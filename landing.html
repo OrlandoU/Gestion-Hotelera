@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Hotel San Pedro | Hospitalidad y Comodidad</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;family=Manrope:wght@200..800&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d8dadc",
+                        "on-primary-container": "#7c839b",
+                        "tertiary": "#000000",
+                        "surface": "#f7f9fb",
+                        "tertiary-container": "#001e2f",
+                        "surface-tint": "#565e74",
+                        "surface-container": "#eceef0",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "on-surface-variant": "#45464d",
+                        "primary-container": "#131b2e",
+                        "on-background": "#191c1e",
+                        "primary": "#000000",
+                        "outline-variant": "#c6c6cd",
+                        "secondary-container": "#d5e3fd",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#c9e6ff",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-primary-fixed": "#131b2e",
+                        "tertiary-fixed-dim": "#89ceff",
+                        "surface-variant": "#e0e3e5",
+                        "inverse-primary": "#bec6e0",
+                        "on-secondary-container": "#57657b",
+                        "primary-fixed": "#dae2fd",
+                        "on-secondary": "#ffffff",
+                        "background": "#f7f9fb",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#2d3133",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-container": "#008cc7",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-tertiary-fixed": "#001e2f",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-container-low": "#f2f4f6",
+                        "secondary": "#515f74",
+                        "outline": "#76777d",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary-fixed-variant": "#004c6e",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#191c1e",
+                        "secondary-fixed": "#d5e3fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "lg": "32px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Hanken Grotesk"],
+                        "body-lg": ["Hanken Grotesk"],
+                        "headline-lg": ["Manrope"],
+                        "headline-sm": ["Manrope"],
+                        "body-sm": ["Hanken Grotesk"],
+                        "label-sm": ["Hanken Grotesk"],
+                        "headline-lg-mobile": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "body-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "label-md": ["14px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "14px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+    <!-- TopNavBar -->
+    <header
+        class="fixed top-0 w-full z-50 bg-surface/90 border-b border-outline-variant/30 backdrop-blur-md shadow-sm h-20 transition-all duration-300">
+        <div class="flex justify-between items-center max-w-[1440px] mx-auto px-margin-desktop h-full">
+            <div class="h-14">
+                <img alt="Hotel San Pedro" class="h-full w-auto object-contain"
+                    src="https://lh3.googleusercontent.com/aida/AP1WRLscGNJdS5NsqKF4KqowgJj49_KZWuF1UhKLAC8hZaVLdyYizzzDoFXdh1vsY3Sv5TrmU1914085ncaT9mG90ISZ2MTEnXf2Y9Gp4KcsmU7Vm6sT-xT6BtFuTv9Vm-a7q4rG_uws9LHqr1dkhbfr0cZ4j4n-bXajZd5SD7A1Atk4txxuIi1YdEz0o-IkHb3XZmWOzZeQGMQg7AovZo8tj37ejaFb4SeMOBqFsz1k_0biHJ_-CAd83A5hS_U" />
+            </div>
+            <nav class="hidden md:flex items-center gap-lg">
+                <a class="font-headline-sm text-headline-sm text-secondary hover:text-primary transition-colors"
+                    href="#about">Nosotros</a>
+                <a class="font-headline-sm text-headline-sm text-secondary hover:text-primary transition-colors"
+                    href="#experiences">Experiencias</a>
+                <a class="font-headline-sm text-headline-sm text-secondary hover:text-primary transition-colors"
+                    href="#mission">Filosofía</a>
+                <a class="font-headline-sm text-headline-sm text-secondary hover:text-primary transition-colors"
+                    href="#contact">Contacto</a>
+            </nav>
+            <div class="flex items-center gap-md">
+                <button
+                    class="px-md py-xs font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all">Ingresar</button>
+                <a class="px-lg py-sm font-label-md text-label-md bg-on-tertiary-container text-white rounded hover:opacity-90 transition-transform active:scale-95"
+                    href="#reservation">Reservar</a>
+            </div>
+        </div>
+    </header>
+    <main>
+        <!-- Section 1: Hero -->
+        <section class="relative h-screen flex flex-col justify-center items-center text-center px-margin-mobile">
+            <div class="absolute inset-0 z-0 overflow-hidden">
+                <img alt="Hotel San Pedro"
+                    class="w-full h-full object-cover scale-105 animate-[pulse_10s_ease-in-out_infinite]"
+                    src="https://lh3.googleusercontent.com/aida/AP1WRLtPwlfbwi1Ky9nSAv2KxNfk090vr8eiJIR8obBu-fUeAr0SEBjuZY5LY_GcvBhcB_37fX42bRY0Lw83mqwkL8KYHum4cwyYILonESypL7S-dgcQ1E1vTa1ViPjErHWEMfHlVzKiKW2DfDKVMByAKEe4qChHdQxNjBwRuoe9R7KAlCArukdV1E6h_dsUMS8KilHO1K80UyECq2a94N2dBwayI59-McFaAD8q2K86jIrQNsXK82b_fTq-92da" />
+                <div class="absolute inset-0 bg-black/40"></div>
+            </div>
+            <div class="relative z-10 max-w-4xl px-margin-desktop">
+                <h1
+                    class="font-headline-lg text-headline-lg md:text-[64px] md:leading-[1.1] text-white mb-md drop-shadow-lg">
+                    Hospitalidad y Comodidad desde 1960</h1>
+                <p class="font-body-lg text-body-lg text-white/90 mb-xl max-w-2xl mx-auto">Más de 50 años siendo parte
+                    de la historia de San Pedro Sula, brindando un refugio de calidez en el corazón de la capital
+                    industrial.</p>
+            </div>
+            <!-- Quick Booking Bar -->
+            <div class="absolute bottom-10 w-full max-w-5xl px-margin-mobile z-20">
+                <div class="glass-panel p-md rounded-xl shadow-2xl flex flex-col md:flex-row items-end gap-md">
+                    <div class="flex-1 w-full text-left">
+                        <label
+                            class="font-label-sm text-label-sm uppercase mb-xs block text-on-surface-variant">Entrada</label>
+                        <input
+                            class="w-full bg-surface-container-low border-outline-variant/50 rounded p-sm focus:ring-2 focus:ring-on-tertiary-container outline-none font-body-md"
+                            type="date" />
+                    </div>
+                    <div class="flex-1 w-full text-left">
+                        <label
+                            class="font-label-sm text-label-sm uppercase mb-xs block text-on-surface-variant">Salida</label>
+                        <input
+                            class="w-full bg-surface-container-low border-outline-variant/50 rounded p-sm focus:ring-2 focus:ring-on-tertiary-container outline-none font-body-md"
+                            type="date" />
+                    </div>
+                    <div class="flex-1 w-full text-left">
+                        <label
+                            class="font-label-sm text-label-sm uppercase mb-xs block text-on-surface-variant">Huéspedes</label>
+                        <select
+                            class="w-full bg-surface-container-low border-outline-variant/50 rounded p-sm focus:ring-2 focus:ring-on-tertiary-container outline-none font-body-md">
+                            <option>1 Huésped</option>
+                            <option selected="">2 Huéspedes</option>
+                            <option>3 Huéspedes</option>
+                            <option>4+ Huéspedes</option>
+                        </select>
+                    </div>
+                    <button
+                        class="bg-on-tertiary-container text-white font-label-md text-label-md px-xl py-[14px] rounded hover:opacity-90 transition-all w-full md:w-auto h-[52px]">
+                        Ver Disponibilidad
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- Section 2: About Us -->
+        <section class="py-xl md:py-[120px] bg-surface-container-lowest" id="about">
+            <div class="max-w-[1440px] mx-auto px-margin-desktop">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-xl items-center">
+                    <div class="order-2 md:order-1">
+                        <span
+                            class="font-label-md text-label-md text-on-tertiary-container tracking-widest uppercase block mb-sm">Nuestra
+                            Historia</span>
+                        <h2 class="font-headline-lg text-headline-lg md:text-[48px] md:leading-tight mb-md">Tradición
+                            que perdura, servicio que abraza</h2>
+                        <div class="space-y-md text-on-surface-variant">
+                            <p class="font-body-lg text-body-lg">Fundado como el tercer hotel de la capital industrial,
+                                Hotel San Pedro se sitúa orgullosamente en el centro de la ciudad. Con más de 50 años de
+                                operación, hemos sido testigos del crecimiento de San Pedro Sula, manteniéndonos firmes
+                                y resilientes, incluso tras superar el incendio de 2012.</p>
+                            <p class="font-body-md text-body-md">Nuestra filosofía es simple pero profunda: queremos que
+                                cada huésped se sienta "como en casa". No solo ofrecemos una habitación, sino un hogar
+                                temporal donde la calidez y el respeto son nuestros cimientos.</p>
+                        </div>
+                        <div class="mt-xl flex gap-lg">
+                            <div>
+                                <div class="font-headline-md text-headline-md text-primary">1960</div>
+                                <div class="font-label-sm text-label-sm text-secondary">Fundación</div>
+                            </div>
+                            <div>
+                                <div class="font-headline-md text-headline-md text-primary">50+</div>
+                                <div class="font-label-sm text-label-sm text-secondary">Años de Servicio</div>
+                            </div>
+                            <div>
+                                <div class="font-headline-md text-headline-md text-primary">Resilientes</div>
+                                <div class="font-label-sm text-label-sm text-secondary">Orgullo Sampedrano</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-1 md:order-2 relative">
+                        <div class="aspect-[4/5] rounded-lg overflow-hidden shadow-xl">
+                            <img alt="Habitación Hotel San Pedro" class="w-full h-full object-cover"
+                                src="https://lh3.googleusercontent.com/aida/AP1WRLu0ipzN75yQSEA3aP2nGzHFQs5B6hOIxUrxtEKVC2Ftul2tTcYj9qSuI8V0kHMyojcB4CaGK5VwUgH3XUrWU2HSwB_Uqz0ywxXv7F8jB0zfJHpe1uF_WLl3M8Qhy1kNEpk81-a8gQ7CLMTncub2ea1G0IqXNcOzqlrrNAxylRqkrfsON-Vss6fMnlrVzn4fdI_wd0Ro1RttE8zychWwlvEAVfqKdpguET4IqaIi-Yn3spDSh-Blmev7gzg" />
+                        </div>
+                        <div
+                            class="absolute -bottom-lg -left-lg hidden md:block w-48 h-48 bg-surface-container shadow-lg rounded-lg border border-outline-variant/30 p-md">
+                            <div class="flex flex-col h-full justify-between">
+                                <span class="material-symbols-outlined text-on-tertiary-container text-4xl">home</span>
+                                <p class="font-label-md text-label-md leading-tight">Su hogar en el corazón de la
+                                    ciudad.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Section 3: Mission, Vision & Values -->
+        <section class="py-xl md:py-[120px] bg-surface" id="mission">
+            <div class="max-w-[1440px] mx-auto px-margin-desktop">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-xl mb-xl">
+                    <div class="space-y-md">
+                        <h3 class="font-headline-md text-headline-md text-on-tertiary-container">Misión</h3>
+                        <p class="font-body-lg text-body-lg">Ser el hogar de nuestros huéspedes fuera de su hogar,
+                            proporcionando un servicio de calidad, calidez y seguridad, cimentado en la tradición
+                            sampedrana.</p>
+                    </div>
+                    <div class="space-y-md">
+                        <h3 class="font-headline-md text-headline-md text-on-tertiary-container">Visión 2030</h3>
+                        <p class="font-body-lg text-body-lg">Consolidarnos como el hotel de referencia en hospitalidad
+                            tradicional en el centro de San Pedro Sula, innovando en nuestros servicios sin perder
+                            nuestra esencia familiar.</p>
+                    </div>
+                </div>
+                <div class="bg-surface-container-low p-xl rounded-2xl">
+                    <h3 class="font-headline-md text-headline-md text-center mb-xl">Nuestros Valores</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-lg text-center">
+                        <div class="p-md">
+                            <span
+                                class="material-symbols-outlined text-on-tertiary-container text-3xl mb-xs block">verified</span>
+                            <h4 class="font-label-md text-label-md uppercase mb-xs">Responsabilidad</h4>
+                        </div>
+                        <div class="p-md">
+                            <span
+                                class="material-symbols-outlined text-on-tertiary-container text-3xl mb-xs block">volunteer_activism</span>
+                            <h4 class="font-label-md text-label-md uppercase mb-xs">Honestidad</h4>
+                        </div>
+                        <div class="p-md">
+                            <span
+                                class="material-symbols-outlined text-on-tertiary-container text-3xl mb-xs block">handshake</span>
+                            <h4 class="font-label-md text-label-md uppercase mb-xs">Compromiso</h4>
+                        </div>
+                        <div class="p-md">
+                            <span
+                                class="material-symbols-outlined text-on-tertiary-container text-3xl mb-xs block">diversity_3</span>
+                            <h4 class="font-label-md text-label-md uppercase mb-xs">Respeto</h4>
+                        </div>
+                        <div class="p-md">
+                            <span
+                                class="material-symbols-outlined text-on-tertiary-container text-3xl mb-xs block">apartment</span>
+                            <h4 class="font-label-md text-label-md uppercase mb-xs">Hospitalidad</h4>
+                        </div>
+                        <div class="p-md">
+                            <span
+                                class="material-symbols-outlined text-on-tertiary-container text-3xl mb-xs block">lock</span>
+                            <h4 class="font-label-md text-label-md uppercase mb-xs">Confianza</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Section 4: Experiences -->
+        <section class="py-xl md:py-[120px] bg-surface-container-low" id="experiences">
+            <div class="max-w-[1440px] mx-auto px-margin-desktop">
+                <div class="text-center mb-xl">
+                    <span
+                        class="font-label-md text-label-md text-on-tertiary-container tracking-widest uppercase block mb-sm">Servicios
+                        Personalizados</span>
+                    <h2 class="font-headline-lg text-headline-lg md:text-[48px]">Más que huéspedes, somos familia</h2>
+                </div>
+                <div class="group relative overflow-hidden rounded-2xl shadow-2xl h-[600px] md:h-[700px]">
+                    <img alt="Comedor Hotel San Pedro"
+                        class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        src="https://lh3.googleusercontent.com/aida/AP1WRLsPMOdetOVLoz6bMIE0AE1d3NTpcdVzyURdoNkRehVFwaRoz6cuaunhxLpslAsCC4fcdX2nP1IrSmrbcRg5sA8UmmBHEKH0dnnMPJGQeXeG0YiiL3Twcqn8sGM_a_UmTn4AxAv6e5npSVelxzJ_iNYQRdiS8xzYB88b6TPnDgnJgm2_bFanu4PiRKAj5uvzT6S__Bth1xUmgKg4iydzpQz2gHbu1QtlZCrKDHR_Z3-PWSz0kumf44Qc5pY" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 w-full p-xl text-white">
+                        <div class="max-w-2xl">
+                            <h3 class="font-headline-lg text-headline-lg mb-md">Atención que Reconforta</h3>
+                            <p class="font-body-lg text-body-lg mb-lg text-white/80">Nos enorgullecemos de tratar a cada
+                                visitante con la cercanía de un familiar. Nuestra calidez es tal que contamos con
+                                residentes de larga estancia que han hecho del Hotel San Pedro su hogar permanente.</p>
+                            <button
+                                class="border-2 border-white text-white px-xl py-sm font-label-md text-label-md hover:bg-white hover:text-black transition-all rounded">Conocer
+                                Más</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Section 5: Reservation CTA -->
+        <section class="py-xl md:py-[160px] bg-surface-container-highest overflow-hidden relative" id="reservation">
+            <div
+                class="absolute top-0 right-0 w-96 h-96 bg-on-tertiary-container/5 rounded-full blur-[120px] -mr-48 -mt-48">
+            </div>
+            <div
+                class="absolute bottom-0 left-0 w-96 h-96 bg-on-tertiary-container/5 rounded-full blur-[120px] -ml-48 -mb-48">
+            </div>
+            <div class="max-w-[1440px] mx-auto px-margin-desktop text-center relative z-10">
+                <div
+                    class="inline-flex items-center gap-sm bg-on-tertiary-container/10 px-md py-xs rounded-full text-on-tertiary-container font-label-sm mb-lg">
+                    <span class="material-symbols-outlined text-[18px]">verified</span> Tradición y Resiliencia
+                    Sampedrana
+                </div>
+                <h2 class="font-headline-lg text-headline-lg md:text-[56px] mb-md">Inicie su estadía con nosotros</h2>
+                <p class="font-body-lg text-body-lg text-on-surface-variant mb-xl max-w-2xl mx-auto">Reserve hoy y
+                    descubra por qué hemos sido el hotel preferido de San Pedro Sula por generaciones.</p>
+                <div class="flex flex-col md:flex-row gap-md justify-center items-center">
+                    <button
+                        class="bg-on-tertiary-container text-white px-xl py-md rounded-lg font-label-md text-label-md shadow-lg shadow-on-tertiary-container/20 hover:scale-105 active:scale-95 transition-all w-full md:w-auto h-14 flex items-center justify-center">
+                        Reservar ahora
+                    </button>
+                    <button
+                        class="border border-outline text-on-surface px-xl py-md rounded-lg font-label-md text-label-md hover:bg-surface transition-all w-full md:w-auto h-14 flex items-center justify-center">
+                        Ver Habitaciones
+                    </button>
+                </div>
+            </div>
+        </section>
+        <!-- Section 6: Contact Us -->
+        <section class="py-xl md:py-[120px] bg-white" id="contact">
+            <div class="max-w-[1440px] mx-auto px-margin-desktop">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-xl">
+                    <!-- Contact Form -->
+                    <div class="bg-surface p-xl rounded-2xl border border-outline-variant/30 shadow-sm">
+                        <h3 class="font-headline-md text-headline-md mb-lg">Envíenos un Mensaje</h3>
+                        <form class="space-y-md">
+                            <div class="space-y-xs">
+                                <label class="font-label-md text-label-md text-on-surface-variant">Nombre
+                                    Completo</label>
+                                <input
+                                    class="w-full bg-white border border-outline-variant rounded p-sm focus:ring-2 focus:ring-on-tertiary-container outline-none transition-all font-body-md"
+                                    placeholder="Su nombre" type="text" />
+                            </div>
+                            <div class="space-y-xs">
+                                <label class="font-label-md text-label-md text-on-surface-variant">Correo
+                                    Electrónico</label>
+                                <input
+                                    class="w-full bg-white border border-outline-variant rounded p-sm focus:ring-2 focus:ring-on-tertiary-container outline-none transition-all font-body-md"
+                                    placeholder="correo@ejemplo.com" type="email" />
+                            </div>
+                            <div class="space-y-xs">
+                                <label class="font-label-md text-label-md text-on-surface-variant">Mensaje</label>
+                                <textarea
+                                    class="w-full bg-white border border-outline-variant rounded p-sm focus:ring-2 focus:ring-on-tertiary-container outline-none transition-all font-body-md"
+                                    placeholder="¿Cómo podemos ayudarle?" rows="4"></textarea>
+                            </div>
+                            <button
+                                class="w-full bg-on-tertiary-container text-white font-label-md text-label-md py-md rounded-lg hover:opacity-90 transition-all mt-lg">Enviar
+                                Consulta</button>
+                        </form>
+                    </div>
+                    <!-- Contact Info -->
+                    <div class="flex flex-col justify-center lg:pl-xl">
+                        <div class="space-y-xl">
+                            <div>
+                                <h3 class="font-headline-md text-headline-md mb-md">Nuestra Ubicación</h3>
+                                <p class="font-body-lg text-body-lg text-on-surface-variant mb-md">3 calle entre la 1 y
+                                    2 avenida,<br />San Pedro Sula, Cortés, Honduras.</p>
+                                <div
+                                    class="w-full h-48 bg-surface-container rounded-lg overflow-hidden border border-outline-variant/50 relative">
+                                    <img alt="Ubicación Hotel San Pedro" class="w-full h-full object-cover"
+                                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRYoK0NSaTDwFsScfSZEIi3UgrHmxuMAtK6z7PM74ueniYvpmqtKQAHs37Udsz2xiNQarxGNaH4yXcDQsIpyU2-PZKg6dKfvnXpxd-tDA1IvC4f78w5pt3dBl7OqbuI8Xq5SppSI3llyPXOUlb4Jo-_h5tnQbipWW1POQpQTh6HZUK7EJ5PVLOv07_s46ECt8iI4GKtpJAvAT7bK9S0Pvpf_pmrVI5W7mwZWf76StQETcgaWMdZ9yKaTREsDrBl2xJkZJd_d4BGBWf" />
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="bg-on-tertiary-container text-white p-sm rounded-full shadow-lg">
+                                            <span class="material-symbols-outlined">location_on</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-lg">
+                                <div>
+                                    <h4 class="font-label-md text-label-md text-secondary uppercase mb-xs">Reservaciones
+                                    </h4>
+                                    <p class="font-headline-sm text-headline-sm text-primary">+504 2550-0000</p>
+                                    <p class="font-body-sm text-body-sm text-on-surface-variant">
+                                        reservaciones@hotelsanpedro.com</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-label-md text-label-md text-secondary uppercase mb-xs">Información
+                                    </h4>
+                                    <p class="font-headline-sm text-headline-sm text-primary">+504 2550-1111</p>
+                                    <p class="font-body-sm text-body-sm text-on-surface-variant">info@hotelsanpedro.com
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-surface-container-lowest border-t border-outline-variant/50">
+        <div class="max-w-[1440px] mx-auto px-margin-desktop py-xl flex flex-col md:flex-row justify-between gap-lg">
+            <div class="space-y-md">
+                <div class="h-10">
+                    <img alt="Hotel San Pedro" class="h-full w-auto object-contain"
+                        src="https://lh3.googleusercontent.com/aida/AP1WRLscGNJdS5NsqKF4KqowgJj49_KZWuF1UhKLAC8hZaVLdyYizzzDoFXdh1vsY3Sv5TrmU1914085ncaT9mG90ISZ2MTEnXf2Y9Gp4KcsmU7Vm6sT-xT6BtFuTv9Vm-a7q4rG_uws9LHqr1dkhbfr0cZ4j4n-bXajZd5SD7A1Atk4txxuIi1YdEz0o-IkHb3XZmWOzZeQGMQg7AovZo8tj37ejaFb4SeMOBqFsz1k_0biHJ_-CAd83A5hS_U" />
+                </div>
+                <p class="font-body-sm text-body-sm max-w-xs text-on-surface-variant/80">Líderes en hospitalidad
+                    tradicional sampedrana desde 1960.</p>
+                <div class="flex gap-md">
+                    <a class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container-low transition-all"
+                        href="#">
+                        <span class="material-symbols-outlined text-[20px]">public</span>
+                    </a>
+                    <a class="w-10 h-10 rounded-full border border-outline-variant flex items-center justify-center hover:bg-surface-container-low transition-all"
+                        href="#">
+                        <span class="material-symbols-outlined text-[20px]">alternate_email</span>
+                    </a>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-xl">
+                <div class="space-y-sm">
+                    <h4 class="font-label-md text-label-md uppercase">El Hotel</h4>
+                    <ul class="space-y-xs">
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Habitaciones</a></li>
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Restaurante</a></li>
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Salones</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-sm">
+                    <h4 class="font-label-md text-label-md uppercase">Empresa</h4>
+                    <ul class="space-y-xs">
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Carreras</a></li>
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Noticias</a></li>
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Sostenibilidad</a></li>
+                    </ul>
+                </div>
+                <div class="space-y-sm">
+                    <h4 class="font-label-md text-label-md uppercase">Legal</h4>
+                    <ul class="space-y-xs">
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Privacidad</a></li>
+                        <li class=""><a
+                                class="font-body-sm text-body-sm text-on-surface-variant/80 hover:text-tertiary-container transition-colors"
+                                href="#">Términos</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div
+            class="max-w-[1440px] mx-auto px-margin-desktop py-md border-t border-outline-variant/30 text-center md:text-left">
+            <p class="font-body-sm text-body-sm text-on-surface-variant/60">© 2024 Hotel San Pedro. Todos los derechos
+                reservados.</p>
+        </div>
+    </footer>
+    <script>
+        // Header scroll behavior
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('bg-surface', 'h-16', 'shadow-md');
+                header.classList.remove('bg-surface/90', 'h-20', 'shadow-sm');
+            } else {
+                header.classList.remove('bg-surface', 'h-16', 'shadow-md');
+                header.classList.add('bg-surface/90', 'h-20', 'shadow-sm');
+            }
+        });
+
+        // Form submission interaction
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Enviando...';
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            setTimeout(() => {
+                btn.innerText = 'Mensaje Enviado';
+                btn.classList.remove('bg-on-tertiary-container');
+                btn.classList.add('bg-emerald-600');
+                btn.classList.remove('opacity-50');
+
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.classList.add('bg-on-tertiary-container');
+                    btn.classList.remove('bg-emerald-600');
+                    btn.disabled = false;
+                    e.target.reset();
+                }, 3000);
+            }, 1500);
+        });
+    </script>
+</body>
+
+</html>
