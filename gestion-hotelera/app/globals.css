@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme {
+  /* Colors */
+  --color-navy-dark: #0f172a;
+  --color-lavender-accent: #e0e7ff;
+  --color-lavender-deep: #6366f1;
+  --color-surface-dim: #f8fafc;
+  --color-on-primary: #ffffff;
+  --color-surface: #ffffff;
+  --color-primary: #0f172a;
+  --color-secondary: #475569;
+  --color-background: #ffffff;
+  --color-outline-variant: #e2e8f0;
+
+  /* Border Radius */
+  --radius-none: 0px; /* Note: v4 uses 'none' as the keyword mapping rather than default overrides */
+  --radius-lg: 4px;
+  --radius-xl: 8px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-space-margin-desktop: 64px;
+  --spacing-space-sm: 16px;
+  --spacing-space-xs: 8px;
+  --spacing-space-lg: 32px;
+  --spacing-space-md: 24px;
+  --spacing-space-xl: 64px;
+  --spacing-space-base: 4px;
+  --spacing-space-margin-mobile: 20px;
+  --spacing-space-gutter: 32px;
+
+  /* Font Families */
+  --font-label-md: "Hanken Grotesk", sans-serif;
+  --font-body-lg: "Hanken Grotesk", sans-serif;
+  --font-headline-lg: "Manrope", sans-serif;
+  --font-headline-sm: "Manrope", sans-serif;
+  --font-body-sm: "Hanken Grotesk", sans-serif;
+  --font-label-sm: "Hanken Grotesk", sans-serif;
+  --font-headline-lg-mobile: "Manrope", sans-serif;
+  --font-headline-md: "Manrope", sans-serif;
+  --font-body-md: "Hanken Grotesk", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
