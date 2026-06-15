@@ -14,11 +14,11 @@ export default function Header() {
             </div>
             <div className="flex items-center gap-6">
                 <div className="flex items-center gap-4">
-                    <button className="p-2 text-[#515f74] hover:bg-[#f2f4f6] rounded-full transition-colors relative">
+                    <button className="p-2 text-[#515f74] hover:bg-[#f2f4f6] rounded-full transition-colors relative cursor-pointer">
                         <span className="material-symbols-outlined">notifications</span>
                         <span className="absolute top-1 right-1 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
                     </button>
-                    <button className="p-2 text-[#515f74] hover:bg-[#f2f4f6] rounded-full transition-colors">
+                    <button className="p-2 text-[#515f74] hover:bg-[#f2f4f6] rounded-full transition-colors cursor-pointer">
                         <span className="material-symbols-outlined">help_outline</span>
                     </button>
                 </div>

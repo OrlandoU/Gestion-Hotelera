@@ -20,7 +20,7 @@ export default function NewSolicitud() {
 
     return (
         <>
-            <button onClick={() => setOpen(true)} className="flex items-center gap-2 bg-[#008cc7] text-white px-4 py-2 rounded transition-transform active:scale-95">
+            <button onClick={() => setOpen(true)} className="flex items-center gap-2 bg-[#008cc7] text-white px-4 py-2 rounded transition-transform active:scale-95 cursor-pointer">
                 <span className="material-symbols-outlined">add</span> Nueva Solicitud
             </button>
             <Modal open={open} onClose={() => setOpen(false)} title="Nueva Solicitud">
@@ -42,8 +42,8 @@ export default function NewSolicitud() {
                         </select>
                     </div>
                     <div className="flex justify-end gap-3">
-                        <button type="button" onClick={() => setOpen(false)} disabled={saving} className="px-4 py-2 rounded border text-sm hover:bg-slate-50 transition-colors">Cancelar</button>
-                        <button type="submit" disabled={saving} className="px-4 py-2 rounded bg-[#008cc7] text-white text-sm flex items-center gap-2 disabled:opacity-60">
+                        <button type="button" onClick={() => setOpen(false)} disabled={saving} className="px-4 py-2 rounded border text-sm hover:bg-slate-50 transition-colors cursor-pointer">Cancelar</button>
+                        <button type="submit" disabled={saving} className="px-4 py-2 rounded bg-[#008cc7] text-white text-sm flex items-center gap-2 disabled:opacity-60 cursor-pointer">
                             {saving ? (
                                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" opacity="0.25"></circle>

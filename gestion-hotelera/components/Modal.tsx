@@ -61,7 +61,7 @@ export default function Modal({ open, onClose, title, children }: { open: boolea
             >
                 <div className="flex items-center justify-between mb-4">
                     <h3 id="modal-title" className="text-lg font-semibold text-slate-900">{title}</h3>
-                    <button onClick={onClose} aria-label="Cerrar" className="text-slate-500 hover:text-slate-800 rounded-full p-1 transition-colors">
+                    <button onClick={onClose} aria-label="Cerrar" className="text-slate-500 hover:text-slate-800 rounded-full p-1 transition-colors cursor-pointer">
                         <span className="material-symbols-outlined">close</span>
                     </button>
                 </div>

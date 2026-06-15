@@ -5,6 +5,9 @@
   --foreground: #171717;
 }
 
+*{
+  font-family: 'Hanken Grotesk', sans-serif;
+}
 
 
 @media (prefers-color-scheme: dark) {

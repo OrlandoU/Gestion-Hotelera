@@ -11,7 +11,7 @@ export default function ReservationPage() {
     const data = id ? RESERVATIONS_DETAIL[id] : null;
 
     if (!data) {
-        return <div className="p-6">Reservation not found.</div>;
+        return <div className="p-6">Reservación no encontrada.</div>;
     }
 
     const { bookingId, guest, status, createdAt, stay, room, party, internalNotes, payment, activity } = data;
@@ -20,9 +20,9 @@ export default function ReservationPage() {
 
     return (
         <>
-            <div className="mb-6">
+            <div className="mb-2">
                 <div className="flex items-center gap-1 text-slate-500 text-xs mb-2">
-                    <a className="hover:text-slate-900 transition-colors" href="#">Reservations</a>
+                    <a className="hover:text-slate-900 transition-colors" href="#">Reservaciones</a>
                     <span className="material-symbols-outlined text-[16px]">chevron_right</span>
                     <span className="text-slate-800 font-medium">{bookingId}</span>
                 </div>
@@ -33,8 +33,8 @@ export default function ReservationPage() {
                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-800 rounded-md text-xs font-semibold">
                                 <span className={`w-2 h-2 rounded-full ${status === "Confirmed" ? "bg-emerald-500" : "bg-amber-500"}`}></span> {status}
                             </span>
-                            <span className="text-xs text-slate-500">Booking ID: {bookingId}</span>
-                            <span className="text-xs text-slate-500">• Created: {createdLabel}</span>
+                            <span className="text-xs text-slate-500">ID de reserva: {bookingId}</span>
+                            <span className="text-xs text-slate-500">• Creado: {createdLabel}</span>
                         </div>
                     </div>
                 </div>
@@ -44,25 +44,25 @@ export default function ReservationPage() {
                 <div className="xl:col-span-8 space-y-6">
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-slate-400">person</span> Guest Information
+                            <span className="material-symbols-outlined text-slate-400">person</span> Información del huésped
                         </h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <p className="text-xs text-slate-400 mb-1 font-medium">Email</p>
+                                <p className="text-xs text-slate-400 mb-1 font-medium">Correo electrónico</p>
                                 <p className="text-slate-800 font-medium">{guest?.email}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-400 mb-1 font-medium">Phone</p>
+                                <p className="text-xs text-slate-400 mb-1 font-medium">Teléfono</p>
                                 <p className="text-slate-800 font-medium">{guest?.phone}</p>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-400 mb-1 font-medium">Loyalty Tier</p>
+                                <p className="text-xs text-slate-400 mb-1 font-medium">Nivel de fidelidad</p>
                                 <p className="text-slate-800 font-medium flex items-center gap-1">
                                     <span className="material-symbols-outlined text-amber-500 text-[18px]">workspace_premium</span> {guest?.loyalty?.tier ?? "—"}
                                 </p>
                             </div>
                             <div>
-                                <p className="text-xs text-slate-400 mb-1 font-medium">Special Requests</p>
+                                <p className="text-xs text-slate-400 mb-1 font-medium">Solicitudes especiales</p>
                                 <p className="text-slate-800">{stay?.specialRequests ?? "—"}</p>
                             </div>
                         </div>
@@ -70,7 +70,7 @@ export default function ReservationPage() {
 
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-slate-400">bed</span> Stay Details
+                            <span className="material-symbols-outlined text-slate-400">bed</span> Detalles de la estadía
                         </h2>
                         <div className="flex flex-col md:flex-row justify-between mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
                             <div className="flex-1 text-center md:text-left mb-3 md:mb-0">
@@ -81,7 +81,7 @@ export default function ReservationPage() {
                             <div className="flex-1 flex flex-col items-center justify-center relative my-2 md:my-0">
                                 <div className="w-full h-px bg-slate-200 absolute top-1/2 -translate-y-1/2 z-0 hidden md:block"></div>
                                 <div className="bg-slate-50 z-10 px-3 flex flex-col items-center">
-                                    <span className="inline-block px-2.5 py-0.5 bg-slate-200 text-slate-800 rounded-full text-xs font-bold mb-1">{stay?.nights ?? "0"} Nights</span>
+                                    <span className="inline-block px-2.5 py-0.5 bg-slate-200 text-slate-800 rounded-full text-xs font-bold mb-1">{stay?.nights ?? "0"} Noches</span>
                                     <span className="material-symbols-outlined text-slate-400">arrow_forward</span>
                                 </div>
                             </div>
@@ -98,7 +98,7 @@ export default function ReservationPage() {
                                     <span className="material-symbols-outlined">meeting_room</span>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400 font-medium">Room Type</p>
+                                    <p className="text-xs text-slate-400 font-medium">Tipo de habitación</p>
                                     <p className="font-bold text-slate-800">{room?.type}</p>
                                 </div>
                             </div>
@@ -107,7 +107,7 @@ export default function ReservationPage() {
                                     <span className="material-symbols-outlined">tag</span>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400 font-medium">Room Number</p>
+                                    <p className="text-xs text-slate-400 font-medium">Número de habitación</p>
                                     <p className="font-bold text-slate-800">{room?.number}</p>
                                 </div>
                             </div>
@@ -116,8 +116,8 @@ export default function ReservationPage() {
                                     <span className="material-symbols-outlined">group</span>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-slate-400 font-medium">Guests</p>
-                                    <p className="font-bold text-slate-800">{party?.adults ?? 0} Adults</p>
+                                    <p className="text-xs text-slate-400 font-medium">Huéspedes</p>
+                                    <p className="font-bold text-slate-800">{party?.adults ?? 0} Adultos</p>
                                 </div>
                             </div>
                         </div>
@@ -126,9 +126,9 @@ export default function ReservationPage() {
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
                             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-slate-400">note_alt</span> Internal Notes
+                                <span className="material-symbols-outlined text-slate-400">note_alt</span> Notas internas
                             </h2>
-                            <button className="text-slate-950 font-semibold text-xs hover:underline">Add Note</button>
+                            <button className="text-slate-950 font-semibold text-xs hover:underline">Agregar nota</button>
                         </div>
                         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                             {internalNotes && internalNotes.length > 0 ? (
@@ -137,7 +137,7 @@ export default function ReservationPage() {
                                     <p className="text-xs text-slate-400 font-medium">- {internalNotes[0].author} ({new Date(internalNotes[0].createdAt).toLocaleDateString()})</p>
                                 </>
                             ) : (
-                                <p className="text-slate-700">No notes</p>
+                                <p className="text-slate-700">Sin notas</p>
                             )}
                         </div>
                     </div>
@@ -145,34 +145,34 @@ export default function ReservationPage() {
 
                 <div className="xl:col-span-4 space-y-6">
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
-                        <h3 className="text-base font-bold text-slate-900 mb-4">Quick Actions</h3>
+                        <h3 className="text-base font-bold text-slate-900 mb-4">Acciones rápidas</h3>
                         <div className="space-y-2">
                             <button className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm">
-                                <span className="material-symbols-outlined text-[20px]">login</span> Process Check-in
+                                <span className="material-symbols-outlined text-[20px]">login</span> Procesar Check-in
                             </button>
                             <button className="w-full min-h-11 bg-white border border-slate-300 card-shadow  text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
-                                <span className="material-symbols-outlined text-[20px]">edit</span> Edit Reservation
+                                <span className="material-symbols-outlined text-[20px]">edit</span> Editar reservación
                             </button>
                             <button className="w-full min-h-11 bg-white border border-slate-300 card-shadow  text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
-                                <span className="material-symbols-outlined text-[20px]">receipt_long</span> Generate Invoice
+                                <span className="material-symbols-outlined text-[20px]">receipt_long</span> Generar factura
                             </button>
                             <button className="w-full min-h-11 text-red-600 hover:bg-red-50 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors mt-4">
-                                <span className="material-symbols-outlined text-[20px]">cancel</span> Cancel Booking
+                                <span className="material-symbols-outlined text-[20px]">cancel</span> Cancelar reserva
                             </button>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-slate-400">account_balance_wallet</span> Payment Summary
+                            <span className="material-symbols-outlined text-slate-400">account_balance_wallet</span> Resumen de pago
                         </h3>
                         <div className="space-y-2 mb-4">
                             <div className="flex justify-between text-slate-600">
-                                <span>Room Rate ({stay?.nights ?? "0"} nights)</span>
+                                <span>Tarifa de habitación ({stay?.nights ?? "0"} noches)</span>
                                 <span className="text-slate-900 font-medium">${(payment?.breakdown?.roomRate ?? 0).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
-                                <span>Taxes & Fees</span>
+                                <span>Impuestos y cargos</span>
                                 <span className="text-slate-900 font-medium">${(payment?.breakdown?.taxesAndFees ?? 0).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
@@ -189,7 +189,7 @@ export default function ReservationPage() {
                         <div className="bg-slate-50 p-3 rounded-xl flex items-center gap-3 border border-slate-100">
                             <span className="material-symbols-outlined text-slate-500">credit_card</span>
                             <div>
-                                <p className="text-xs text-slate-400 font-medium">Guarantee Method</p>
+                                <p className="text-xs text-slate-400 font-medium">Método de garantía</p>
                                 <p className="text-slate-800 font-medium">{payment?.guaranteeMethod}</p>
                             </div>
                         </div>
@@ -197,7 +197,7 @@ export default function ReservationPage() {
 
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-slate-400">history</span> Activity Log
+                            <span className="material-symbols-outlined text-slate-400">history</span> Registro de actividad
                         </h3>
                         <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2.75 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-slate-200 before:hidden md:before:block">
                             {activity && activity.length > 0 ? (
@@ -212,7 +212,7 @@ export default function ReservationPage() {
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-slate-700">No activity</p>
+                                <p className="text-slate-700">Sin actividad</p>
                             )}
                         </div>
                     </div>

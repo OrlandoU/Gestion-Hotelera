@@ -1,4 +1,4 @@
-export default function PageHeader({ name, subtitle, buttons }: { name: string, subtitle: string, buttons: React.ReactNode }) {
+export default function PageHeader({ name, subtitle, buttons }: { name: string, subtitle: string, buttons: React.ReactNode | null }) {
     return (<div className="flex justify-between items-end">
         <div>
             <h2 className="font-['Hanken_Grotesk'] text-[32px] leading-10 tracking-[-0.02em] font-bold text-[#000000]">{name}</h2>
