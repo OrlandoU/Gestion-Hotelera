@@ -5,7 +5,43 @@ export const RESERVATIONS_LIST = [
     { id: "r4", roomId: "103", start: "2023-10-15", end: "2023-10-20", guest: "Katherine Michelle", color: "emerald-100" },
 ];
 
-export const RESERVATIONS_DETAIL: Record<string, any> = {
+export type ReservationDetail = {
+    id: string;
+    bookingId: string;
+    guest: {
+        name: string;
+        email: string;
+        phone: string;
+        loyalty: { tier: string };
+    };
+    status: string;
+    createdAt: string;
+    stay: {
+        checkIn: string;
+        checkInTime: string;
+        checkOut: string;
+        checkOutTime: string;
+        nights: number;
+        specialRequests: string;
+    };
+    room: {
+        number: string;
+        type: string;
+        name: string;
+        ratePerNight: number;
+    };
+    party: { adults: number; children: number };
+    internalNotes: { id: string; text: string; author: string; createdAt: string }[];
+    payment: {
+        breakdown: { roomRate: number; taxesAndFees: number; extras: number };
+        total: number;
+        guaranteeMethod: string;
+    };
+    activity: { time: string; text: string }[];
+    ui: { color: string; icon: string | null };
+};
+
+export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
     r1: {
         id: "r1",
         bookingId: "RES-88291A",

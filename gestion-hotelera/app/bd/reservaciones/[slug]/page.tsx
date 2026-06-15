@@ -42,7 +42,7 @@ export default function ReservationPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                 <div className="xl:col-span-8 space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-200/60 card-shadow p-6">
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                             <span className="material-symbols-outlined text-slate-400">person</span> Guest Information
                         </h2>
@@ -68,7 +68,7 @@ export default function ReservationPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-200/60 card-shadow p-6">
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                             <span className="material-symbols-outlined text-slate-400">bed</span> Stay Details
                         </h2>
@@ -123,7 +123,7 @@ export default function ReservationPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-200/60 card-shadow p-6">
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
                             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-slate-400">note_alt</span> Internal Notes
@@ -144,25 +144,25 @@ export default function ReservationPage() {
                 </div>
 
                 <div className="xl:col-span-4 space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-200/60 card-shadow p-6">
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4">Quick Actions</h3>
                         <div className="space-y-2">
-                            <button className="w-full min-h-[44px] bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm">
+                            <button className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm">
                                 <span className="material-symbols-outlined text-[20px]">login</span> Process Check-in
                             </button>
-                            <button className="w-full min-h-[44px] bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+                            <button className="w-full min-h-11 bg-white border border-slate-300 card-shadow  text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                                 <span className="material-symbols-outlined text-[20px]">edit</span> Edit Reservation
                             </button>
-                            <button className="w-full min-h-[44px] bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+                            <button className="w-full min-h-11 bg-white border border-slate-300 card-shadow  text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                                 <span className="material-symbols-outlined text-[20px]">receipt_long</span> Generate Invoice
                             </button>
-                            <button className="w-full min-h-[44px] text-red-600 hover:bg-red-50 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors mt-4">
+                            <button className="w-full min-h-11 text-red-600 hover:bg-red-50 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors mt-4">
                                 <span className="material-symbols-outlined text-[20px]">cancel</span> Cancel Booking
                             </button>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-200/60 card-shadow p-6">
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                             <span className="material-symbols-outlined text-slate-400">account_balance_wallet</span> Payment Summary
                         </h3>
@@ -195,15 +195,15 @@ export default function ReservationPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-200/60 card-shadow p-6">
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                             <span className="material-symbols-outlined text-slate-400">history</span> Activity Log
                         </h3>
-                        <div className="space-y-4 relative before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-slate-200 before:hidden md:before:block">
+                        <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2.75 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-slate-200 before:hidden md:before:block">
                             {activity && activity.length > 0 ? (
                                 activity.map((a: { time: string; text: string }, i: number) => (
                                     <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                                        <div className="flex items-center justify-center w-6 h-6 rounded-full border-2 border-slate-200 bg-white text-slate-400 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                                        <div className="flex items-center justify-center w-6 h-6 rounded-full border-2 border-slate-300 card-shadow  bg-white text-slate-400 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
                                         </div>
                                         <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] bg-slate-50 p-3 rounded-xl border border-slate-100">
                                             <p className="text-xs text-slate-400 mb-1 font-medium">{new Date(a.time).toLocaleString()}</p>
