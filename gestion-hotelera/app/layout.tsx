@@ -17,7 +17,7 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   title: "Hotel San Pedro | Modern Heritage Since 1960",
-  description: "Cincuenta años de hospitalidad tradicional reinterpretados para el viajero contemporáneo en el corazón de San Pedro Sula.",
+  description: "Cincuenta años de hospitalidad tradicional reinterpretados para el viajero contemporáneo en el corazón de San Pedro Sula",
 };
 
 export default function RootLayout({
