@@ -116,7 +116,7 @@ export default function Page() {
                                 {dates.map((d) => {
                                     const weekday = d.toLocaleString(undefined, { weekday: "short" });
                                     const daynum = d.getDate();
-                                    const isMid = d.getDay() === 3; // example highlight for Wed
+                                    const isMid = d.getDay() === 3; // ejemplo: resaltar miércoles
                                     const weekend = d.getDay() === 0 || d.getDay() === 6;
                                     return (
                                         <div key={d.toISOString()} className={`p-2 text-center border-r border-slate-300 card-shadow  ${isMid ? "bg-blue-50/50" : weekend ? "bg-slate-100/50" : ""}`} style={{ minWidth: dayWidth }}>

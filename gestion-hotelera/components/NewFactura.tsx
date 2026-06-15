@@ -11,7 +11,7 @@ export default function NewFactura() {
         if (saving) return;
         const data = Object.fromEntries(new FormData(e.target as HTMLFormElement).entries());
         setSaving(true);
-        console.log("New factura:", data);
+        // console.log removed for production
         setTimeout(() => {
             setSaving(false);
             setOpen(false);

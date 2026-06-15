@@ -13,8 +13,8 @@ export default function NewReservation() {
         const form = e.target as HTMLFormElement;
         const data = Object.fromEntries(new FormData(form).entries());
         setSaving(true);
-        console.log("New reservation:", data);
-        // simulate save
+        // console.log removed for production
+        // simular guardado
         setTimeout(() => {
             setSaving(false);
             setOpen(false);

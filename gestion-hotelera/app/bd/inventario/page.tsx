@@ -48,10 +48,10 @@ export default function InventarioPage() {
                     </div>
 
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow  p-6 card-shadow flex flex-col gap-2">
-                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Urgent Alerts</h3>
+                        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Alertas urgentes</h3>
                         <ul className="flex flex-col gap-2.5">
                             <li className="flex items-center gap-2 text-xs font-medium text-slate-800">
-                                <div className="w-2 h-2 rounded-full bg-red-600"></div> Gel desinfectante (Lobby)
+                                <div className="w-2 h-2 rounded-full bg-red-600"></div> Gel desinfectante (Vestíbulo)
                             </li>
                             <li className="flex items-center gap-2 text-xs font-medium text-slate-800">
                                 <div className="w-2 h-2 rounded-full bg-red-600"></div> Toallas de baño (Piso 4)
@@ -89,9 +89,9 @@ export default function InventarioPage() {
                             <tbody className="text-slate-800 divide-y divide-slate-100">
                                 <tr className="hover:bg-slate-50/80 transition-colors">
                                     <td className="py-3.5 px-6 font-medium text-slate-900">Bleach Solution Pro</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Cleaning Supplies</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Suministros de limpieza</td>
                                     <td className="py-3.5 px-6 text-right font-bold text-red-600">12</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Gallons</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Galones</td>
                                     <td className="py-3.5 px-6">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-red-600"></div>
@@ -104,9 +104,9 @@ export default function InventarioPage() {
                                 </tr>
                                 <tr className="hover:bg-slate-50/80 transition-colors">
                                     <td className="py-3.5 px-6 font-medium text-slate-900">Premium Coffee Beans</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Food & Beverage</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Alimentos y bebidas</td>
                                     <td className="py-3.5 px-6 text-right font-semibold">45</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Lbs</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Libras</td>
                                     <td className="py-3.5 px-6">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -119,9 +119,9 @@ export default function InventarioPage() {
                                 </tr>
                                 <tr className="hover:bg-slate-50/80 transition-colors bg-red-50/30">
                                     <td className="py-3.5 px-6 font-medium text-red-600">King Size Duvet Cover</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Furniture/Linens</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Muebles / Ropa de cama</td>
                                     <td className="py-3.5 px-6 text-right font-bold text-red-600">0</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Pieces</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Piezas</td>
                                     <td className="py-3.5 px-6">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-red-600 flex items-center justify-center"></div>
@@ -134,9 +134,9 @@ export default function InventarioPage() {
                                 </tr>
                                 <tr className="hover:bg-slate-50/80 transition-colors">
                                     <td className="py-3.5 px-6 font-medium text-slate-900">Glass Cleaner spray</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Cleaning Supplies</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Suministros de limpieza</td>
                                     <td className="py-3.5 px-6 text-right font-semibold">88</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Bottles</td>
+                                    <td className="py-3.5 px-6 text-slate-500">Botellas</td>
                                     <td className="py-3.5 px-6">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
