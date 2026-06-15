@@ -3,7 +3,7 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}", // For when you add a components folder
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   darkMode: "class",
   theme: {
@@ -37,17 +37,36 @@ const config: Config = {
         "margin-mobile": "20px",
         "gutter": "32px"
       },
-      // This protects your max-w-* classes from breaking due to the spacing overrides
+      // SOLUCIÓN AL BUG DE HERENCIA: Forzamos la escala nativa de anchos máximos
       maxWidth: {
+        "sm": "24rem",    // 384px
+        "md": "28rem",    // 448px
+        "lg": "32rem",    // 512px
         "xl": "36rem",    // 576px
         "2xl": "42rem",   // 672px
+        "3xl": "48rem",   // 768px
+        "4xl": "56rem",   // 896px
         "5xl": "64rem",   // 1024px
+        "6xl": "72rem",   // 1152px
+        "7xl": "80rem",   // 1280px
         "1440px": "1440px"
+      },
+      fontFamily: {
+        "label-md": ["var(--font-hanken)"],
+        "body-lg": ["var(--font-hanken)"],
+        "headline-lg": ["var(--font-manrope)"],
+        "headline-sm": ["var(--font-manrope)"],
+        "body-sm": ["var(--font-hanken)"],
+        "label-sm": ["var(--font-hanken)"],
+        "headline-lg-mobile": ["var(--font-manrope)"],
+        "headline-md": ["var(--font-manrope)"],
+        "body-md": ["var(--font-hanken)"]
       }
     },
   },
   plugins: [
-    require("@tailwindcss/forms"),
+    // require("@tailwindcss/forms"),
+    // require("@tailwindcss/container-queries"),
   ],
 };
 

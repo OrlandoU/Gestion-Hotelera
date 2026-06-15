@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
@@ -65,4 +66,47 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.gantt-grid {
+  display: grid;
+  grid-template-columns: 200px repeat(14, minmax(60px, 1fr));
+}
+
+.gantt-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.card-shadow {
+  box-shadow: 0px 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+.room-col {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: white;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.02);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.reservation-bar {
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.reservation-bar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 30;
 }
