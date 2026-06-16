@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, ViewTransition } from "react";
 import PageHeader from "@/components/pageheader";
 import NewReservation from "@/components/NewReservation";
 import Link from "next/link";
@@ -76,7 +76,7 @@ export default function Page() {
     }, [dates.length]);
 
     return (
-        <>
+        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <PageHeader
                 name="Reservaciones"
                 subtitle="Gestión de reservas y disponibilidad"
@@ -221,6 +221,6 @@ export default function Page() {
                     </div>
                 </div>
             )}
-        </>
+        </ ViewTransition>
     );
 }

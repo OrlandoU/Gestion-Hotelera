@@ -1,9 +1,10 @@
 import PageHeader from "@/components/pageheader";
 import NewReservation from "@/components/NewReservation";
+import { ViewTransition } from "react";
 
 export default function Page() {
     return (
-        <>
+        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <PageHeader name="Panel" subtitle="Visión general de operaciones" buttons={<NewReservation />} />
             <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
                 <div className="bg-[#ffffff] border border-slate-300 card-shadow  rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
@@ -190,6 +191,6 @@ export default function Page() {
                     </div>
                 </div>
             </section>
-        </>
+        </ViewTransition>
     )
 }

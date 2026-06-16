@@ -41,6 +41,7 @@ export default function DashboardLayout({
               key={link.href}
               className={`${isActive(link.href) ? 'border-l-4 border-[#008cc7] text-[#008cc7]' : ''} flex items-center gap-4 p-4  hover:bg-[#eceef0] transition-all ease-linear duration-100 rounded-r-xl text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider `}
               href={link.href}
+              transitionTypes={['nav-forward']}
             >
               <span className="material-symbols-outlined">{link.icon}</span> {link.name}
             </Link>

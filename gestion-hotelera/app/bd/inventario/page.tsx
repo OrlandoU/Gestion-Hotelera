@@ -1,8 +1,9 @@
 import PageHeader from "@/components/pageheader";
+import { ViewTransition } from "react";
 
 export default function InventarioPage() {
     return (
-        <>
+        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <PageHeader name="Inventario" subtitle="Gestione y supervise los activos del hotel en tiempo real" buttons={<button className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-xs hover:bg-sky-500 transition-all shadow-sm">
                 <span className="material-symbols-outlined text-[18px]">add</span> Nuevo Activo
             </button>} />
@@ -167,6 +168,6 @@ export default function InventarioPage() {
                     </div>
                 </div>
             </div>
-        </>
+        </ ViewTransition>
     );
 }

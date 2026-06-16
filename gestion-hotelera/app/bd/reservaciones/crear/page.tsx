@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, ViewTransition } from "react";
 import PageHeader from "@/components/pageheader";
 
 export default function CrearReservacion() {
@@ -45,7 +45,7 @@ export default function CrearReservacion() {
     };
 
     return (
-        <>
+        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <PageHeader name="Crear nueva reservación" subtitle="Completa los pasos para crear una nueva reserva." buttons={null} />
             <div className="flex flex-col lg:flex-row gap-6">
                 <div className="flex-1 space-y-6">
@@ -381,5 +381,5 @@ export default function CrearReservacion() {
                 </aside>
 
             </div>
-        </>);
+        </ ViewTransition>);
 }

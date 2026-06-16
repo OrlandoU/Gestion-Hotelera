@@ -23,7 +23,7 @@ export default function NewReservation() {
 
     return (
         <>
-            <Link href={"/bd/reservaciones/crear"} className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
+            <Link href={"/bd/reservaciones/crear"} transitionTypes={['nav-forward']} className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
                 <span className="material-symbols-outlined">add</span> Nueva Reserva
             </Link>
             <Modal open={open} onClose={() => setOpen(false)} title="Nueva Reserva">

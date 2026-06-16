@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { RESERVATIONS_DETAIL } from "@/data/reservations";
+import { ViewTransition } from "react";
 
 export default function ReservationPage() {
     const params = useParams();
@@ -19,7 +20,7 @@ export default function ReservationPage() {
     const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
 
     return (
-        <>
+        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <div className="mb-2">
                 <div className="flex items-center gap-1 text-slate-500 text-xs mb-2">
                     <a className="hover:text-slate-900 transition-colors" href="#">Reservaciones</a>
@@ -218,6 +219,6 @@ export default function ReservationPage() {
                     </div>
                 </div>
             </div>
-        </>
+        </ViewTransition>
     );
 }

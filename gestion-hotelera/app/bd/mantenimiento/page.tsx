@@ -1,9 +1,10 @@
 import PageHeader from "@/components/pageheader"
 import NewSolicitud from "@/components/NewSolicitud"
+import { ViewTransition } from "react"
 
 export default function MantenimientoPage() {
     return (
-        <>
+        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <div className="max-w-360 mx-auto w-full flex flex-col gap-6">
                 <PageHeader name="Mantenimiento" subtitle="Gestión de solicitudes y tareas de mantenimiento" buttons={<NewSolicitud />} />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -154,6 +155,6 @@ export default function MantenimientoPage() {
                     </div>
                 </div>
             </div>
-        </>
+        </ ViewTransition>
     );
 }

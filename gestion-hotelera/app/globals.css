@@ -65,3 +65,88 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 30;
 }
+:root {
+  /* Tiempos recortados y coordinados (Estándar de UI fluida: ~250ms a 300ms total) */
+  --animation-duration: 280ms;
+  
+  /* Curva de desaceleración acentuada (Emprende rápido, frena suave con inercia física) */
+  --ease-fluid: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================
+   1. TRANSICIONES DE NAVEGACIÓN HORIZONTAL
+   ========================================== */
+
+/* Avanzar de página (Slide a la izquierda) */
+::view-transition-old(.nav-forward) {
+  --slide-offset: -30px; /* Reducido para evitar distancias exageradas */
+  animation: 
+    var(--animation-duration) var(--ease-fluid) both slide-x reverse,
+    calc(var(--animation-duration) * 0.6) ease-in both fade reverse;
+}
+::view-transition-new(.nav-forward) {
+  --slide-offset: 30px;
+  animation: 
+    var(--animation-duration) var(--ease-fluid) both slide-x,
+    var(--animation-duration) var(--ease-fluid) both fade;
+}
+
+/* Retroceder de página (Slide a la derecha) */
+::view-transition-old(.nav-back) {
+  --slide-offset: 30px;
+  animation: 
+    var(--animation-duration) var(--ease-fluid) both slide-x reverse,
+    calc(var(--animation-duration) * 0.6) ease-in both fade reverse;
+}
+::view-transition-new(.nav-back) {
+  --slide-offset: -30px;
+  animation: 
+    var(--animation-duration) var(--ease-fluid) both slide-x,
+    var(--animation-duration) var(--ease-fluid) both fade;
+}
+
+/* Keyframe Horizontal Unificado */
+@keyframes slide-x {
+  from { transform: translateX(var(--slide-offset)); }
+  to { transform: translateX(0); }
+}
+
+/* ==========================================
+   2. TRANSICIONES VERTICALES (SLIDE UP / DOWN)
+   ========================================== */
+
+/* Salida suave hacia abajo */
+::view-transition-old(.slide-down) {
+  --slide-y-offset: 15px;
+  animation: 
+    var(--animation-duration) var(--ease-fluid) both slide-y reverse,
+    calc(var(--animation-duration) * 0.6) ease-in both fade reverse;
+}
+
+/* Entrada limpia desde abajo hacia arriba */
+::view-transition-new(.slide-up) {
+  --slide-y-offset: 15px;
+  animation: 
+    var(--animation-duration) var(--ease-fluid) both slide-y,
+    var(--animation-duration) var(--ease-fluid) both fade;
+}
+
+/* Keyframe Vertical Unificado */
+@keyframes slide-y {
+  from { transform: translateY(var(--slide-y-offset)); }
+  to { transform: translateY(0); }
+}
+
+/* ==========================================
+   3. KEYFRAMES DE OPACIDAD Y BLUR UNIFICADO
+   ========================================== */
+@keyframes fade {
+  from {
+    opacity: 0;
+    filter: blur(2px); /* Reducido para que no se sienta pesado ni lento */
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
