@@ -333,7 +333,7 @@ export default function HomePage() {
           
           {/* Iframe con contenedor controlado */}
           <div className="mt-8 sm:mt-16 h-64 sm:h-96 md:h-[500px] w-full overflow-hidden shadow-inner opacity-90 hover:opacity-100 transition-opacity duration-500">
-            <iframe src="https://maps.google.com/maps?q=3%20calle%20entre%201%20y%202%20avenida,%20San%20Pedro%20Sula&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3844.637075276313!2d-88.02565002494666!3d15.503941685096555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f665b4536eb25d9%3A0xff3dffbffeb793e6!2sHotel%20San%20Pedro!5e0!3m2!1ses-419!2shn!4v1781505597298!5m2!1ses-419!2shn" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </section>
       </main>
