@@ -108,7 +108,7 @@ export default function HomePage() {
             <div className="w-full h-full hero-parallax animate-hero-img will-change-transform">
               <Image fill priority alt="Hotel Interior SPS" className="w-full h-full object-cover grayscale-20" src={img1} />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/40 to-transparent z-10" />
+            <div className="absolute inset-0 bg-linear-to-t from-[#0f172a] via-[#0f172a]/40 to-transparent z-10" />
           </div>
           
           <div className="relative z-20 w-full px-4 sm:px-8 md:px-16 grid grid-cols-12 gap-4 animate-fade-up">
@@ -164,12 +164,12 @@ export default function HomePage() {
                 {/* Contadores Estadísticos */}
                 <div className="mt-8 sm:mt-16 flex gap-8 sm:gap-16 items-center border-t border-[#0f172a]/10 pt-8 sm:pt-16">
                   <div className="text-center group cursor-default">
-                    <span className="block text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 transform group-hover:scale-110 inline-block cubic-fluid">50+</span>
+                    <span className="text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 transform group-hover:scale-110 inline-block cubic-fluid">50+</span>
                     <span className="block text-[10px] uppercase tracking-widest opacity-60 mt-1">Años</span>
                   </div>
                   <div className="h-12 w-px bg-[#0f172a]/10"></div>
                   <div className="text-center group cursor-default">
-                    <span className="block text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 transform group-hover:scale-110 inline-block cubic-fluid">03</span>
+                    <span className="text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 transform group-hover:scale-110 inline-block cubic-fluid">03</span>
                     <span className="block text-[10px] uppercase tracking-widest opacity-60 mt-1">Fundación</span>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function HomePage() {
         </section>
 
         {/* SECTION: CONTACTO & FORMULARIO */}
-        <section className="pt-16 sm:pt-24 md:pt-40 bg-gradient-to-b from-slate-50 to-blue-50" id="contact">
+        <section className="pt-16 sm:pt-24 md:pt-40 bg-linear-to-b from-slate-50 to-blue-50" id="contact">
           <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-16 items-start">
             <div className="lg:col-span-4 space-y-8">
               <h2 className="text-[#0f172a] font-['Hanken_Grotesk'] text-[clamp(1.75rem,6vw,4.5rem)] leading-none">Conecte con nosotros.</h2>
@@ -332,7 +332,7 @@ export default function HomePage() {
           </div>
           
           {/* Iframe con contenedor controlado */}
-          <div className="mt-8 sm:mt-16 h-64 sm:h-96 md:h-[500px] w-full overflow-hidden shadow-inner opacity-90 hover:opacity-100 transition-opacity duration-500">
+          <div className="mt-8 sm:mt-16 h-64 sm:h-96 md:h-125 w-full overflow-hidden shadow-inner opacity-90 hover:opacity-100 transition-opacity duration-500">
             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3844.637075276313!2d-88.02565002494666!3d15.503941685096555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f665b4536eb25d9%3A0xff3dffbffeb793e6!2sHotel%20San%20Pedro!5e0!3m2!1ses-419!2shn!4v1781505597298!5m2!1ses-419!2shn" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </section>

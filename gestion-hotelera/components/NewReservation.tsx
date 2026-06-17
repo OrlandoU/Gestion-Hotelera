@@ -10,8 +10,6 @@ export default function NewReservation() {
     function handleSave(e: React.FormEvent) {
         e.preventDefault();
         if (saving) return;
-        const form = e.target as HTMLFormElement;
-        const data = Object.fromEntries(new FormData(form).entries());
         setSaving(true);
         // console.log removed for production
         // simular guardado

@@ -9,7 +9,6 @@ export default function NewSolicitud() {
     function handleSave(e: React.FormEvent) {
         e.preventDefault();
         if (saving) return;
-        const data = Object.fromEntries(new FormData(e.target as HTMLFormElement).entries());
         setSaving(true);
         // console.log removed for production
         setTimeout(() => {
