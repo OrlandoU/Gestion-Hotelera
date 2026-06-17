@@ -20,7 +20,7 @@ export default function NewSolicitud() {
 
     return (
         <>
-            <button onClick={() => setOpen(true)} className="flex items-center gap-2 bg-[#008cc7] text-white px-4 py-2 rounded transition-transform active:scale-95 cursor-pointer">
+            <button onClick={() => setOpen(true)} className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
                 <span className="material-symbols-outlined">add</span> Nueva Solicitud
             </button>
             <Modal open={open} onClose={() => setOpen(false)} title="Nueva Solicitud">

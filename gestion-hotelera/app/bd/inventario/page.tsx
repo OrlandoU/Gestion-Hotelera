@@ -4,7 +4,7 @@ import { ViewTransition } from "react";
 export default function InventarioPage() {
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-            <PageHeader name="Inventario" subtitle="Gestione y supervise los activos del hotel en tiempo real" buttons={<button className="flex items-center gap-1.5 px-4 py-2 bg-sky-600 text-white rounded-lg font-bold text-xs hover:bg-sky-500 transition-all shadow-sm">
+            <PageHeader name="Inventario" subtitle="Gestione y supervise los activos del hotel en tiempo real" buttons={<button className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
                 <span className="material-symbols-outlined text-[18px]">add</span> Nuevo Activo
             </button>} />
             <div className="flex-1 flex flex-col gap-6 max-w-360 mx-auto w-full">
@@ -89,7 +89,7 @@ export default function InventarioPage() {
                             </thead>
                             <tbody className="text-slate-800 divide-y divide-slate-100">
                                 <tr className="hover:bg-slate-50/80 transition-colors">
-                                    <td className="py-3.5 px-6 font-medium text-slate-900">Bleach Solution Pro</td>
+                                    <td className="py-3.5 px-6 font-medium text-slate-900">Cloro Magia Blanca</td>
                                     <td className="py-3.5 px-6 text-slate-500">Suministros de limpieza</td>
                                     <td className="py-3.5 px-6 text-right font-bold text-red-600">12</td>
                                     <td className="py-3.5 px-6 text-slate-500">Galones</td>
@@ -104,7 +104,7 @@ export default function InventarioPage() {
                                     </td>
                                 </tr>
                                 <tr className="hover:bg-slate-50/80 transition-colors">
-                                    <td className="py-3.5 px-6 font-medium text-slate-900">Premium Coffee Beans</td>
+                                    <td className="py-3.5 px-6 font-medium text-slate-900">Cafe Oro</td>
                                     <td className="py-3.5 px-6 text-slate-500">Alimentos y bebidas</td>
                                     <td className="py-3.5 px-6 text-right font-semibold">45</td>
                                     <td className="py-3.5 px-6 text-slate-500">Libras</td>
@@ -119,7 +119,7 @@ export default function InventarioPage() {
                                     </td>
                                 </tr>
                                 <tr className="hover:bg-slate-50/80 transition-colors bg-red-50/30">
-                                    <td className="py-3.5 px-6 font-medium text-red-600">King Size Duvet Cover</td>
+                                    <td className="py-3.5 px-6 font-medium text-red-600">Edredón King Size</td>
                                     <td className="py-3.5 px-6 text-slate-500">Muebles / Ropa de cama</td>
                                     <td className="py-3.5 px-6 text-right font-bold text-red-600">0</td>
                                     <td className="py-3.5 px-6 text-slate-500">Piezas</td>
@@ -134,7 +134,7 @@ export default function InventarioPage() {
                                     </td>
                                 </tr>
                                 <tr className="hover:bg-slate-50/80 transition-colors">
-                                    <td className="py-3.5 px-6 font-medium text-slate-900">Glass Cleaner spray</td>
+                                    <td className="py-3.5 px-6 font-medium text-slate-900">Limpia Vidrios</td>
                                     <td className="py-3.5 px-6 text-slate-500">Suministros de limpieza</td>
                                     <td className="py-3.5 px-6 text-right font-semibold">88</td>
                                     <td className="py-3.5 px-6 text-slate-500">Botellas</td>

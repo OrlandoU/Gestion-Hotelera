@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Hanken_Grotesk, Manrope } from "next/font/google";
 import "./globals.css";
-import "material-symbols"
+import "material-symbols";
+import KeyboardShortcuts from "@/components/KeyboardShortcuts";
 
 const hanken = Hanken_Grotesk({
   subsets: ["latin"],
@@ -28,6 +29,8 @@ export default function RootLayout({
   return (
     <html lang="es" className="scroll-smooth">
       <body className={`${hanken.variable} ${manrope.variable} bg-background text-primary font-body-md overflow-x-hidden selection:bg-lavender-accent selection:text-navy-dark`}>
+        {/* Inject global client shortcuts safely here */}
+        <KeyboardShortcuts />
         {children}
       </body>
     </html>
