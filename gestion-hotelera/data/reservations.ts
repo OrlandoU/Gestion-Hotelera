@@ -46,7 +46,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
     r1: {
         id: "r1",
         bookingId: "RES-88291A",
-        guest: { name: "Eleanor Vance", email: "eleanor.vance@example.com", phone: "+1 (555) 010-1212", loyalty: { tier: "Platinum" } },
+        guest: { name: "Eleanor Vance", email: "eleanor.vance@example.com", phone: "+504 9778-4680", loyalty: { tier: "Platinum" } },
         status: "InHouse",
         createdAt: "2026-10-12T14:30:00Z",
         stay: { checkIn: "2026-10-14", checkInTime: "15:00", checkOut: "2026-10-17", checkOutTime: "11:00", nights: 3, specialRequests: "Llegada tardía; almohadas sin plumas" },
@@ -60,7 +60,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
     r2: {
         id: "r2",
         bookingId: "RES-88292B",
-        guest: { name: "Luke Crain", email: "luke.crain@example.com", phone: "+1 (555) 019-5001", loyalty: { tier: "Plata" } },
+        guest: { name: "Luke Crain", email: "luke.crain@example.com", phone: "+504 9778-4680", loyalty: { tier: "Plata" } },
         status: "Completed",
         createdAt: "2026-10-11T10:15:00Z",
         stay: { checkIn: "2026-10-12", checkInTime: "15:00", checkOut: "2026-10-13", checkOutTime: "11:00", nights: 1, specialRequests: "" },
@@ -74,7 +74,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
     r3: {
         id: "r3",
         bookingId: "RES-88293C",
-        guest: { name: "Theodora Crain", email: "theodora.crain@example.com", phone: "+1 (555) 019-7777", loyalty: { tier: "Oro" } },
+        guest: { name: "Theodora Crain", email: "theodora.crain@example.com", phone: "+504 9778-4680", loyalty: { tier: "Oro" } },
         status: "Pending",
         createdAt: "2026-10-15T08:20:00Z",
         stay: { checkIn: "2026-10-18", checkInTime: "15:00", checkOut: "2026-10-22", checkOutTime: "11:00", nights: 4, specialRequests: "Pilas extra" },
@@ -88,7 +88,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
     r4: {
         id: "r4",
         bookingId: "RES-88294D",
-        guest: { name: "Katherine Michelle", email: "katherine.michelle@example.com", phone: "+1 (555) 013-2424", loyalty: { tier: "Oro" } },
+        guest: { name: "Katherine Michelle", email: "katherine.michelle@example.com", phone: "+504 9778-4680", loyalty: { tier: "Oro" } },
         status: "Confirmed",
         createdAt: "2026-10-13T11:00:00Z",
         stay: { checkIn: "2026-10-15", checkInTime: "15:00", checkOut: "2026-10-20", checkOutTime: "11:00", nights: 5, specialRequests: "Piso alto, late checkout si es posible" },

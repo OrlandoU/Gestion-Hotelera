@@ -172,7 +172,7 @@ export default function CrearReservacion() {
                                     <label className="text-xs font-semibold text-slate-500" htmlFor="phone">Teléfono</label>
                                     <div className="relative">
                                         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">phone</span>
-                                        <input className="w-full h-10 bg-slate-50 border border-slate-200 focus:border-slate-400 focus:bg-white focus:ring-0 rounded-lg pl-9 pr-3 text-slate-800 placeholder-slate-400 outline-none transition-all" id="phone" name="phone" placeholder="+1 (555) 000-0000" type="tel" value={formData.phone} onChange={handleInputChange} />
+                                        <input className="w-full h-10 bg-slate-50 border border-slate-200 focus:border-slate-400 focus:bg-white focus:ring-0 rounded-lg pl-9 pr-3 text-slate-800 placeholder-slate-400 outline-none transition-all" id="phone" name="phone" placeholder="+504 9778-4680" type="tel" value={formData.phone} onChange={handleInputChange} />
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1">
