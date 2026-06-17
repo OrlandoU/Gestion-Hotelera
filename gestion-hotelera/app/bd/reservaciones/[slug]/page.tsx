@@ -5,6 +5,14 @@ import { RESERVATIONS_DETAIL } from "@/data/reservations";
 import { ViewTransition } from "react";
 import Link from "next/link";
 
+// Diccionario visual unificado para los estados de la reservación
+const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
+    Pending: { label: "Pendiente", badge: "bg-amber-100 text-amber-800 border-amber-300", dot: "bg-amber-500" },
+    Confirmed: { label: "Confirmada", badge: "bg-blue-100 text-blue-800 border-blue-300", dot: "bg-blue-500" },
+    InHouse: { label: "En estancia", badge: "bg-emerald-100 text-emerald-800 border-emerald-300", dot: "bg-emerald-500" },
+    Completed: { label: "Finalizada", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" },
+};
+
 export default function ReservationPage() {
     const params = useParams();
     const rawId = params?.slug as string | string[] | undefined;
@@ -20,6 +28,18 @@ export default function ReservationPage() {
 
     const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
 
+    // --- CÁLCULOS FINANCIEROS (Uso de fallbacks seguros en caso de datos nulos) ---
+    const roomRate = payment?.breakdown?.roomRate ?? 0;
+    const taxesAndFees = payment?.breakdown?.taxesAndFees ?? 0;
+    const extras = payment?.breakdown?.extras ?? 0;
+    const totalCargos = payment?.total ?? (roomRate + taxesAndFees + extras);
+
+    // Suponiendo que tu modelo de datos guarde r.payment.amountPaid (monto ya abonado)
+    const amountPaid = payment?.amountPaid ?? (status !== "Pending" ? totalCargos : 0);
+    const saldoPendiente = totalCargos - amountPaid;
+
+    const currentStatus = STATUS_CONFIG[status] || { label: status, badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" };
+
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <div className="mb-2">
@@ -32,8 +52,8 @@ export default function ReservationPage() {
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight mb-2">{guest?.name}</h1>
                         <div className="flex flex-wrap items-center gap-3">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-800 rounded-md text-xs font-semibold">
-                                <span className={`w-2 h-2 rounded-full ${status === "Confirmed" ? "bg-emerald-500" : "bg-amber-500"}`}></span> {status}
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border ${currentStatus.badge}`}>
+                                <span className={`w-2 h-2 rounded-full ${currentStatus.dot}`}></span> {currentStatus.label}
                             </span>
                             <span className="text-xs text-slate-500">ID de reserva: {bookingId}</span>
                             <span className="text-xs text-slate-500">• Creado: {createdLabel}</span>
@@ -44,7 +64,8 @@ export default function ReservationPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                 <div className="xl:col-span-8 space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
+                    {/* Información del huésped */}
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow p-6">
                         <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                             <span className="material-symbols-outlined text-slate-400">person</span> Información del huésped
                         </h2>
@@ -70,7 +91,8 @@ export default function ReservationPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
+                    {/* Detalles de la estadía */}
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow p-6">
                         <h2 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                             <span className="material-symbols-outlined text-slate-400">bed</span> Detalles de la estadía
                         </h2>
@@ -125,7 +147,8 @@ export default function ReservationPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
+                    {/* Notas internas */}
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow p-6">
                         <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
                             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                                 <span className="material-symbols-outlined text-slate-400">note_alt</span> Notas internas
@@ -145,17 +168,25 @@ export default function ReservationPage() {
                     </div>
                 </div>
 
+                {/* BARRA LATERAL (Acciones y Pagos) */}
                 <div className="xl:col-span-4 space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
+                    {/* Acciones Rápidas */}
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4">Acciones rápidas</h3>
                         <div className="space-y-2">
-                            <button className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm">
-                                <span className="material-symbols-outlined text-[20px]">login</span> Procesar Check-in
-                            </button>
-                            <button className="w-full min-h-11 bg-white border border-slate-300 card-shadow  text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+                            {status === "Pending" ? (
+                                <button className="w-full min-h-11 bg-amber-600 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-amber-700 transition-colors shadow-sm">
+                                    <span className="material-symbols-outlined text-[20px]">payments</span> Registrar Pago
+                                </button>
+                            ) : (
+                                <button className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm">
+                                    <span className="material-symbols-outlined text-[20px]">login</span> Procesar Check-in
+                                </button>
+                            )}
+                            <button className="w-full min-h-11 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                                 <span className="material-symbols-outlined text-[20px]">edit</span> Editar reservación
                             </button>
-                            <button className="w-full min-h-11 bg-white border border-slate-300 card-shadow  text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
+                            <button className="w-full min-h-11 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                                 <span className="material-symbols-outlined text-[20px]">receipt_long</span> Generar factura
                             </button>
                             <button className="w-full min-h-11 text-red-600 hover:bg-red-50 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors mt-4">
@@ -164,40 +195,62 @@ export default function ReservationPage() {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
+                    {/* Resumen de Pago Mejorado con Abonos y Saldos */}
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-slate-400">account_balance_wallet</span> Resumen de pago
+                            <span className="material-symbols-outlined text-slate-400">account_balance_wallet</span> Resumen de cuenta
                         </h3>
-                        <div className="space-y-2 mb-4">
+
+                        {/* Desglose de cargos */}
+                        <div className="space-y-2 mb-4 text-sm">
                             <div className="flex justify-between text-slate-600">
                                 <span>Tarifa de habitación ({stay?.nights ?? "0"} noches)</span>
-                                <span className="text-slate-900 font-medium">${(payment?.breakdown?.roomRate ?? 0).toFixed(2)}</span>
+                                <span className="text-slate-900 font-medium">${roomRate.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
                                 <span>Impuestos y cargos</span>
-                                <span className="text-slate-900 font-medium">${(payment?.breakdown?.taxesAndFees ?? 0).toFixed(2)}</span>
+                                <span className="text-slate-900 font-medium">${taxesAndFees.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
-                                <span>Extras</span>
-                                <span className="text-slate-900 font-medium">${(payment?.breakdown?.extras ?? 0).toFixed(2)}</span>
+                                <span>Extras consumidos</span>
+                                <span className="text-slate-900 font-medium">${extras.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between pt-2 border-t border-slate-100 font-semibold text-slate-900">
+                                <span>Total Cargos</span>
+                                <span>${totalCargos.toFixed(2)}</span>
                             </div>
                         </div>
-                        <div className="pt-3 border-t border-slate-100 mb-4">
-                            <div className="flex justify-between items-center">
-                                <span className="text-base font-bold text-slate-900">Total</span>
-                                <span className="text-xl font-bold text-slate-900">${(payment?.total ?? 0).toFixed(2)}</span>
+
+                        {/* SECCIÓN DE ABONOS REALIZADOS */}
+                        <div className="pt-3 border-t border-slate-200 space-y-2 text-sm bg-slate-50/50 -mx-6 px-6 py-3">
+                            <div className="flex justify-between text-emerald-700 font-medium">
+                                <span className="flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-[16px]">check_circle</span> Total Abonado
+                                </span>
+                                <span>-${amountPaid.toFixed(2)}</span>
+                            </div>
+
+                            {/* Estado del Balance */}
+                            <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200">
+                                <span className="font-bold text-slate-900">Saldo Pendiente</span>
+                                <span className={`text-base font-bold px-2 py-0.5 rounded ${saldoPendiente > 0 ? "text-amber-700 bg-amber-50" : "text-emerald-700 bg-emerald-50"}`}>
+                                    ${saldoPendiente.toFixed(2)}
+                                </span>
                             </div>
                         </div>
-                        <div className="bg-slate-50 p-3 rounded-xl flex items-center gap-3 border border-slate-100">
+
+                        {/* Detalles de Garantía */}
+                        <div className="mt-4 bg-slate-50 p-3 rounded-xl flex items-center gap-3 border border-slate-100 text-sm">
                             <span className="material-symbols-outlined text-slate-500">credit_card</span>
                             <div>
                                 <p className="text-xs text-slate-400 font-medium">Método de garantía</p>
-                                <p className="text-slate-800 font-medium">{payment?.guaranteeMethod}</p>
+                                <p className="text-slate-800 font-medium">{payment?.guaranteeMethod || "No especificado"}</p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl border border-slate-300 card-shadow /60 card-shadow p-6">
+                    {/* Registro de actividad */}
+                    <div className="bg-white rounded-xl border border-slate-300 card-shadow p-6">
                         <h3 className="text-base font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2">
                             <span className="material-symbols-outlined text-slate-400">history</span> Registro de actividad
                         </h3>
@@ -205,16 +258,15 @@ export default function ReservationPage() {
                             {activity && activity.length > 0 ? (
                                 activity.map((a: { time: string; text: string }, i: number) => (
                                     <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
-                                        <div className="flex items-center justify-center w-6 h-6 rounded-full border-2 border-slate-300 card-shadow  bg-white text-slate-400 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
-                                        </div>
+                                        <div className="flex items-center justify-center w-6 h-6 rounded-full border-2 border-slate-300 bg-white text-slate-400 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2"></div>
                                         <div className="w-[calc(100%-2.5rem)] md:w-[calc(50%-1.5rem)] bg-slate-50 p-3 rounded-xl border border-slate-100">
                                             <p className="text-xs text-slate-400 mb-1 font-medium">{new Date(a.time).toLocaleString()}</p>
-                                            <p className="text-slate-700">{a.text}</p>
+                                            <p className="text-slate-700 text-xs">{a.text}</p>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <p className="text-slate-700">Sin actividad</p>
+                                <p className="text-slate-700 text-sm">Sin actividad</p>
                             )}
                         </div>
                     </div>

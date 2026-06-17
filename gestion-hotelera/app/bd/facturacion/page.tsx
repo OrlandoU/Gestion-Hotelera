@@ -1,19 +1,19 @@
 "use client"
 import PageHeader from "@/components/pageheader";
 import NewFactura from "@/components/NewFactura";
-import {ViewTransition} from "react"
+import { ViewTransition } from "react"
 
 export default function Page() {
     return (
-        <ViewTransition onEnter={()=>console.log("animati")} enter={{
+        <ViewTransition onEnter={() => console.log("animati")} enter={{
             'nav-forward': 'nav-forward',
             'nav-back': 'nav-back',
             default: 'none',
-          }}
+        }}
             exit={{
-              'nav-forward': 'nav-forward',
-              'nav-back': 'nav-back',
-              default: 'none',
+                'nav-forward': 'nav-forward',
+                'nav-back': 'nav-back',
+                default: 'none',
             }}
             default="none">
             <PageHeader name="Facturación" subtitle="Gestión de facturación" buttons={<NewFactura />} />
@@ -60,7 +60,7 @@ export default function Page() {
                     <div className="flex justify-between items-center mb-8">
                         <h4 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000]">Ingresos Mensuales</h4>
                         <select className="bg-[#f2f4f6] border-none rounded-lg text-[12px] leading-3.5 font-medium font-['Hanken_Grotesk'] focus:ring-1 focus:ring-[#008cc7]">
-                            <option>Año 2023</option>
+                            <option>Año 2026</option>
                             <option>Año 2024</option>
                         </select>
                     </div>

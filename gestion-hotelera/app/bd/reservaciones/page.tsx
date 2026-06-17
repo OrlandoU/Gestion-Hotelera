@@ -43,8 +43,8 @@ type Reservation = { id: string; roomId: string; start: string; end: string; gue
 
 export default function Page() {
     // sample date range (same as original example)
-    const startDate = new Date("2023-10-12");
-    const endDate = new Date("2023-10-25");
+    const startDate = new Date("2026-10-12");
+    const endDate = new Date("2026-10-25");
     const dates = getDatesInRange(startDate, endDate);
 
     // sample rooms and reservations — replace with real data later
@@ -99,7 +99,7 @@ export default function Page() {
                     <div className="flex items-center justify-between p-4 border-b border-slate-300 card-shadow  bg-white gantt-header">
                         <div className="flex items-center gap-3">
                             <button className="p-1 rounded hover:bg-slate-100 transition-colors"><span className="material-symbols-outlined">chevron_left</span></button>
-                            <h3 className="text-sm font-bold text-slate-800">Oct 12 - Oct 25, 2023</h3>
+                            <h3 className="text-sm font-bold text-slate-800">Oct 12 - Oct 25, 2026</h3>
                             <button className="p-1 rounded hover:bg-slate-100 transition-colors"><span className="material-symbols-outlined">chevron_right</span></button>
                         </div>
                         <div className="flex items-center gap-4">{/* Estado: Pendiente */}
