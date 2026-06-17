@@ -5,7 +5,6 @@ import { RESERVATIONS_DETAIL } from "@/data/reservations";
 import { ViewTransition } from "react";
 import Link from "next/link";
 
-// Diccionario visual unificado para los estados de la reservación
 const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
     Pending: { label: "Pendiente", badge: "bg-amber-100 text-amber-800 border-amber-300", dot: "bg-amber-500" },
     Confirmed: { label: "Confirmada", badge: "bg-blue-100 text-blue-800 border-blue-300", dot: "bg-blue-500" },
@@ -28,13 +27,11 @@ export default function ReservationPage() {
 
     const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
 
-    // --- CÁLCULOS FINANCIEROS (Uso de fallbacks seguros en caso de datos nulos) ---
     const roomRate = payment?.breakdown?.roomRate ?? 0;
     const taxesAndFees = payment?.breakdown?.taxesAndFees ?? 0;
     const extras = payment?.breakdown?.extras ?? 0;
     const totalCargos = payment?.total ?? (roomRate + taxesAndFees + extras);
 
-    // Suponiendo que tu modelo de datos guarde r.payment.amountPaid (monto ya abonado)
     const amountPaid = payment?.amountPaid ?? (status !== "Pending" ? totalCargos : 0);
     const saldoPendiente = totalCargos - amountPaid;
 

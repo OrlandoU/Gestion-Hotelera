@@ -12,6 +12,7 @@ export type Room = {
   price: number;
   amenities: string[];
   view: string;
+  
 };
 
 export const ROOMS_LIST: Room[] = [

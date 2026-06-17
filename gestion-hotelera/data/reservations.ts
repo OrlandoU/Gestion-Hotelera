@@ -33,6 +33,7 @@ export type ReservationDetail = {
     party: { adults: number; children: number };
     internalNotes: { id: string; text: string; author: string; createdAt: string }[];
     payment: {
+        amountPaid?: number;
         breakdown: { roomRate: number; taxesAndFees: number; extras: number };
         total: number;
         guaranteeMethod: string;
@@ -52,7 +53,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
         room: { number: "101", type: "Suite King", name: "Suite King", ratePerNight: 250 },
         party: { adults: 2, children: 0 },
         internalNotes: [{ id: "n1", text: "VIP — amenidad de bienvenida (champán y fruta). Notificado a housekeeping sobre alergia a las plumas.", author: "Sarah Jenkins, Front Desk Mgr", createdAt: "2026-10-13T09:41:00Z" }],
-        payment: { breakdown: { roomRate: 750, taxesAndFees: 112.5, extras: 50 }, total: 912.5, guaranteeMethod: "Visa terminada en 4242" },
+        payment: { amountPaid: 912.50, breakdown: { roomRate: 750, taxesAndFees: 112.5, extras: 50 }, total: 912.5, guaranteeMethod: "Visa terminada en 4242" },
         activity: [{ time: "2026-10-13T09:41:00Z", text: "Nota interna agregada sobre el estado VIP." }, { time: "2026-10-12T14:30:00Z", text: "Reservación creada por web directa." }],
         icon: "credit_card"
     },
@@ -66,7 +67,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
         room: { number: "102", type: "Suite Queen", name: "Suite Queen", ratePerNight: 180 },
         party: { adults: 1, children: 0 },
         internalNotes: [],
-        payment: { breakdown: { roomRate: 180, taxesAndFees: 27, extras: 0 }, total: 207, guaranteeMethod: "Mastercard terminada en 6789" },
+        payment: { amountPaid: 207, breakdown: { roomRate: 180, taxesAndFees: 27, extras: 0 }, total: 207, guaranteeMethod: "Mastercard terminada en 6789" },
         activity: [{ time: "2026-10-11T10:15:00Z", text: "Reservación creada por web directa." }],
         icon: null
     },
@@ -80,7 +81,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
         room: { number: "102", type: "Suite Queen", name: "Suite Queen", ratePerNight: 180 },
         party: { adults: 2, children: 1 },
         internalNotes: [{ id: "n1", text: "Solicitó traslado desde el aeropuerto", author: "Reservations", createdAt: "2026-10-16T12:00:00Z" }],
-        payment: { breakdown: { roomRate: 720, taxesAndFees: 108, extras: 150 }, total: 978, guaranteeMethod: "Amex terminada en 1111" },
+        payment: { amountPaid: 0, breakdown: { roomRate: 720, taxesAndFees: 108, extras: 150 }, total: 978, guaranteeMethod: "Amex terminada en 1111" },
         activity: [{ time: "2026-10-16T12:00:00Z", text: "Se agregó traslado desde el aeropuerto." }, { time: "2026-10-15T08:20:00Z", text: "Reservación creada por un agente." }],
         icon: "warning"
     },
@@ -94,7 +95,7 @@ export const RESERVATIONS_DETAIL: Record<string, ReservationDetail> = {
         room: { number: "103", type: "Suite Imperial", name: "Suite Imperial", ratePerNight: 320 },
         party: { adults: 2, children: 0 },
         internalNotes: [{ id: "n1", text: "Prefiere amenidad vegana", author: "Front Desk", createdAt: "2026-10-14T09:00:00Z" }],
-        payment: { breakdown: { roomRate: 1600, taxesAndFees: 240, extras: 0 }, total: 1840, guaranteeMethod: "Visa terminada en 4242" },
+        payment: { amountPaid: 920, breakdown: { roomRate: 1600, taxesAndFees: 240, extras: 0 }, total: 1840, guaranteeMethod: "Visa terminada en 4242" },
         activity: [{ time: "2026-10-14T09:00:00Z", text: "Se agregó solicitud de amenidad vegana." }, { time: "2026-10-13T11:00:00Z", text: "Reservación confirmada por teléfono." }],
         icon: null
     }
