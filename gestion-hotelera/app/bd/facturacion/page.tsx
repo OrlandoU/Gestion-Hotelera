@@ -100,15 +100,6 @@ export default function Page() {
                     <div className="space-y-6">
                         <div className="flex flex-col gap-2">
                             <div className="flex justify-between text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider">
-                                <span className="text-[#515f74]">Tarjeta de Crédito</span>
-                                <span className="text-[#000000] font-bold">65%</span>
-                            </div>
-                            <div className="w-full bg-[#eceef0] h-2 rounded-full overflow-hidden">
-                                <div className="bg-[#008cc7] h-full"></div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <div className="flex justify-between text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider">
                                 <span className="text-[#515f74]">Transferencia Bancaria</span>
                                 <span className="text-[#000000] font-bold">25%</span>
                             </div>
@@ -128,7 +119,7 @@ export default function Page() {
                     </div>
                     <div className="mt-auto pt-8">
                         <div className="p-4 bg-[#f2f4f6] rounded-lg border border-slate-300 card-shadow ">
-                            <p className="text-[14px] leading-5 font-normal font-['Hanken_Grotesk'] text-[#515f74] italic">&quot;Los pagos con tarjeta han aumentado un 5% respecto al trimestre anterior.&quot;</p>
+                            <p className="text-[14px] leading-5 font-normal font-['Hanken_Grotesk'] text-[#515f74] italic">&quot;Los pagos con transferencia bancaria han aumentado un 5% respecto al trimestre anterior.&quot;</p>
                         </div>
                     </div>
                 </div>
