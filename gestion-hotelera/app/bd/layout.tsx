@@ -14,6 +14,8 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const navLinks = [
     { name: "Panel", href: "/bd", icon: "dashboard", buttons: [], subtitle: "Visión general de operaciones" },
+        { name: "Habitaciones", href: "/bd/habitaciones", icon: "bed", buttons: [], subtitle: "Estado y historial de habitaciones" },
+
     { name: "Reservaciones", href: "/bd/reservaciones", icon: "calendar_month", buttons: [], subtitle: "Gestión de reservas y disponibilidad" },
     { name: "Inventario", href: "/bd/inventario", icon: "inventory_2", buttons: [], subtitle: "Gestión de inventario" },
     { name: "Mantenimiento", href: "/bd/mantenimiento", icon: "build", buttons: [], subtitle: "Gestión de mantenimiento" },

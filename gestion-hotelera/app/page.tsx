@@ -79,7 +79,7 @@ export default function HomePage() {
         isScrolled ? 'bg-[#0f172a]/40 backdrop-blur-md h-20 shadow-xl ' : 'bg-transparent'
       }`}>
           <div className="h-10 transition-transform duration-500 cubic-fluid hover:scale-105">
-            <Image width={86} height={100} alt="Hotel San Pedro" className="h-full invert brightness-0" src={logo} />
+            <Image width={66} height={80} alt="Hotel San Pedro" className="invert brightness-0" src={logo} />
           </div>
           <nav className="hidden md:flex items-center gap-16 text-xs font-['Hanken_Grotesk'] uppercase tracking-[0.2em]">
             <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#about">
@@ -342,7 +342,7 @@ export default function HomePage() {
       <footer className="bg-[#0f172a] text-white py-12 sm:py-16 md:py-20 border-t border-white/5">
         <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 flex flex-col md:flex-row justify-between items-start gap-12 sm:gap-16">
           <div className="space-y-4 sm:space-y-6">
-            <Image width={86} height={100} alt="Hotel San Pedro Test" className=" invert brightness-0 transition-transform duration-500 hover:scale-105" src={logo} />
+            <Image width={66} height={80} alt="Hotel San Pedro Test" className=" invert brightness-0 transition-transform duration-500 hover:scale-105" src={logo} />
             <p className="text-white/40 text-xs sm:text-sm max-w-xs leading-relaxed">Liderando la hospitalidad tradicional desde 1960. Un refugio de resiliencia y calidez en la capital industrial.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8 sm:gap-16">

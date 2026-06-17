@@ -47,7 +47,7 @@ export default function Page() {
                     <div className="flex items-end gap-4">
                         <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">14</h2>
                         <span className="text-[12px] leading-3.5 font-medium text-[#ba1a1a] flex items-center mb-1">
-                            3 High Priority
+                            3 de Alta Prioridad
                         </span>
                     </div>
                 </div>

@@ -24,7 +24,7 @@ function diffDays(a: Date, b: Date) {
 }
 
 type Room = { id: string; name: string; type?: string; statusColor?: string };
-type Reservation = { id: string; roomId: string; start: string; end: string; guest: string; color?: string; icon?: string };
+type Reservation = { id: string; roomId: string; start: string; end: string; guest: string; color?: string; icon?: string, status?: string };
 
 // function getStatusLabel(color?: string) {
 //     if (!color) return "—";
@@ -102,11 +102,29 @@ export default function Page() {
                             <h3 className="text-sm font-bold text-slate-800">Oct 12 - Oct 25, 2023</h3>
                             <button className="p-1 rounded hover:bg-slate-100 transition-colors"><span className="material-symbols-outlined">chevron_right</span></button>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500"></span><span className="text-xs text-slate-500 font-medium">Confirmado</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-500"></span><span className="text-xs text-slate-500 font-medium">En estancia</span></div>
-                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500"></span><span className="text-xs text-slate-500 font-medium">Salida</span></div>
-                        </div>
+                        <div className="flex items-center gap-4">{/* Estado: Pendiente */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                <span className="text-xs text-slate-600 font-medium">Pendiente</span>
+                            </div>
+
+                            {/* Estado: Confirmada */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                <span className="text-xs text-slate-600 font-medium">Confirmada</span>
+                            </div>
+
+                            {/* Estado: En estancia */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span className="text-xs text-slate-600 font-medium">En estancia</span>
+                            </div>
+
+                            {/* Estado: Finalizada */}
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-slate-400"></span>
+                                <span className="text-xs text-slate-600 font-medium">Finalizada</span>
+                            </div></div>
                     </div>
 
                     <div className="flex-1 overflow-auto scrollbar-hide relative">
@@ -153,9 +171,19 @@ export default function Page() {
                                             const offset = Math.max(0, diffDays(rStart, startDate));
                                             const length = diffDays(rEnd, rStart) + 1;
                                             const left = ROOM_COL_PX + offset * dayWidth;
-                                            const width = Math.max(dayWidth * length, dayWidth); // at least 1 day
-                                            const bg = r.color === "amber-100" ? "bg-amber-100" : r.color === "emerald-100" ? "bg-emerald-100" : r.color === "blue-100" ? "bg-blue-100" : "bg-slate-100";
-                                            const border = r.color === "amber-100" ? "border-amber-500" : r.color === "emerald-100" ? "border-emerald-500" : r.color === "blue-100" ? "border-blue-500" : "border-slate-300 card-shadow ";
+                                            const width = Math.max(dayWidth * length, dayWidth);
+                                            console.log(reservations); // at least 1 day
+                                            const bg =
+                                                r.status === "Pending" ? "bg-amber-100" :
+                                                    r.status === "Confirmed" ? "bg-blue-100" :
+                                                        r.status === "InHouse" ? "bg-emerald-100" :
+                                                            "bg-slate-100"; // para 'finalizada' o cualquier otro estado
+
+                                            const border =
+                                                r.status === "Pending" ? "border-amber-500" :
+                                                    r.status === "Confirmed" ? "border-blue-500" :
+                                                        r.status === "InHouse" ? "border-emerald-500" :
+                                                            "border-slate-300 card-shadow"; // para 'finalizada' u otros
                                             return (
                                                 <Link href={`/bd/reservaciones/${r.id}`} key={r.id} className={`reservation-bar ${bg} border-l-4 ${border} px-3 py-1 flex items-center justify-between overflow-hidden cursor-pointer`} style={{ position: "absolute", top: 8, bottom: 8, left, width }}>
                                                     <div className="truncate">
@@ -189,10 +217,48 @@ export default function Page() {
                             <tbody className="bg-white">
                                 {reservations.map((r) => {
                                     const nights = diffDays(new Date(r.end), new Date(r.start)) + 1;
-                                    const statusLabel = r.color === "amber-100" ? "En estancia" : r.color === "emerald-100" ? "Salida" : r.color === "blue-100" ? "Confirmado" : "—";
-                                    const badgeBg = r.color === "amber-100" ? "bg-amber-100" : r.color === "emerald-100" ? "bg-emerald-100" : r.color === "blue-100" ? "bg-blue-100" : "bg-slate-100";
-                                    const badgeText = r.color === "amber-100" ? "text-amber-800" : r.color === "emerald-100" ? "text-emerald-800" : r.color === "blue-100" ? "text-blue-800" : "text-slate-800";
-                                    const dotBg = r.color === "amber-100" ? "bg-amber-500" : r.color === "emerald-100" ? "bg-emerald-500" : r.color === "blue-100" ? "bg-blue-500" : "bg-slate-400";
+
+                                    // Configuración centralizada de textos y estilos basados en r.status
+                                    const STATUS_CONFIG = {
+                                        Pending: {
+                                            label: "Pendiente",
+                                            badgeBg: "bg-amber-100",
+                                            badgeText: "text-amber-800",
+                                            border: "border-amber-300",
+                                            dotBg: "bg-amber-500"
+                                        },
+                                        Confirmed: {
+                                            label: "Confirmada",
+                                            badgeBg: "bg-blue-100",
+                                            badgeText: "text-blue-800",
+                                            border: "border-blue-300",
+                                            dotBg: "bg-blue-500"
+                                        },
+                                        InHouse: {
+                                            label: "En estancia",
+                                            badgeBg: "bg-emerald-100",
+                                            badgeText: "text-emerald-800",
+                                            border: "border-emerald-300",
+                                            dotBg: "bg-emerald-500"
+                                        },
+                                        Completed: {
+                                            label: "Finalizada",
+                                            badgeBg: "bg-slate-100",
+                                            badgeText: "text-slate-800",
+                                            border: "border-slate-300 card-shadow",
+                                            dotBg: "bg-slate-400"
+                                        }
+                                    };
+
+                                    // Fallback por si r.status viene vacío o no coincide
+                                    const currentStatus = STATUS_CONFIG[r.status as keyof typeof STATUS_CONFIG] || {
+                                        label: "—",
+                                        badgeBg: "bg-slate-100",
+                                        badgeText: "text-slate-800",
+                                        border: "border-slate-300",
+                                        dotBg: "bg-slate-400"
+                                    };
+
                                     return (
                                         <tr key={r.id} className="hover:bg-slate-50">
                                             <td className="px-4 py-3 align-middle">
@@ -204,9 +270,9 @@ export default function Page() {
                                             <td className="px-4 py-3">{new Date(r.end).toLocaleDateString()}</td>
                                             <td className="px-4 py-3">{nights}</td>
                                             <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border ${badgeBg} ${badgeText} border-slate-300 card-shadow `}>
-                                                    <span className={`w-2 h-2 rounded-full ${dotBg}`}></span>
-                                                    {statusLabel}
+                                                <span className={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border ${currentStatus.badgeBg} ${currentStatus.badgeText} ${currentStatus.border}`}>
+                                                    <span className={`w-2 h-2 rounded-full ${currentStatus.dotBg}`}></span>
+                                                    {currentStatus.label}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3">

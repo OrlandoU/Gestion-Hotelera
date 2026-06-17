@@ -2,6 +2,7 @@
 
 import { useState, ViewTransition } from "react";
 import PageHeader from "@/components/pageheader";
+import Link from "next/link";
 
 export default function CrearReservacion() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -46,7 +47,14 @@ export default function CrearReservacion() {
 
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+            <div>
+                <div className="flex items-center gap-1 text-slate-500 text-xs mb-2">
+                    <Link className="hover:text-slate-900 transition-colors" href="/bd/reservaciones" transitionTypes={["nav-back"]}>Reservaciones</Link>
+                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                    <span className="text-slate-800 font-medium">Crear reserva</span>
+                </div>
             <PageHeader name="Crear nueva reservación" subtitle="Completa los pasos para crear una nueva reserva." buttons={null} />
+            </div>
             <div className="flex flex-col lg:flex-row gap-6">
                 <div className="flex-1 space-y-6">
 
@@ -129,9 +137,9 @@ export default function CrearReservacion() {
                             </div>
                             
                             <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-4">
-                                <button onClick={() => {}} className="h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
+                                <Link href="/bd/reservaciones" transitionTypes={["nav-back"]} className="flex items-center h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
                                     Cancelar
-                                </button>
+                                </Link>
                                 <button onClick={handleNextStep} className="h-10 px-5 rounded-lg bg-sky-600 text-white font-bold hover:bg-sky-500 hover:shadow-sm hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer">
                                     Siguiente paso
                                     <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -190,9 +198,9 @@ export default function CrearReservacion() {
                                     Atrás
                                 </button>
                                 <div className="flex gap-3">
-                                    <button onClick={() => {}} className="h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
+                                    <Link href="/bd/reservaciones" transitionTypes={["nav-back"]} className="flex items-center h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
                                         Cancelar
-                                    </button>
+                                    </Link>
                                     <button onClick={handleNextStep} className="h-10 px-5 rounded-lg bg-sky-600 text-white font-bold hover:bg-sky-500 hover:shadow-sm hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer">
                                         Siguiente paso
                                         <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -223,9 +231,9 @@ export default function CrearReservacion() {
                                     Atrás
                                 </button>
                                 <div className="flex gap-3">
-                                    <button onClick={() => {}} className="h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
+                                    <Link href="/bd/reservaciones" transitionTypes={["nav-back"]} className="flex items-center h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
                                         Cancelar
-                                    </button>
+                                    </Link>
                                     <button onClick={handleNextStep} className="h-10 px-5 rounded-lg bg-sky-600 text-white font-bold hover:bg-sky-500 hover:shadow-sm hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer">
                                         Siguiente paso
                                         <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -277,9 +285,9 @@ export default function CrearReservacion() {
                                     Atrás
                                 </button>
                                 <div className="flex gap-3">
-                                    <button onClick={() => {}} className="h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
+                                    <Link href="/bd/reservaciones" transitionTypes={["nav-back"]} className="flex items-center h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
                                         Cancelar
-                                    </button>
+                                    </Link>
                                     <button onClick={handleNextStep} className="h-10 px-5 rounded-lg bg-sky-600 text-white font-bold hover:bg-sky-500 hover:shadow-sm hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer">
                                         Siguiente paso
                                         <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
@@ -320,9 +328,9 @@ export default function CrearReservacion() {
                                     Atrás
                                 </button>
                                 <div className="flex gap-3">
-                                    <button onClick={() => {}} className="h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
+                                    <Link href="/bd/reservaciones" transitionTypes={["nav-back"]} className="flex items-center h-10 px-5 rounded-lg border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors cursor-pointer">
                                         Cancelar
-                                    </button>
+                                    </Link>
                                     <button onClick={() => {}} className="h-10 px-5 rounded-lg bg-emerald-600 text-white font-bold hover:bg-emerald-500 hover:shadow-sm hover:-translate-y-0.5 transition-all flex items-center gap-2 cursor-pointer">
                                         Confirmar reservación
                                         <span className="material-symbols-outlined text-[18px]">check</span>

@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { RESERVATIONS_DETAIL } from "@/data/reservations";
 import { ViewTransition } from "react";
+import Link from "next/link";
 
 export default function ReservationPage() {
     const params = useParams();
@@ -23,7 +24,7 @@ export default function ReservationPage() {
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <div className="mb-2">
                 <div className="flex items-center gap-1 text-slate-500 text-xs mb-2">
-                    <a className="hover:text-slate-900 transition-colors" href="#">Reservaciones</a>
+                    <Link className="hover:text-slate-900 transition-colors" href="/bd/reservaciones" transitionTypes={["nav-back"]}>Reservaciones</Link>
                     <span className="material-symbols-outlined text-[16px]">chevron_right</span>
                     <span className="text-slate-800 font-medium">{bookingId}</span>
                 </div>
