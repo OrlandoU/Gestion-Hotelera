@@ -17,6 +17,7 @@ export default function DashboardLayout({
         { name: "Habitaciones", href: "/bd/habitaciones", icon: "bed", buttons: [], subtitle: "Estado y historial de habitaciones" },
 
     { name: "Reservaciones", href: "/bd/reservaciones", icon: "calendar_month", buttons: [], subtitle: "Gestión de reservas y disponibilidad" },
+    { name: "Clientes", href: "/bd/clientes", icon: "group", buttons: [], subtitle: "Perfiles de huéspedes, historial y preferencias" },
     { name: "Inventario", href: "/bd/inventario", icon: "inventory_2", buttons: [], subtitle: "Gestión de inventario" },
     { name: "Mantenimiento", href: "/bd/mantenimiento", icon: "build", buttons: [], subtitle: "Gestión de mantenimiento" },
     { name: "Facturación", href: "/bd/facturacion", icon: "payments", buttons: [], subtitle: "Gestión de facturación" },
