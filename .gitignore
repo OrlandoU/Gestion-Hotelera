@@ -1,0 +1,20 @@
+# This is a comment - Git ignores these lines
+
+# Ignore node_modules (third-party dependencies)
+node_modules/
+
+# Ignore build/dist directories
+dist/
+build/
+
+# Ignore environment variables and secrets (CRITICAL)
+.env
+.env.local
+*.pem
+
+# Ignore OS-specific system files
+.DS_Store
+Thumbs.db
+
+# Ignore log files
+*.log
