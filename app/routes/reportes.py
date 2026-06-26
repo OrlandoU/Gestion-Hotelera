@@ -70,21 +70,70 @@ async def read_reporte_actividades_mantenimiento(
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
 @router.get("/pagos-realizados")
-async def read_pagos_realizados():
-    return {"Hello": "World"}
+async def read_pagos_realizados(
+    huesped_dni: None,
+    huesped_nombre: None,
+    metodo_pago: None,
+    fecha: None,
+    db: Session = Depends(get_db)
+):
+    try: 
+        query = text("EXEC sp_listar_pagos_realizados :huesped_dni, huesped_nombre, metodo_pago, fecha")
+        result = db.execute(query, {"huesped_dni": huesped_dni, "huesped_nombre": huesped_nombre, "metodo_pago": metodo_pago, "fecha": fecha})
+        pagos = [dict(row._mapping) for row in result]
+        return pagos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
 @router.get("/consumo-stock-semanal")
-async def read_consumo_stock_semanal():
-    return {"Hello": "World"}
+async def read_consumo_stock_semanal(
+    fecha: None,
+    db: Session = Depends(get_db)
+):
+    try:
+        query = text("EXEC sp_consumo_stock_semanal :fecha")
+        result = db.execute(query, {"fecha": fecha})
+        consumos = [dict(row._mapping) for row in result]
+        return consumos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
 @router.get("/estadistica-ocupacion-mensual")
-async def read_estadistica_ocupacion_mensual():
-    return {"Hello": "World"}
+async def read_estadistica_ocupacion_mensual(
+    fecha: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    try:
+        query = text("EXEC sp_estadistica_ocupacion_habitacion_mensual :fecha")
+        result = db.execute(query, {"fecha": fecha})
+        estadistica = [dict(row._mapping) for row in result]
+        return estadistica
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
 @router.get("/ingresos-tipo-habitacion")
-async def read_ingresos_tipo_habitacion():
-    return {"Hello": "World"}
+async def read_ingresos_tipo_habitacion(
+    fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    try:
+        query = text("EXEC sp_ingresos_por_tipo_habitacion :fecha")
+        result = db.execute(query, {"fecha": fecha})
+        ingresos = [dict(row._mapping) for row in result]
+        return ingresos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
+    
 
 @router.get("/consumo-amenidades-mensual")
-async def read_consumo_amenidades_mensual():
-    return {"Hello": "World"}
+async def read_consumo_amenidades_mensual(
+    fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
+    db: Session = Depends(get_db)
+):
+    try:
+        query = text("EXEC sp_resumen_mensual_consumo_productos :fecha")
+        result = db.execute(query, {"fecha": fecha})
+        consumos = [dict(row._mapping) for row in result]
+        return consumos
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
