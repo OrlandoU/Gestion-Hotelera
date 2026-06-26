@@ -13,15 +13,3 @@ router = APIRouter(
 async def read_mantenimientos():
     return {"Hello": "World"}
 
-@router.get("/reporte-actividades-mantenimiento")
-async def read_reporte_actividades_mantenimiento(
-    fecha_inicio: date = Query(default=None, description="Formato YYYY-MM-DD"),
-    db: Session = Depends(get_db)
-):
-    try:
-        query = text("EXEC sp_reporte_actividades_mantenimiento :fecha")
-        result = db.execute(query, {"fecha": fecha_inicio})
-        
-        return [dict(row._mapping) for row in result]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
