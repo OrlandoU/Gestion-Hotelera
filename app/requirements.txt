@@ -4,3 +4,4 @@ sqlalchemy
 fastapi[standard]
 pyodbc
 mssql_python
+pymssql
