@@ -55,30 +55,29 @@ async def read_reporte_habitaciones(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
-@router.get("/actividades-mantenimientos-diarias")
+@router.get("/actividades-mantenimientos-diarios")
 async def read_reporte_actividades_mantenimiento(
+    tipo: str = Query(default=None, description="Tipo de actividad"),
+    usuario_id: int = Query(default=None, description="ID del usuario"),
     fecha_inicio: date = Query(default=None, description="Formato YYYY-MM-DD"),
     db: Session = Depends(get_db)
 ):
     try:
-        query = text("EXEC sp_reporte_actividades_mantenimiento :fecha")
-        result = db.execute(query, {"fecha": fecha_inicio})
-        
-        return [dict(row._mapping) for row in result]
+        query = text("EXEC sp_reporte_actividades_mantenimiento :tipo, :usuario_id, :fecha_inicio")
+        result = db.execute(query, {"tipo": tipo, "usuario_id": usuario_id, "fecha_inicio": fecha_inicio})
+        actividades = [dict(row._mapping) for row in result]
+        return actividades
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
 @router.get("/pagos-realizados")
 async def read_pagos_realizados(
-    huesped_dni: None,
-    huesped_nombre: None,
-    metodo_pago: None,
-    fecha: None,
+    fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
     db: Session = Depends(get_db)
 ):
     try: 
-        query = text("EXEC sp_listar_pagos_realizados :huesped_dni, huesped_nombre, metodo_pago, fecha")
-        result = db.execute(query, {"huesped_dni": huesped_dni, "huesped_nombre": huesped_nombre, "metodo_pago": metodo_pago, "fecha": fecha})
+        query = text("EXEC sp_listar_pagos_realizados :fecha")
+        result = db.execute(query, {"fecha": fecha})
         pagos = [dict(row._mapping) for row in result]
         return pagos
     except Exception as e:
