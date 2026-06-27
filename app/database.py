@@ -1,14 +1,12 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
 from os import getenv
 from dotenv import load_dotenv
-import urllib
+from mssql_python import connect
 
 load_dotenv()
 
-# Construyes tu cadena de conexión usando tus variables de entorno
+# Construyes tu cadena de conexión nativa para mssql-python
+# Nota: Este driver acepta los parámetros estándar de las cadenas de conexión de Microsoft
 conn_str = (
-    f"Driver={getenv('DB_DRIVER')};"
     f"Server={getenv('DB_SERVER')},{getenv('DB_PORT')};"
     f"Database={getenv('DB_NAME')};"
     f"UID={getenv('DB_USER')};"
@@ -17,20 +15,15 @@ conn_str = (
     f"TrustServerCertificate={getenv('DB_TRUST_CERT')};"
 )
 
-# SQLAlchemy necesita un formato específico (URL) para mssql+pyodbc
-connection_url = f"mssql+pyodbc:///?odbc_connect={urllib.parse.quote(conn_str)}"
+# Ya no necesitas SQLAlchemy ni codificar la URL con urllib. 
+# El pool de conexiones viene integrado y activo por defecto en mssql-python.
 
-engine = create_engine(connection_url)
-
-# SessionLocal asegura que cada request tenga su propia instancia de conexión aislada
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base = declarative_base()
-
-# Dependencia vital para tus endpoints (Dependency Injection)
+# Dependencia vital para tus endpoints en FastAPI (Dependency Injection)
 def get_db():
-    db = SessionLocal()
+    # Abre una conexión eficiente desde el pool nativo
+    conn = connect(conn_str)
     try:
-        yield db
+        yield conn
     finally:
-        db.close() # Se asegura de cerrar la conexión al terminar el request
+        # Al terminar el request, se cierra la sesión limpiamente
+        conn.close()
