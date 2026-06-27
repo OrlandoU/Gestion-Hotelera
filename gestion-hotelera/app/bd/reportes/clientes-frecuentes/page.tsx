@@ -130,7 +130,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#008cc7]">group</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : stats.totalClientes}
           </h2>
         </div>
@@ -142,7 +142,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#008cc7]">trending_up</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : stats.visitasTotales}
           </h2>
         </div>
@@ -154,7 +154,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#93000a]">bar_chart</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : `${stats.frecuenciaPromedio}x`}
           </h2>
         </div>
@@ -166,7 +166,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#6a2d91]">star</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : stats.distribucion["7+ visitas"]}
           </h2>
         </div>
@@ -250,7 +250,8 @@ export default function Page() {
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">ID</th>
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nombre Completo</th>
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Teléfono</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Frecuencia</th>
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Visitas</th>
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Noches</th>
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nivel</th>
                 </tr>
               </thead>
@@ -271,6 +272,12 @@ export default function Page() {
                         <div className="flex items-center gap-2">
                           <span className="material-symbols-outlined text-[16px] text-[#008cc7]">event_repeat</span>
                           <span className="text-[14px] font-bold text-[#000000]">{cliente.frecuencia}x</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px] text-[#008cc7]">bed</span>
+                          <span className="text-[14px] font-bold text-[#000000]">{cliente.total_noches || 0}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">

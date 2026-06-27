@@ -147,7 +147,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#008cc7]">meeting_room</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : stats.totalHabitaciones}
           </h2>
         </div>
@@ -159,7 +159,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#008cc7]">payments</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : `$${(stats.ingresoTotal / 1000).toFixed(1)}k`}
           </h2>
         </div>
@@ -171,7 +171,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#93000a]">price_change</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : `$${stats.ingresoPromedio}`}
           </h2>
         </div>
@@ -183,7 +183,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#565e74]">check_circle</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : (stats.totalHabitaciones > 0 ? '100%' : 'N/A')}
           </h2>
         </div>

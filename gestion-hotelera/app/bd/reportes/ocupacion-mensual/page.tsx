@@ -77,7 +77,7 @@ export default function Page() {
     if (!stats) return [];
     return [
       { name: 'Ocupada', value: stats.ocupacionGeneral, fill: '#008cc7' },
-      { name: 'Disponible', value: stats.disponibilidad, fill: '#e0e3e5' },
+      { name: 'Disponible', value: stats.disponibilidad, fill: '#c7c7c7' },
     ];
   }, [stats]);
 
@@ -164,7 +164,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#008cc7]">percent</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : `${stats?.ocupacionGeneral || 0}%`}
           </h2>
           <span className="text-[12px] leading-3.5 font-medium text-[#515f74] flex items-center mt-2">
@@ -179,7 +179,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#008cc7]">check_circle</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : `${stats?.disponibilidad || 0}%`}
           </h2>
           <span className="text-[12px] leading-3.5 font-medium text-[#515f74] flex items-center mt-2">
@@ -194,7 +194,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#93000a]">event_busy</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : stats?.totalReservas}
           </h2>
           <span className="text-[12px] leading-3.5 font-medium text-[#515f74] flex items-center mt-2">
@@ -209,7 +209,7 @@ export default function Page() {
               <span className="material-symbols-outlined text-[20px] text-[#6a2d91]">calendar_today</span>
             </div>
           </div>
-          <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
             {loading ? <span className="animate-pulse">--</span> : stats?.diasDelMes}
           </h2>
           <span className="text-[12px] leading-3.5 font-medium text-[#6a2d91] flex items-center mt-2">
@@ -240,7 +240,7 @@ export default function Page() {
                   labelLine={true}
                   label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
                   outerRadius={100}
-                  fill="#8884d8"
+                  fill="#8b86e6"
                   dataKey="value"
                 >
                   {dataTorta.map((entry, index) => (

@@ -27,7 +27,7 @@ export default function Page() {
                     </div>
                     <div>
                         <p className="text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider text-[#515f74]">Ingresos Totales (Mes)</p>
-                        <h3 className="font-['Hanken_Grotesk'] text-[24px] leading-8 font-semibold text-[#000000] mt-2">€142,580.00</h3>
+                        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-8 font-semibold text-[#000000] mt-2">€142,580.00</h3>
                     </div>
                 </div>
                 <div className="bg-[#ffffff] border border-slate-300 card-shadow  rounded-xl p-6 shadow-level-1 duration-300  flex flex-col justify-between group hover:-translate-y-1 transition-transform">
@@ -39,7 +39,7 @@ export default function Page() {
                     </div>
                     <div>
                         <p className="text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider text-[#515f74]">Pendientes de Cobro</p>
-                        <h3 className="font-['Hanken_Grotesk'] text-[24px] leading-8 font-semibold text-[#000000] mt-2">€12,440.50</h3>
+                        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-8 font-semibold text-[#000000] mt-2">€12,440.50</h3>
                     </div>
                 </div>
                 <div className="bg-[#ffffff] border border-slate-300 card-shadow  rounded-xl shadow-level-1 duration-300 p-6 flex flex-col justify-between group hover:-translate-y-1 transition-transform">
@@ -51,7 +51,7 @@ export default function Page() {
                     </div>
                     <div>
                         <p className="text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider text-[#515f74]">Facturas Emitidas</p>
-                        <h3 className="font-['Hanken_Grotesk'] text-[24px] leading-8 font-semibold text-[#000000] mt-2">342</h3>
+                        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-8 font-semibold text-[#000000] mt-2">342</h3>
                     </div>
                 </div>
             </div>

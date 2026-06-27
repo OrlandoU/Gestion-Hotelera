@@ -3,4 +3,3 @@ uvicorn
 sqlalchemy
 fastapi[standard]
 pyodbc
-unixODBC
