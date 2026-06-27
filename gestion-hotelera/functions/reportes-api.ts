@@ -428,7 +428,7 @@ export function useOcupacionMensual() {
 /**
  * Hook para obtener ingresos por tipo de habitación
  */
-export function useIngresosTipoHabitacion() {
+export function useIngresosTipoHabitacion(fecha: string) {
   const [state, setState] = useState<UseReporteState<IngresoTipoHabitacion[]>>({
     data: null,
     loading: true,

@@ -7,7 +7,11 @@ import { useIngresosTipoHabitacion } from "@/functions/reportes-api"; // Ajustad
 import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function Page() {
-  const { data: ingresosApi, loading, error, refetch } = useIngresosTipoHabitacion();
+  // Inicializamos el periodo en el mes actual (Junio 2026)
+  const [periodoFiltro, setPeriodoFiltro] = useState<string>("2026-06");
+
+  // Pasamos el periodo dinámicamente al hook de la API
+  const { data: ingresosApi, loading, error, refetch } = useIngresosTipoHabitacion(periodoFiltro);
   const [ordenar, setOrdenar] = useState<"ingresos" | "reservas" | "noches">("ingresos");
 
   // Fallback de arreglo seguro
@@ -23,7 +27,7 @@ export default function Page() {
 
   const colorFallback = { hex: "#64748b", bg: "bg-slate-100", text: "text-slate-800", border: "border-l-4 border-slate-400" };
 
-  // Totales generales acumulados de la muestra
+  // Totales generales acumulados del periodo seleccionado
   const globales = useMemo(() => {
     const totalIngresos = ingresosData.reduce((sum, item) => sum + (item.ingresos_totales || 0), 0);
     const totalReservas = ingresosData.reduce((sum, item) => sum + (item.total_reservas || 0), 0);
@@ -62,7 +66,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader 
-          name="Ingresos por Tipo de Habitación" 
+          name="Ingresos Mensuales por Tipo de Habitación" 
           subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -82,25 +86,36 @@ export default function Page() {
 
   return (
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-      {/* Encabezado Principal */}
-      <div className="flex justify-between items-start gap-4">
+      {/* Encabezado Principal y Controles de Periodo */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <PageHeader 
-            name="Ingresos por Tipo de Habitación" 
+            name="Ingresos Mensuales por Tipo de Habitación " 
             subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
           />
         </div>
-        {loading ? (
-          <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
-            <span className="material-symbols-outlined animate-spin text-blue-600">refresh</span>
-            <span className="text-blue-700 text-sm font-medium">Procesando Métricas...</span>
+        
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex flex-col">
+            <label className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider mb-1">Periodo Mensual</label>
+            <input 
+              type="month" 
+              value={periodoFiltro}
+              onChange={(e) => setPeriodoFiltro(e.target.value)}
+              className="px-3 py-1.5 border border-slate-300 rounded-lg text-[14px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
+              disabled={loading}
+            />
           </div>
-        ) : (
-          <button onClick={refetch} className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700">
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Recargar
-          </button>
-        )}
+          {loading ? (
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200 mt-5">
+              <span className="material-symbols-outlined animate-spin text-blue-600 text-[18px]">refresh</span>
+            </div>
+          ) : (
+            <button onClick={refetch} className="mt-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700" title="Recargar periodo">
+              <span className="material-symbols-outlined text-[20px] block">refresh</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Bloque Global de KPIs */}
@@ -113,7 +128,7 @@ export default function Page() {
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : `${globales.totalIngresos.toLocaleString()} Lps`}
+            {loading ? <span className="animate-pulse">--</span> : `$${globales.totalIngresos.toLocaleString()}`}
           </h2>
         </div>
 
@@ -159,11 +174,10 @@ export default function Page() {
           ) : ingresosData.length === 0 ? (
             <div className="py-20 text-center flex flex-col items-center justify-center flex-1">
               <span className="material-symbols-outlined text-[40px] text-slate-300">pie_chart_dissolved</span>
-              <p className="text-sm text-slate-500 mt-2">No hay datos de facturación</p>
+              <p className="text-sm text-slate-500 mt-2">No hay datos de facturación para este periodo</p>
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center my-auto w-full">
-              {/* Contenedor Responsivo para Recharts con diseño tipo Donut */}
               <div className="w-full h-56 relative flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -173,7 +187,7 @@ export default function Page() {
                       nameKey="tipo_habitacion"
                       cx="50%"
                       cy="50%"
-                      innerRadius={65} // Efecto Donut Estilizado
+                      innerRadius={65}
                       outerRadius={85}
                       paddingAngle={4}
                       isAnimationActive={true}
@@ -188,14 +202,12 @@ export default function Page() {
                   </PieChart>
                 </ResponsiveContainer>
                 
-                {/* Indicador Central Absoluto */}
                 <div className="absolute flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Mix</span>
                   <span className="text-[16px] font-bold text-black">{ingresosData.length} Tipos</span>
                 </div>
               </div>
 
-              {/* Leyenda Detallada del Gráfico */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-6 w-full px-2">
                 {ingresosData.map((item) => {
                   const color = esquemaColores[item.tipo_habitacion!] || colorFallback;
@@ -226,7 +238,7 @@ export default function Page() {
                   className="px-3 py-1.5 border border-slate-300 rounded-lg text-[13px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
                   disabled={loading}
                 >
-                  <option value="ingresos">Ordenar por Ingresos (Lps)</option>
+                  <option value="ingresos">Ordenar por Ingresos ($)</option>
                   <option value="reservas">Ordenar por Reservas</option>
                   <option value="noches">Ordenar por Noches</option>
                 </select>
@@ -241,7 +253,7 @@ export default function Page() {
             ) : ingresosOrdenados.length === 0 ? (
               <div className="px-6 py-12 text-center">
                 <span className="material-symbols-outlined text-[40px] text-slate-300 block mb-2">grid_off</span>
-                <p className="text-[14px] text-[#515f74]">No hay registros de habitaciones que procesar</p>
+                <p className="text-[14px] text-[#515f74]">No hay registros de habitaciones que procesar en este periodo</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -269,7 +281,7 @@ export default function Page() {
                             {item.total_noches}
                           </td>
                           <td className="px-6 py-4 text-right text-[14px] font-bold text-[#008cc7]">
-                            {item.ingresos_totales.toLocaleString()} Lps
+                            ${item.ingresos_totales.toLocaleString()}
                           </td>
                         </tr>
                       );
@@ -282,7 +294,7 @@ export default function Page() {
 
           <div className="p-4 bg-slate-50 border-t border-slate-200 text-[12px] font-medium text-slate-500 flex items-center gap-2">
             <span className="material-symbols-outlined text-[15px]">insights</span>
-            <span>La categoría con mayor rendimiento representa el {ingresosOrdenados[0]?.porcentaje || 0}% de los ingresos totales.</span>
+            <span>La categoría con mayor rendimiento representa el {ingresosOrdenados[0]?.porcentaje || 0}% de los ingresos del periodo.</span>
           </div>
         </div>
       </section>
