@@ -204,7 +204,7 @@ export async function getConsumoStockSemanal(): Promise<ConsumoStock[]> {
  * Obtiene estadísticas de ocupación mensual
  */
 export async function getOcupacionMensual(): Promise<OcupacionMensual[]> {
-  return fetchAPI<OcupacionMensual[]>('/reportes/estadistica-ocupacion-mensual');
+  return fetchAPI<OcupacionMensual[]>('/reportes/estadistica-ocupacion-mensual?fecha=2026-06-27');
 }
 
 /**

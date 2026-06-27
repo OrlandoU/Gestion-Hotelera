@@ -113,7 +113,7 @@ export default function Page() {
 
   return (
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-      <div className="flex justify-between items-start gap-4 mb-6">
+      <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader 
             name="Estado de Habitaciones" 
@@ -150,9 +150,6 @@ export default function Page() {
           <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
             {loading ? <span className="animate-pulse">--</span> : stats.totalHabitaciones}
           </h2>
-          <span className="text-[12px] leading-3.5 font-medium text-[#515f74] flex items-center mt-2">
-            <span className="material-symbols-outlined text-[16px]">rooms</span> Espacios inventariados
-          </span>
         </div>
 
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
@@ -165,9 +162,6 @@ export default function Page() {
           <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
             {loading ? <span className="animate-pulse">--</span> : `$${(stats.ingresoTotal / 1000).toFixed(1)}k`}
           </h2>
-          <span className="text-[12px] leading-3.5 font-medium text-[#515f74] flex items-center mt-2">
-            <span className="material-symbols-outlined text-[16px]">trending_up</span> Precio diario combinado
-          </span>
         </div>
 
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
@@ -180,9 +174,6 @@ export default function Page() {
           <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
             {loading ? <span className="animate-pulse">--</span> : `$${stats.ingresoPromedio}`}
           </h2>
-          <span className="text-[12px] leading-3.5 font-medium text-[#515f74] flex items-center mt-2">
-            <span className="material-symbols-outlined text-[16px]">show_chart</span> Por habitación
-          </span>
         </div>
 
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
@@ -195,68 +186,6 @@ export default function Page() {
           <h2 className="font-['Hanken_Grotesk'] text-[24px] leading-10 tracking-[-0.02em] font-semibold text-[#000000] mt-4">
             {loading ? <span className="animate-pulse">--</span> : (stats.totalHabitaciones > 0 ? '100%' : 'N/A')}
           </h2>
-          <span className="text-[12px] leading-3.5 font-medium text-[#007a2c] flex items-center mt-2">
-            <span className="material-symbols-outlined text-[16px]">verified</span> Todas disponibles
-          </span>
-        </div>
-      </section>
-
-      {/* Distribución por tipo */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
-          <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Distribución por Tipo</h3>
-          <div className="flex flex-col gap-4">
-            {loading ? (
-              <div className="space-y-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-4 bg-slate-200 rounded w-1/4 mb-2"></div>
-                    <div className="h-2.5 bg-slate-200 rounded-full w-full"></div>
-                  </div>
-                ))}
-              </div>
-            ) : Object.entries(stats.porTipo).length > 0 ? (
-              Object.entries(stats.porTipo).map(([tipo, cantidad]) => (
-                <div key={tipo}>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-[14px] font-medium text-[#515f74]">{tipo}</span>
-                    <span className="text-[14px] font-bold text-[#000000]">{cantidad} habitaciones</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        tipo === "Básica" ? "bg-blue-500" :
-                        tipo === "Doble-Básica" ? "bg-cyan-500" :
-                        tipo === "Estandar" ? "bg-purple-500" :
-                        tipo === "Doble-Estandar" ? "bg-indigo-500" :
-                        "bg-slate-500"
-                      }`}
-                      style={{ width: `${stats.totalHabitaciones > 0 ? (cantidad / stats.totalHabitaciones) * 100 : 0}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-slate-500 text-center py-8">Sin datos disponibles</p>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
-          <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Leyenda de Estados</h3>
-          <div className="flex flex-col gap-3">
-            {[
-              { estado: "Disponible", icon: "check_circle", color: "emerald" },
-              { estado: "Ocupada", icon: "lock", color: "slate" },
-              { estado: "Limpieza", icon: "cleaning_services", color: "amber" },
-              { estado: "Mantenimiento", icon: "build", color: "rose" },
-            ].map(({ estado, icon, color }) => (
-              <div key={estado} className="flex items-center gap-3">
-                <span className={`material-symbols-outlined text-[20px] text-${color}-600`}>{icon}</span>
-                <span className="text-[14px] font-medium text-[#515f74]">{estado}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -344,7 +273,7 @@ export default function Page() {
                 {habitacionesFiltradas.map((habitacion) => {
                   const colorEstado = getColorEstado(habitacion.estado || "");
                   return (
-                    <tr key={habitacion.numero_espacio} className={`border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors ${colorEstado.bg}`}>
+                    <tr key={habitacion.numero_espacio} className={`border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors`}>
                       <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>{habitacion.numero_espacio}</td>
                       <td className="px-6 py-4">
                         <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${getColorTipo(habitacion.tipo || "")}`}>
@@ -372,6 +301,70 @@ export default function Page() {
           </div>
         )}
       </section>
+
+      
+
+      {/* Distribución por tipo */}
+      {/* grid grid-cols-1 lg:grid-cols-3 */}
+      <section className=" gap-8">
+        <div className="lg:col-span-2 bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
+          <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Distribución por Tipo</h3>
+          <div className="flex flex-col gap-4">
+            {loading ? (
+              <div className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="animate-pulse">
+                    <div className="h-4 bg-slate-200 rounded w-1/4 mb-2"></div>
+                    <div className="h-2.5 bg-slate-200 rounded-full w-full"></div>
+                  </div>
+                ))}
+              </div>
+            ) : Object.entries(stats.porTipo).length > 0 ? (
+              Object.entries(stats.porTipo).map(([tipo, cantidad]) => (
+                <div key={tipo}>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[14px] font-medium text-[#515f74]">{tipo}</span>
+                    <span className="text-[14px] font-bold text-[#000000]">{cantidad} habitaciones</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        tipo === "Básica" ? "bg-blue-500" :
+                        tipo === "Doble-Básica" ? "bg-cyan-500" :
+                        tipo === "Estandar" ? "bg-purple-500" :
+                        tipo === "Doble-Estandar" ? "bg-indigo-500" :
+                        "bg-slate-500"
+                      }`}
+                      style={{ width: `${stats.totalHabitaciones > 0 ? (cantidad / stats.totalHabitaciones) * 100 : 0}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-slate-500 text-center py-8">Sin datos disponibles</p>
+            )}
+          </div>
+        </div>
+{/* 
+        <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
+          <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Leyenda de Estados</h3>
+          <div className="flex flex-col gap-3">
+            {[
+              { estado: "Disponible", icon: "check_circle", color: "emerald" },
+              { estado: "Ocupada", icon: "lock", color: "slate" },
+              { estado: "Limpieza", icon: "cleaning_services", color: "amber" },
+              { estado: "Mantenimiento", icon: "build", color: "rose" },
+            ].map(({ estado, icon, color }) => (
+              <div key={estado} className="flex items-center gap-3">
+                <span className={`material-symbols-outlined text-[20px] text-${color}-600`}>{icon}</span>
+                <span className="text-[14px] font-medium text-[#515f74]">{estado}</span>
+              </div>
+            ))}
+          </div>
+        </div> */}
+      </section>
+
+      
 
       {/* Resumen */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
