@@ -85,7 +85,7 @@ async def read_pagos_realizados(
 
 @router.get("/consumo-stock-semanal")
 async def read_consumo_stock_semanal(
-    fecha: None,
+    fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
     db: Session = Depends(get_db)
 ):
     try:
