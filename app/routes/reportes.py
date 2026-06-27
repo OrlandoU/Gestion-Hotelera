@@ -19,7 +19,7 @@ async def read_reportes():
 async def read_huespedes_frecuentes(db: Session = Depends(get_db)):
     try:
         # Ejemplo ejecutando una consulta SQL cruda
-        result = db.execute(text("SELECT * FROM vw_huespedes_frecuentes"))
+        result = db.execute(text("EXEC sp_clientes_frecuentes"))
         # Convertimos a diccionario
         usuarios = [dict(row._mapping) for row in result]
         return usuarios
@@ -28,8 +28,7 @@ async def read_huespedes_frecuentes(db: Session = Depends(get_db)):
 
 @router.get("/reservaciones-diarias")
 async def read_reporte_reservaciones_diarias(
-    fecha: date = Query(default=date.today(), description="Formato YYYY-MM-DD"), 
-    #fecha: date = Query(..., description="Formato YYYY-MM-DD"), 
+    fecha: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
     db: Session = Depends(get_db)
 ):
     try:
