@@ -179,7 +179,7 @@ export async function getActividadesMantenimiento(
   fecha_inicio?: string
 ): Promise<ActividadMantenimiento[]> {
   return fetchAPI<ActividadMantenimiento[]>(
-    '/reportes/actividades-mantenimientos-diarias',
+    '/reportes/actividades-mantenimientos-diarios',
     {
       params: { fecha_inicio },
     }
@@ -216,9 +216,14 @@ export async function getIngresosTipoHabitacion(): Promise<IngresoTipoHabitacion
 
 /**
  * Obtiene consumo de amenidades mensual
+ * @param fecha
  */
-export async function getConsumoAmenidadesMensual(): Promise<ConsumoAmenidades[]> {
-  return fetchAPI<ConsumoAmenidades[]>('/reportes/consumo-amenidades-mensual');
+export async function getConsumoAmenidadesMensual(fecha?: string): Promise<ConsumoAmenidades[]> {
+  return fetchAPI<ConsumoAmenidades[]>('/reportes/consumo-amenidades-mensual',
+    {
+      params: { fecha },
+    }
+  );
 }
 
 // ============================================
@@ -450,7 +455,7 @@ export function useIngresosTipoHabitacion() {
 /**
  * Hook para obtener consumo de amenidades
  */
-export function useConsumoAmenidadesMensual() {
+export function useConsumoAmenidadesMensual(fecha?:string) {
   const [state, setState] = useState<UseReporteState<ConsumoAmenidades[]>>({
     data: null,
     loading: true,
@@ -460,12 +465,12 @@ export function useConsumoAmenidadesMensual() {
   const refetch = useCallback(async () => {
     setState({ data: null, loading: true, error: null });
     try {
-      const data = await getConsumoAmenidadesMensual();
+      const data = await getConsumoAmenidadesMensual(fecha);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error as Error });
     }
-  }, []);
+  }, [fecha]);
 
   useEffect(() => {
     refetch();

@@ -16,15 +16,15 @@ export default function DashboardLayout({
   const [reportesOpen, setReportesOpen] = useState(false);
 
   const reportSublinks = [
-    { name: "Clientes Frecuentes", href: "/bd/reportes/clientes-frecuentes" },
-    { name: "Reservaciones Diarias", href: "/bd/reportes/reservaciones-diarias" },
-    { name: "Estado de Habitaciones", href: "/bd/reportes/estado-habitaciones" },
-    { name: "Limpieza y Mantenimiento", href: "/bd/reportes/limpieza-mantenimiento" },
-    { name: "Historial de Pagos", href: "/bd/reportes/historial-pago" },
-    { name: "Consumo de Inventario", href: "/bd/reportes/consumo-inventario" },
-    { name: "Ocupacion Mensual", href: "/bd/reportes/ocupacion-mensual" },
-    { name: "Ingresos por Habitacion", href: "/bd/reportes/ingresos-habitacion" },
-    { name: "Consumo de Amenidades", href: "/bd/reportes/consumo-amenidades" },
+    { name: "Clientes Frecuentes", href: "/bd/reportes/clientes-frecuentes", icon: "notes" },
+    { name: "Reservaciones Diarias", href: "/bd/reportes/reservaciones-diarias", icon: "notes" },
+    { name: "Estado de Habitaciones", href: "/bd/reportes/estado-habitaciones", icon: "notes" },
+    { name: "Limpieza y Mantenimiento", href: "/bd/reportes/limpieza-mantenimiento", icon: "notes" },
+    // { name: "Historial de Pagos", href: "/bd/reportes/historial-pago", icon: "notes" },
+    // { name: "Consumo de Inventario", href: "/bd/reportes/consumo-inventario", icon: "notes" },
+    { name: "Ocupacion Mensual", href: "/bd/reportes/ocupacion-mensual", icon: "bar_chart_4_bars" },
+    { name: "Ingresos por Habitacion", href: "/bd/reportes/ingresos-habitacion", icon: "bar_chart_4_bars" },
+    { name: "Consumo de Amenidades", href: "/bd/reportes/consumo-amenidades", icon: "bar_chart_4_bars" },
   ];
 
   const navLinks = [
@@ -86,7 +86,7 @@ export default function DashboardLayout({
                           } flex items-center gap-3 px-3 py-2 hover:bg-[#eceef0] transition-all ease-linear duration-100 text-[13px] leading-4 font-medium font-['Hanken_Grotesk']`}
                           transitionTypes={['nav-forward']}
                         >
-                          <span className="material-symbols-outlined text-[18px]">description</span>
+                          <span className="material-symbols-outlined text-[18px]">{sublink.icon}</span>
                           {sublink.name}
                         </Link>
                       ))}

@@ -122,7 +122,7 @@ export default function Page() {
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader 
-            name="Reservaciones Diarias" 
+            name="Reporte de Reservaciones Diarias" 
             subtitle="Monitoreo y control de ingresos, salidas y ocupación programada"
           />
         </div>
@@ -168,20 +168,20 @@ export default function Page() {
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : `$${stats.ingresosDelDia.toLocaleString()}`}
+            {loading ? <span className="animate-pulse">--</span> : `${stats.ingresosDelDia.toLocaleString()} Lps`}
           </h2>
         </div>
 
         {/* Tarifa Promedio por Transacción */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
-            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ticket Promedio</span>
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Precio Promedio de Reservacion</span>
             <div className="p-2 bg-[#ffdad6] rounded-lg flex items-center">
               <span className="material-symbols-outlined text-[20px] text-[#93000a]">analytics</span>
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : `$${stats.promedioTarifa.toLocaleString()}`}
+            {loading ? <span className="animate-pulse">--</span> : `${stats.promedioTarifa.toLocaleString()} Lps`}
           </h2>
         </div>
 
@@ -313,7 +313,7 @@ export default function Page() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${colorEstado.bg} inline-flex items-center gap-1`}>
-                          <span className="material-symbols-outlined text-[14px]">{colorEstado.icon}</span>
+                          {/* <span className="material-symbols-outlined text-[14px]">{colorEstado.icon}</span> */}
                           {reserva.estado}
                         </span>
                       </td>
@@ -327,10 +327,10 @@ export default function Page() {
                         {reserva.cantidad_unidades}
                       </td>
                       <td className="px-6 py-4 text-[14px] font-medium text-slate-600">
-                        ${reserva.precio_unidad}
+                        {reserva.precio_unidad} Lps
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">
-                        ${reserva.total_pagar}
+                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7] text-nowrap">
+                        {reserva.total_pagar} Lps
                       </td>
                     </tr>
                   );
@@ -359,7 +359,7 @@ export default function Page() {
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingresos de la Selección</p>
               <h4 className="text-[24px] font-bold text-[#000000]">
-                ${reservacionesFiltradas.reduce((sum, r) => sum + (r.total_pagar || 0), 0).toLocaleString()}
+                {reservacionesFiltradas.reduce((sum, r) => sum + (r.total_pagar || 0), 0).toLocaleString()} Lps
               </h4>
               <p className="text-[12px] text-[#515f74] mt-2">Impacto monetario neto de los elementos visibles</p>
             </div>

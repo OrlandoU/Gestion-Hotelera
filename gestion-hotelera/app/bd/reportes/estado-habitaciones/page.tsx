@@ -90,7 +90,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader 
-          name="Estado de Habitaciones" 
+          name="Lista Detallada del Estado de las Habitaciones" 
           subtitle="Visualización y gestión del inventario de espacios disponibles"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -116,7 +116,7 @@ export default function Page() {
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader 
-            name="Estado de Habitaciones" 
+            name="Lista del estado de las Habitaciones" 
             subtitle="Visualización y gestión del inventario de espacios disponibles"
           />
         </div>
@@ -160,7 +160,7 @@ export default function Page() {
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : `$${(stats.ingresoTotal / 1000).toFixed(1)}k`}
+            {loading ? <span className="animate-pulse">--</span> : `${(stats.ingresoTotal / 1000).toFixed(1)}k Lps`}
           </h2>
         </div>
 
@@ -172,7 +172,7 @@ export default function Page() {
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : `$${stats.ingresoPromedio}`}
+            {loading ? <span className="animate-pulse">--</span> : `${stats.ingresoPromedio} Lps`}
           </h2>
         </div>
 
@@ -292,7 +292,7 @@ export default function Page() {
                           {habitacion.capacidad_huespedes}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">${habitacion.precio_unidad}</td>
+                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">{habitacion.precio_unidad} Lps</td>
                     </tr>
                   );
                 })}
@@ -383,7 +383,7 @@ export default function Page() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingreso Filtrado</p>
-              <h4 className="text-[24px] font-bold text-[#000000]">${(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / 1000).toFixed(1)}k</h4>
+              <h4 className="text-[24px] font-bold text-[#000000]">{(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / 1000).toFixed(1)}k Lps</h4>
               <p className="text-[12px] text-[#515f74] mt-2">Total potencial</p>
             </div>
             <span className="material-symbols-outlined text-[32px] text-[#008cc7]">attach_money</span>
@@ -395,7 +395,7 @@ export default function Page() {
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Precio Promedio</p>
               <h4 className="text-[24px] font-bold text-[#000000]">
-                ${habitacionesFiltradas.length > 0 ? Math.round(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / habitacionesFiltradas.length) : 0}
+                {habitacionesFiltradas.length > 0 ? Math.round(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / habitacionesFiltradas.length) : 0} Lps
               </h4>
               <p className="text-[12px] text-[#515f74] mt-2">Del filtrado</p>
             </div>
