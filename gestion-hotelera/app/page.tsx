@@ -5,11 +5,135 @@ import img3 from '@/public/img3.jpg';
 import img4 from '@/public/img4.jpg';
 import logo from '@/public/logo.png';
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useEstadoHabitaciones } from "@/functions/reportes-api";
+import { useHabitacionesDisponibles, crearReserva, Reserva } from "@/functions/reservas"
+
+type TipoHabitacion = "Básica" | "Doble-Básica" | "Estandar" | "Doble-Estandar";
+type Habitacion = {
+  id: number;
+  numero_espacio: string;
+  tipo: string;
+  estado: string;
+  precio_unidad: number;
+};
 
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [visibleSections, setVisibleSections] = useState<{ [key: string]: boolean }>({});
+
+  const [cargando, setCargando] = useState(false);
+
+  const handleCrearReserva = async () => {
+    // 1. Definir los datos de la reserva (pueden venir del estado de un formulario)
+    const nuevaReserva: Reserva = {
+      id_huesped: 2,
+      espacio_id: 34,
+      fecha_entrada: new Date("2026-07-01"),
+      fecha_salida: new Date("2026-07-02")
+    };
+
+    setCargando(true);
+    try {
+      // 2. Llamar a la API
+      const respuesta = await crearReserva(nuevaReserva);
+      alert(respuesta.message); // "Reserva creada exitosamente"
+    } catch (error) {
+      alert("No se pudo crear la reserva. Revisa la consola.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+
+  const { data: habitacionesApi, loading, error, refetch } = useEstadoHabitaciones();
+  const [filtroTipo, setFiltroTipo] = useState<TipoHabitacion | "Todos">("Todos");
+  const [busqueda, setBusqueda] = useState("");
+  const [ordenar, setOrdenar] = useState<"numero" | "tipo" | "precio">("numero");
+
+  // Usar datos de API si existen, sino array vacío
+  const habitacionesData = habitacionesApi || [];
+
+  const habitacionesFiltradas = useMemo(() => {
+    let resultado = habitacionesData;
+
+    if (filtroTipo !== "Todos") {
+      resultado = resultado.filter(h => h.tipo === filtroTipo);
+    }
+
+    if (busqueda) {
+      resultado = resultado.filter(h =>
+        h.numero_espacio?.toLowerCase().includes(busqueda.toLowerCase())
+      );
+    }
+
+    // Ordenar
+    resultado.sort((a, b) => {
+      if (ordenar === "numero") return (a.numero_espacio || "").localeCompare(b.numero_espacio || "");
+      if (ordenar === "tipo") return (a.tipo || "").localeCompare(b.tipo || "");
+      if (ordenar === "precio") return (a.precio_unidad || 0) - (b.precio_unidad || 0);
+      return 0;
+    });
+
+    return resultado;
+  }, [habitacionesData, filtroTipo, busqueda, ordenar]);
+
+  const getColorEstado = (estado: string) => {
+    switch (estado?.toLowerCase()) {
+      case "disponible":
+        return { bg: "bg-emerald-50", border: "border-l-4 border-emerald-500", icon: "check_circle", text: "text-emerald-700" };
+      case "ocupada":
+        return { bg: "bg-slate-50", border: "border-l-4 border-slate-500", icon: "lock", text: "text-slate-700" };
+      case "limpieza":
+        return { bg: "bg-amber-50", border: "border-l-4 border-amber-500", icon: "cleaning_services", text: "text-amber-700" };
+      case "mantenimiento":
+        return { bg: "bg-rose-50", border: "border-l-4 border-rose-500", icon: "build", text: "text-rose-700" };
+      default:
+        return { bg: "bg-slate-50", border: "border-l-4 border-slate-300", icon: "info", text: "text-slate-700" };
+    }
+  };
+
+  const getColorTipo = (tipo: string) => {
+    switch (tipo) {
+      case "Básica":
+        return "bg-blue-100 text-blue-800";
+      case "Doble-Básica":
+        return "bg-cyan-100 text-cyan-800";
+      case "Estandar":
+        return "bg-purple-100 text-purple-800";
+      case "Doble-Estandar":
+        return "bg-indigo-100 text-indigo-800";
+      default:
+        return "bg-slate-100 text-slate-800";
+    }
+  };
+
+  // CREAR RESERVA
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [isOpenSuccess, setIsOpenSuccess] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState<Habitacion | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const openBookingModal = (room: Habitacion) => {
+    setSelectedRoom(room);
+    setIsOpenModal(true);
+  };
+
+  const closeModal = () => {
+    setIsOpenModal(false);
+    setSelectedRoom(null);
+  };
+
+  const openSuccessModal = () => {
+    setIsOpenSuccess(true);
+    closeModal();
+    setTimeout(() => setIsOpenSuccess(false), 3000);
+  };
+
+  const handleSubmitReserva = async (data: any) => {
+    useEstadoHabitaciones();
+  }
+
 
   useEffect(() => {
     // 1. Control de scroll clásico optimizado
@@ -51,7 +175,7 @@ export default function HomePage() {
 
   return (
     <div className="bg-[#ffffff] text-[#0f172a] font-['Hanken_Grotesk'] overflow-x-hidden selection:bg-blue-100 selection:text-[#0f172a] scroll-smooth">
-      
+
       {/* Estilos embebidos rápidos para la curva fluida personalizada y animaciones de entrada sin flashes */}
       <style jsx global>{`
         .cubic-fluid {
@@ -75,9 +199,8 @@ export default function HomePage() {
 
       {/* HEADER */}
       <header className={`fixed p-1 sm:p-2 md:p-4 top-0 w-full z-50 flex items-center transition-all duration-500 cubic-fluid `}>
-        <div className={`w-full transition-all duration-300 ease-linear rounded-lg  py-1 sm:py-2 md:py-4 px-4 sm:px-8 md:px-16 flex justify-between items-center text-white ${
-        isScrolled ? 'bg-[#0f172a]/40 backdrop-blur-md h-20 shadow-xl ' : 'bg-transparent'
-      }`}>
+        <div className={`w-full transition-all duration-300 ease-linear rounded-lg  py-1 sm:py-2 md:py-4 px-4 sm:px-8 md:px-16 flex justify-between items-center text-white ${isScrolled ? 'bg-[#0f172a]/40 backdrop-blur-md h-20 shadow-xl ' : 'bg-transparent'
+          }`}>
           <div className="h-10 transition-transform duration-500 cubic-fluid hover:scale-105">
             <Image width={66} height={80} alt="Hotel San Pedro" className="invert brightness-0" src={logo} />
           </div>
@@ -110,7 +233,7 @@ export default function HomePage() {
             </div>
             <div className="absolute inset-0 bg-linear-to-t from-[#0f172a] via-[#0f172a]/40 to-transparent z-10" />
           </div>
-          
+
           <div className="relative z-20 w-full px-4 sm:px-8 md:px-16 grid grid-cols-12 gap-4 animate-fade-up">
             <div className="col-span-12 lg:col-span-8 lg:col-start-2">
               <span className="text-white/60 font-['Hanken_Grotesk'] uppercase tracking-[0.4em] block mb-4 sm:mb-6 text-xs sm:text-sm delay-100">Establecido en 1960</span>
@@ -129,30 +252,109 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full flex-1">
                 <div className="flex-1 border-b border-white/20 pb-2 focus-within:border-white transition-colors duration-300">
                   <label className="block text-[10px] uppercase tracking-widest mb-1 text-white/60">Entrada</label>
-                  <input className="bg-transparent border-none text-white p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500" type="date" defaultValue="2026-05-20" />
+                  <input className="bg-transparent border-none text-black p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500 invert" type="date" defaultValue="2026-05-20" />
                 </div>
                 <div className="flex-1 border-b border-white/20 pb-2 focus-within:border-white transition-colors duration-300">
                   <label className="block text-[10px] uppercase tracking-widest mb-1 text-white/60">Salida</label>
-                  <input className="bg-transparent border-none text-white p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500" type="date" defaultValue="2026-05-25" />
+                  <input className="bg-transparent border-none text-black p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500 invert" type="date" defaultValue="2026-05-25" />
                 </div>
               </div>
-              <button className="rounded-2xl bg-white text-[#0f172a] px-6 sm:px-16 py-4 sm:py-6 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-[#0f172a] text-xs sm:text-sm hover:text-white border border-white transition-all duration-500 cubic-fluid w-full md:w-auto shadow-xl hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 cursor-pointer">
+              <button onClick={() => openSuccessModal()} className="rounded-2xl bg-white text-[#0f172a] px-6 sm:px-16 py-4 sm:py-6 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-[#0f172a] text-xs sm:text-sm hover:text-white border border-white transition-all duration-500 cubic-fluid w-full md:w-auto shadow-xl hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 cursor-pointer">
                 Explorar Habitaciones
               </button>
             </div>
           </div>
         </section>
 
+        <section className='inset-0 mx-120 my-100 z-30 absolute'>
+          <div className="flex items-center justify-center bg-white py-10 rounded-lg">
+            <div className="grid grid-cols-6 md:grid-cols-10 gap-2 flex-1 px-4 sm:px-8 md:px-16 lg:px-32">
+              {habitacionesFiltradas.map((habitacion) => {
+                const colorEstado = getColorEstado(habitacion.estado || "");
+
+                return (
+                  <button key={habitacion.numero_espacio} onClick={handleCrearReserva} disabled={cargando}>
+                    <div className={`aspect-square border-t-4 border-${colorEstado.border} bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors`}>{habitacion.numero_espacio}</div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          {/*
+            <div className="aspect-square border-t-4 border-slate-400 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">102</div>
+            <div className="aspect-square border-t-4 border-amber-500 card-shadow  bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">103</div>
+            <div className="aspect-square border-t-4 border-emerald-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">104</div>
+            <div className="aspect-square border-t-4 border-rose-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">105</div>
+            <div className="aspect-square border-t-4 border-emerald-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">106</div>
+            <div className="aspect-square border-t-4 border-slate-400 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">107</div>
+            <div className="aspect-square border-t-4 border-slate-400 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">108</div>
+            <div className="aspect-square border-t-4 border-amber-500 card-shadow  bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">109</div>
+            <div className="aspect-square border-t-4 border-emerald-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">110</div>
+            <div className="aspect-square border-t-4 border-slate-400 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">201</div>
+            <div className="aspect-square border-t-4 border-slate-400 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">202</div>
+            <div className="aspect-square border-t-4 border-emerald-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">203</div>
+            <div className="aspect-square border-t-4 border-emerald-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">204</div>
+            <div className="aspect-square border-t-4 border-amber-500 card-shadow  bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">205</div>
+            <div className="aspect-square border-t-4 border-amber-500 card-shadow  bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">206</div>
+            <div className="aspect-square border-t-4 border-slate-400 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">207</div>
+            <div className="aspect-square border-t-4 border-slate-400 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">208</div>
+            <div className="aspect-square border-t-4 border-rose-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">209</div>
+            <div className="aspect-square border-t-4 border-emerald-500 bg-[#f7f9fb] flex items-center justify-center rounded-sm text-[12px] leading-3.5 font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors">210</div>
+          */}
+          {/*
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Habitación</th>
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Tipo</th>
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Estado</th>
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Capacidad</th>
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Precio/Noche</th>
+                </tr>
+              </thead>
+              <tbody>
+                {habitacionesFiltradas.map((habitacion) => {
+                  const colorEstado = getColorEstado(habitacion.estado || "");
+                  return (
+                    <tr key={habitacion.numero_espacio} className={`border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors`}>
+                      <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>{habitacion.numero_espacio}</td>
+                      <td className="px-6 py-4">
+                        <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${getColorTipo(habitacion.tipo || "")}`}>
+                          {habitacion.tipo}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`material-symbols-outlined text-[18px] ${colorEstado.text}`}>{colorEstado.icon}</span>
+                          <span className={`text-[14px] font-semibold ${colorEstado.text}`}>{habitacion.estado}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
+                        <span className="inline-flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[16px]">person</span>
+                          {habitacion.capacidad_huespedes}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">{habitacion.precio_unidad} Lps</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>*/}
+        </section>
+
         {/* SECTION: ABOUT */}
         <section className="bg-[#ffffff] overflow-hidden" id="about">
           <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
             <div className="relative bg-slate-50 p-4 sm:p-8 md:p-16 lg:p-30 flex flex-col justify-center">
-              
+
               {/* Número gigante desvanecido con sutil desplazamiento interactivo */}
               <div className="absolute top-0 left-0 p-4 sm:p-8 text-[#0f172a]/5 text-[80px] sm:text-[120px] md:text-[200px] font-bold leading-none select-none transition-transform duration-1000 cubic-fluid transform hover:scale-105">
                 1960
               </div>
-              
+
               <div className={`relative z-10 transition-all duration-1000 cubic-fluid ${visibleSections['about'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
                 <span className="text-blue-700 font-['Hanken_Grotesk'] uppercase tracking-[0.3em] block mb-4 sm:mb-8 text-xs sm:text-sm">Nuestra Trayectoria</span>
                 <h2 className="text-[#0f172a] font-['Hanken_Grotesk'] text-[clamp(1.75rem,6vw,4.5rem)] leading-tight mb-8 sm:mb-16">Resiliencia y Tradición Sampedrana</h2>
@@ -160,7 +362,7 @@ export default function HomePage() {
                   <p>Como el tercer hotel fundado en la capital industrial, hemos sido testigos silenciosos de la evolución de una ciudad. Nuestra historia está escrita con la fuerza de quienes no se rinden.</p>
                   <p>Tras superar el incendio de 2012, renacimos manteniendo la esencia: ser el hogar fuera de casa para cada viajero que busca no solo una cama, sino una experiencia humana real.</p>
                 </div>
-                
+
                 {/* Contadores Estadísticos */}
                 <div className="mt-8 sm:mt-16 flex gap-8 sm:gap-16 items-center border-t border-[#0f172a]/10 pt-8 sm:pt-16">
                   <div className="text-center group cursor-default">
@@ -180,11 +382,10 @@ export default function HomePage() {
             <div className="relative h-64 sm:h-96 lg:h-auto overflow-hidden group">
               <Image fill alt="Historic San Pedro" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 cubic-fluid group-hover:scale-105" src={img3} />
               <div className="absolute inset-0 bg-[#0f172a]/10 transition-opacity duration-500 group-hover:bg-[#0f172a]/20" />
-              
+
               {/* Tarjeta flotante con animación interactiva */}
-              <div className={`absolute bottom-4 sm:bottom-12 right-4 sm:right-12 bg-white p-6 sm:p-8 shadow-2xl max-w-xs transition-all duration-1000 cubic-fluid delay-300 ${
-                visibleSections['about'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-              } hover:-translate-y-2`}>
+              <div className={`absolute bottom-4 sm:bottom-12 right-4 sm:right-12 bg-white p-6 sm:p-8 shadow-2xl max-w-xs transition-all duration-1000 cubic-fluid delay-300 ${visibleSections['about'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+                } hover:-translate-y-2`}>
                 <p className="font-['Hanken_Grotesk'] italic text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed">
                   “Queremos que cada huésped se sienta en casa, rodeado de respeto y calidez.”
                 </p>
@@ -199,9 +400,8 @@ export default function HomePage() {
             <span className="text-[clamp(100px,20vw,400px)] font-bold leading-none -mr-40 block transition-transform duration-1000 transform hover:translate-x-5">2030</span>
           </div>
           <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 relative z-10">
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-16 items-start transition-all duration-1000 cubic-fluid ${
-              visibleSections['mission'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
-            }`}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-16 items-start transition-all duration-1000 cubic-fluid ${visibleSections['mission'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
+              }`}>
               <div className="space-y-8 sm:space-y-16 group">
                 <div className="p-2 group-hover:translate-x-2 transition-transform duration-500 cubic-fluid">
                   <span className="inline-block px-4 py-1 border border-white/30 text-white/80 text-[10px] uppercase tracking-[0.3em] mb-4 sm:mb-6 rounded-full">Nuestra Misión</span>
@@ -245,8 +445,8 @@ export default function HomePage() {
                 { icon: "apartment", id: "05", title: "Hospitalidad", desc: "La esencia sampedrana de dar la bienvenida con el corazón." },
                 { icon: "lock", id: "06", title: "Confianza", desc: "Construyendo relaciones seguras y duraderas por generaciones." }
               ].map((pilar, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="group border-t border-[#0f172a]/10 pt-6 sm:pt-8 hover:border-[#0f172a] transition-all duration-500 cubic-fluid transform hover:-translate-y-2 cursor-default"
                 >
                   <div className="flex justify-between items-start mb-4 sm:mb-6">
@@ -271,7 +471,7 @@ export default function HomePage() {
         <section className="relative min-h-screen sm:h-[60vh] md:h-[80vh] flex items-center overflow-hidden group">
           <Image fill alt="Dining Area" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 cubic-fluid group-hover:scale-105" src={img4} />
           <div className="absolute inset-0 bg-[#0f172a]/40 transition-opacity duration-700 group-hover:bg-[#0f172a]/50" />
-          
+
           <div className="relative z-10 w-full px-4 sm:px-8 md:px-16 flex justify-start sm:justify-end">
             <div className="bg-white p-6 sm:p-8 md:p-16 max-w-xl shadow-2xl transition-transform duration-700 cubic-fluid hover:-translate-y-1">
               <span className="text-blue-700 font-['Hanken_Grotesk'] uppercase tracking-[0.3em] block mb-3 sm:mb-6 text-xs sm:text-sm">Experiencias</span>
@@ -330,7 +530,7 @@ export default function HomePage() {
               </form>
             </div>
           </div>
-          
+
           {/* Iframe con contenedor controlado */}
           <div className="mt-8 sm:mt-16 h-64 sm:h-96 md:h-125 w-full overflow-hidden shadow-inner opacity-90 hover:opacity-100 transition-opacity duration-500">
             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3844.637075276313!2d-88.02565002494666!3d15.503941685096555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f665b4536eb25d9%3A0xff3dffbffeb793e6!2sHotel%20San%20Pedro!5e0!3m2!1ses-419!2shn!4v1781505597298!5m2!1ses-419!2shn" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>

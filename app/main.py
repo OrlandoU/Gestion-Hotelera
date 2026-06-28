@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+app.include_router(reservas_router)
 app.include_router(reportes_router)
 app.include_router(huespedes_router)
 app.include_router(reservas_router)
