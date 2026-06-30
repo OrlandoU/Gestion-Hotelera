@@ -7,6 +7,8 @@ import Link from "next/link";
 
 export default function Header() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    // Estado para controlar el menú desplegable de notificaciones
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
     const adminData = {
         name: "Admin Jefe",
@@ -17,6 +19,22 @@ export default function Header() {
         department: "Recepcion y Administración",
         since: "2026"
     };
+
+    // Notificación estática solicitada
+    const notifications = [
+        {
+            id: 1,
+            title: "¡Celebración de Aniversario! 🎉",
+            description: "Maynor Josue Padilla cumple 3 años en el equipo.",
+            time: "Hace un momento"
+        },
+        {
+            id: 2,
+            title: "Reporte de Habitación ⚠️",
+            description: "Habitación 204 reporta problemas con el aire acondicionado. Se requiere soporte.",
+            time: "Hace 15 minutos"
+        }
+    ];
 
     return (
         <>
@@ -31,10 +49,36 @@ export default function Header() {
                 </div>
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-4">
-                        <button className="p-2 text-[#515f74] hover:bg-[#f2f4f6] rounded-full transition-colors relative cursor-pointer flex items-center">
-                            <span className="material-symbols-outlined">notifications</span>
-                            <span className="absolute top-1 right-1 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
-                        </button>
+                        {/* Contenedor relativo para posicionar la lista flotante */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                className="p-2 text-[#515f74] hover:bg-[#f2f4f6] rounded-full transition-colors relative cursor-pointer flex items-center"
+                            >
+                                <span className="material-symbols-outlined">notifications</span>
+                                <span className="absolute top-1 right-1 w-2 h-2 bg-[#ba1a1a] rounded-full"></span>
+                            </button>
+
+                            {/* Desplegable de Notificaciones */}
+                            {isNotificationsOpen && (
+                                <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden font-['Hanken_Grotesk']">
+                                    <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex justify-between items-center">
+                                        <span className="text-sm font-bold text-slate-800">Notificaciones</span>
+                                        <span className="text-[11px] bg-blue-100 text-[#008cc7] px-2 py-0.5 rounded-full font-semibold">Nueva</span>
+                                    </div>
+                                    <div className="max-h-64 overflow-y-auto">
+                                        {notifications.map((notif) => (
+                                            <div key={notif.id} className="p-4 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0 text-left">
+                                                <p className="text-xs font-bold text-slate-900 leading-tight mb-1">{notif.title}</p>
+                                                <p className="text-xs text-slate-600 leading-normal">{notif.description}</p>
+                                                <span className="text-[10px] text-slate-400 block mt-2">{notif.time}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         <button className="p-2 text-[#515f74] hover:bg-[#f2f4f6] rounded-full transition-colors cursor-pointer flex items-center">
                             <span className="material-symbols-outlined">help_outline</span>
                         </button>

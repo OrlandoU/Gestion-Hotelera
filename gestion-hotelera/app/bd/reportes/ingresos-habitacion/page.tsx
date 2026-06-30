@@ -128,7 +128,7 @@ export default function Page() {
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : `$${globales.totalIngresos.toLocaleString()}`}
+            {loading ? <span className="animate-pulse">--</span> : `${globales.totalIngresos.toLocaleString()} Lps`}
           </h2>
         </div>
 
@@ -238,7 +238,7 @@ export default function Page() {
                   className="px-3 py-1.5 border border-slate-300 rounded-lg text-[13px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
                   disabled={loading}
                 >
-                  <option value="ingresos">Ordenar por Ingresos ($)</option>
+                  <option value="ingresos">Ordenar por Ingresos (Lps)</option>
                   <option value="reservas">Ordenar por Reservas</option>
                   <option value="noches">Ordenar por Noches</option>
                 </select>
@@ -281,7 +281,7 @@ export default function Page() {
                             {item.total_noches}
                           </td>
                           <td className="px-6 py-4 text-right text-[14px] font-bold text-[#008cc7]">
-                            ${item.ingresos_totales.toLocaleString()}
+                            {item.ingresos_totales.toLocaleString()} Lps
                           </td>
                         </tr>
                       );
