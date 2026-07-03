@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // URL base de la API - usa variable de entorno o localhost como fallback
-const API_BASE_URL = "https://fluffy-barnacle-rv579j5wxrfx6jp-8000.app.github.dev";
-
+//const API_BASE_URL = "https://fluffy-barnacle-rv579j5wxrfx6jp-8000.app.github.dev";
+const API_BASE_URL = "http://127.0.0.1:8000";
 // ============================================
 // TIPOS E INTERFACES
 // ============================================
@@ -20,12 +20,15 @@ export interface HuespedFrecuente {
 }
 
 export interface ReservacionDiaria {
-  id_reservacion?: number;
-  numero_habitacion?: string;
-  huesped?: string;
+  reserva_id?: number;
+  huesped_nombre?: string;
+  huesped_telefono?: string;
+  numero_reserva?: string;
+  numero_espacio?: string;
   fecha_entrada?: string;
   fecha_salida?: string;
-  estado?: string;
+  cantidad_unidades?: number;
+  reserva_estado?: string;
   tarifa?: number;
   [key: string]: any;
 }

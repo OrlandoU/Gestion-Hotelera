@@ -1,17 +1,40 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // URL base de la API - usa variable de entorno o localhost como fallback
-const API_BASE_URL = "https://gestion-hotelera.fastapicloud.dev";
+//const API_BASE_URL = "https://gestion-hotelera.fastapicloud.dev";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 // ============================================
 // TIPOS E INTERFACES
 // ============================================
 
 export interface Reserva {
-    id_huesped: number;
-    espacio_id: number;
-    fecha_entrada: Date;
-    fecha_salida: Date;
+    reserva_id?: number;
+    huesped_id?: number;
+    nombre_huesped?: string;
+    apellido_huesped?: string;
+    telefono_huesped?: string;
+    email_huesped?: string;
+    huesped_dni?: string;
+    espacio_id?: number;
+    numero_reserva?: string;
+    numero_espacio?: string;
+    numero_huespedes?: number;
+    fecha_entrada?: string;
+    fecha_salida?: string;
+    cantidad_unidades?: number;
+    reserva_estado?: string;
+    tarifa?: number;
+    [key: string]: any;
+}
+
+export interface EspacioHabitacion {
+    espacio_id?: number;
+    numero_espacio?: string;
+    tipo?: string;
+    estado?: string;
+    capacidad_huespedes?: number;
+    precio_unidad?: number;
     [key: string]: any;
 }
 
@@ -64,12 +87,67 @@ async function fetchAPI<T = any>(
     }
 }
 
-export async function getHabitacionesDisponibles(): Promise<Reserva[]> {
-    return fetchAPI<Reserva[]>('/reservas/mostrar-habitaciones-disponibles');
+export async function getReservas(fecha_entrada: Date): Promise<Reserva[]> {
+    return fetchAPI<Reserva[]>('/reservas/listar-reservaciones', {
+        method: 'GET',
+        params: { fecha_entrada: fecha_entrada.toISOString().split('T')[0] }
+    });
 }
 
-export function useHabitacionesDisponibles() {
+export function useReservas(fecha_entrada: Date) {
     const [state, setState] = useState<UseReporteState<Reserva[]>>({
+        data: null,
+        loading: true,
+        error: null,
+    });
+
+    const refetch = useCallback(async () => {
+        setState(prev => ({ ...prev, loading: true, error: null })); // Evita parpadeos borrando data
+        try {
+            const data = await getReservas(fecha_entrada);
+            setState({ data, loading: false, error: null });
+        } catch (error) {
+            setState({ data: null, loading: false, error: error as Error });
+        }
+        // 💡 PASAMOS EL STRING DE LA FECHA COMO DEPENDENCIA
+    }, [fecha_entrada.toISOString().split('T')[0]]);
+
+    useEffect(() => {
+        refetch();
+    }, [refetch]);
+
+    return { ...state, refetch };
+}
+
+const formatearFecha = (fecha: Date | string): string => {
+    if (typeof fecha === 'string') return fecha; // Si ya es string, asumimos que viene bien
+    return fecha.toISOString().split('T')[0]; // Convierte a "YYYY-MM-DD"
+};
+
+export async function getHabitacionesDisponibles(
+    fechaEntrada: string,
+    fechaSalida: string
+): Promise<EspacioHabitacion[]> {
+    // 1. Limpiar y formatear las fechas con la hora exacta obligatoria
+    const formatoFechaSQL = (f: Date | string) => {
+        const base = f instanceof Date ? f.toISOString().split('T')[0] : String(f).split('T')[0];
+        return `${base}T00:00:00`;
+    };
+
+    return fetchAPI<EspacioHabitacion[]>('/reservas/mostrar-habitaciones-disponibles', {
+        method: 'GET',
+        params: {
+            fecha_entrada: formatoFechaSQL(fechaEntrada),
+            fecha_salida: formatoFechaSQL(fechaSalida)
+        }
+    });
+}
+
+export function useHabitacionesDisponibles(
+    fechaEntrada: Date | string,
+    fechaSalida: Date | string
+) {
+    const [state, setState] = useState<UseReporteState<EspacioHabitacion[]>>({
         data: null,
         loading: true,
         error: null,
@@ -78,12 +156,16 @@ export function useHabitacionesDisponibles() {
     const refetch = useCallback(async () => {
         setState({ data: null, loading: true, error: null });
         try {
-            const data = await getHabitacionesDisponibles();
+            // 🛠️ Formateamos las fechas antes de enviarlas
+            const fechaIn = formatearFecha(fechaEntrada);
+            const fechaOut = formatearFecha(fechaSalida);
+
+            const data = await getHabitacionesDisponibles(fechaIn, fechaOut);
             setState({ data, loading: false, error: null });
         } catch (error) {
             setState({ data: null, loading: false, error: error as Error });
         }
-    }, []);
+    }, [fechaEntrada, fechaSalida]);
 
     useEffect(() => {
         refetch();
@@ -93,17 +175,8 @@ export function useHabitacionesDisponibles() {
 }
 
 export async function crearReserva(datos: Reserva): Promise<{ message: string }> {
-    const limpiarFecha = (f: Date | string) => {
-        return f instanceof Date ? f.toISOString().split('T')[0] : String(f).split('T')[0];
-    };
-
     return fetchAPI<{ message: string }>('/reservas/crear-reserva', {
         method: 'POST',
-        params: {
-            huesped_id: Number(datos.id_huesped),
-            espacio_id: Number(datos.espacio_id),
-            fecha_entrada: limpiarFecha(datos.fecha_entrada),
-            fecha_salida: limpiarFecha(datos.fecha_salida)
-        }
+        body: JSON.stringify(datos)
     });
 }

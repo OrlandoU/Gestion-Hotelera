@@ -1,8 +1,8 @@
 export const RESERVATIONS_LIST = [
-    { id: "r1", roomId: "101", start: "2026-10-14", end: "2026-10-17", guest: "Eleanor Vance", status: "InHouse", icon: "credit_card" },
-    { id: "r2", roomId: "102", start: "2026-10-12", end: "2026-10-13", guest: "Luke Crain", status: "Completed" },
-    { id: "r3", roomId: "102", start: "2026-10-18", end: "2026-10-22", guest: "Theodora Crain", status: "Pending", icon: "warning" },
-    { id: "r4", roomId: "103", start: "2026-10-15", end: "2026-10-20", guest: "Katherine Michelle", status: "Confirmed" },
+    { id: "r1", roomId: "101", numberReservation: "1", start: "2026-10-14", end: "2026-10-17", guest: "Eleanor Vance", status: "InHouse", icon: "credit_card" },
+    { id: "r2", roomId: "102", numberReservation: "2", start: "2026-10-12", end: "2026-10-13", guest: "Luke Crain", status: "Completed" },
+    { id: "r3", roomId: "102", numberReservation: "3", start: "2026-10-18", end: "2026-10-22", guest: "Theodora Crain", status: "Pending", icon: "warning" },
+    { id: "r4", roomId: "103", numberReservation: "4", start: "2026-10-15", end: "2026-10-20", guest: "Katherine Michelle", status: "Confirmed" },
 ];
 
 export type ReservationDetail = {
