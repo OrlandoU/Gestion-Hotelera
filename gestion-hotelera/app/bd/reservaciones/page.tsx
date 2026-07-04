@@ -42,6 +42,33 @@ const STATUS_CONFIG = {
     }
 };
 
+const handleEnlace = (telefono: string, nombre_huesped: string, total_pagar: number): string => {
+    const total_depositar = total_pagar * 0.5;
+    const ahora = new Date();
+    const horaActual = ahora.getHours();
+    let saludo = '';
+
+    if (horaActual >= 0 && horaActual < 12) {
+        saludo = 'buenos días';
+    } else if (horaActual >= 12 && horaActual < 18) {
+        saludo = 'buenas tardes';
+    } else {
+        saludo = 'buenas noches';
+    }
+
+    const mensaje = `Hola ${nombre_huesped} ${saludo}. Mucho gusto, soy el recepcionista del Hotel San Pedro, se nos ha solicitado una reservación con su número, si usted es la persona recordarle que según los términos y condiciones del hotel, para realizar la reservación usted deberá realizar un depósito del 50% de su saldo total (${total_depositar} Lempiras) para poder confirmar la reservación, de lo contrario no se realizará. 
+    
+    Puede realizar el depósito a las siguientes cuentas:
+    
+    Banco: Banco Atlántida
+    Numero de Cuenta: 123456789
+
+    En caso de no haber solicitado la reservación puede continuar con sus actividades diarias y una disculpa. ${saludo}`;
+
+
+    return `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+}
+
 function getDatesInRange(start: Date, end: Date) {
     const dates: Date[] = [];
     let cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
@@ -64,6 +91,8 @@ interface ApiReservation {
     reserva_id: number;
     huesped_nombre: string;
     numero_reserva: string;
+    total_pagar: number;
+    telefono_huesped?: string;
     numero_espacio?: string | number;
     fecha_entrada?: string;
     fecha_salida?: string;
@@ -78,7 +107,7 @@ export default function Page() {
     const dates = getDatesInRange(startDate, endDate);
 
     // Sincronizamos el estado inicial de la fecha con el value del input para evitar desfases
-    const [fechaStr, setFechaStr] = useState("2026-08-01");
+    const [fechaStr, setFechaStr] = useState(new Date().toISOString().split('T')[0]);
 
     // Pasamos un objeto Date válido a tu hook usando la fecha del estado
     const { data, loading, error } = useReservas(new Date(`${fechaStr}T00:00:00`));
@@ -284,6 +313,27 @@ export default function Page() {
                                                 <td className="px-4 py-3 align-middle">
                                                     <Link href={`/bd/reservaciones/${r.reserva_id}`} className="text-sm text-[#008cc7] hover:underline mr-3">Ver</Link>
                                                     <Link href={`/bd/reservaciones/${r.reserva_id}/edit`} className="text-sm text-slate-700 hover:underline">Editar</Link>
+                                                    <a
+                                                        href={handleEnlace(r.telefono_huesped || "", r.huesped_nombre || "", r.total_pagar || 0)}
+                                                        target="whatsapp-chat"
+                                                        className="flex items-center justify-center p-2 text-slate-700 hover:text-green-600 transition-colors"
+                                                        title="Enviar mensaje por WhatsApp"
+                                                    >
+                                                        {/* Icono de mensaje SVG */}
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            width="20"
+                                                            height="20"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        >
+                                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                                        </svg>
+                                                    </a>
                                                 </td>
                                             </tr>
                                         );

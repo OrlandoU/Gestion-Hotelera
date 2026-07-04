@@ -56,7 +56,7 @@ async def read_reporte_habitaciones(db = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
 
-@router.get("/actividades-mantenimientos-diarios")
+@router.get("/actividades-mantenimientos-diarias")
 async def read_reporte_actividades_mantenimiento(
     tipo: str = Query(default=None, description="Tipo de actividad"),
     usuario_id: int = Query(default=None, description="ID del usuario"),

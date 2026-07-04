@@ -12,6 +12,8 @@ export interface Reserva {
     reserva_id?: number;
     huesped_id?: number;
     nombre_huesped?: string;
+    nombres?: string;
+    apellidos?: string;
     apellido_huesped?: string;
     telefono_huesped?: string;
     email_huesped?: string;
@@ -25,6 +27,9 @@ export interface Reserva {
     cantidad_unidades?: number;
     reserva_estado?: string;
     tarifa?: number;
+    monto_pagado?: number;
+    total_pagar?: number;
+    precio_unidad?: number;
     [key: string]: any;
 }
 
@@ -87,6 +92,21 @@ async function fetchAPI<T = any>(
     }
 }
 
+export async function getReserva(id: number): Promise<Reserva> {
+    return fetchAPI<Reserva>(`/reservas/obtener-reserva/?reserva_id=${id}`);
+}
+
+export async function registrarPago(reserva_id: number, metodo: string, monto: number): Promise<{ message: string }> {
+    return fetchAPI<{ message: string }>('/reservas/registrar-pago', {
+        method: 'POST',
+        params: {
+            reserva_id: reserva_id.toString(),
+            metodo: metodo,
+            monto: monto.toString()
+        }
+    });
+}
+
 export async function getReservas(fecha_entrada: Date): Promise<Reserva[]> {
     return fetchAPI<Reserva[]>('/reservas/listar-reservaciones', {
         method: 'GET',
@@ -109,7 +129,7 @@ export function useReservas(fecha_entrada: Date) {
         } catch (error) {
             setState({ data: null, loading: false, error: error as Error });
         }
-        // 💡 PASAMOS EL STRING DE LA FECHA COMO DEPENDENCIA
+        // PASAMOS EL STRING DE LA FECHA COMO DEPENDENCIA
     }, [fecha_entrada.toISOString().split('T')[0]]);
 
     useEffect(() => {

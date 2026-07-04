@@ -13,6 +13,43 @@ router = APIRouter(
 def read_reservas():
     return {"Hello": "World"}
 
+@router.get("/obtener-reserva")
+def obtener_reserva(
+    reserva_id: int = Query(..., description="ID de la reserva"),
+    db = Depends(get_db)
+):
+    cursor = None
+    try:
+        cursor = db.cursor(as_dict=True)
+        cursor.execute("EXEC sp_obtener_reserva %s", (reserva_id))
+        reserva = cursor.fetchone()
+        return reserva
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
+    finally:
+        if cursor:
+            cursor.close()
+
+# PAGO
+@router.post("/registrar-pago")
+def registrar_pago(    
+    reserva_id: int = Query(..., description="ID de la reserreserva va"),
+    metodo: str = Query(..., description="Método de pago"),
+    monto: int = Query(..., description="Monto a pagar"),
+    db = Depends(get_db)
+):
+    cursor = None
+    try:
+        cursor = db.cursor(as_dict=True)
+        cursor.execute("EXEC sp_registrar_pago %s, %s, %s", (reserva_id, metodo, monto))
+        db.commit()
+        return {"message": "Pago registrado exitosamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
+    finally:
+        if cursor:
+            cursor.close()
+
 
 @router.get("/listar-reservaciones")
 def listar_reservaciones(
@@ -25,6 +62,7 @@ def listar_reservaciones(
         # Usamos %s para pymssql
         cursor.execute("EXEC sp_listar_reservaciones %s", (fecha_entrada,))
         reservaciones = cursor.fetchall()
+        
         return reservaciones
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
