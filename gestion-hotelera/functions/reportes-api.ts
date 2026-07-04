@@ -1,8 +1,9 @@
 // lib/api/reportes.ts
 import { useState, useEffect, useCallback } from 'react';
+import { fetchAPI } from './http-base';
 
 // URL base de la API - usa variable de entorno o localhost como fallback
-const API_BASE_URL = "https://gestion-hotelera.fastapicloud.dev";
+//const API_BASE_URL = "https://gestion-hotelera.fastapicloud.dev";
 
 // ============================================
 // TIPOS E INTERFACES
@@ -102,7 +103,7 @@ export interface ConsumoAmenidades {
 // ============================================
 // CLIENTE HTTP BASE
 // ============================================
-
+/*
 interface FetchOptions extends RequestInit {
   params?: Record<string, any>;
 }
@@ -143,6 +144,7 @@ async function fetchAPI<T = any>(
     throw error;
   }
 }
+  */
 
 // ============================================
 // FUNCIONES DE API - REPORTES
@@ -182,7 +184,7 @@ export async function getActividadesMantenimiento(
   fecha_inicio?: string
 ): Promise<ActividadMantenimiento[]> {
   return fetchAPI<ActividadMantenimiento[]>(
-    '/reportes/actividades-mantenimientos-diarios',
+    '/reportes/actividades-mantenimientos-diarias',
     {
       params: { fecha_inicio },
     }
@@ -458,7 +460,7 @@ export function useIngresosTipoHabitacion(fecha: string) {
 /**
  * Hook para obtener consumo de amenidades
  */
-export function useConsumoAmenidadesMensual(fecha?:string) {
+export function useConsumoAmenidadesMensual(fecha?: string) {
   const [state, setState] = useState<UseReporteState<ConsumoAmenidades[]>>({
     data: null,
     loading: true,

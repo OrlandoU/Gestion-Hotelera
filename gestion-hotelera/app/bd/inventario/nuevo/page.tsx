@@ -1,44 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import Link from "next/link";
-
-interface EntradaProducto {
-    id: string;
-    productoId: string;
-    cantidad: number;
-    costoUnitario: number;
-}
+import { getProveedores, Proveedor } from "@/functions/proveedores";
+import { getProductos, Producto, Compra, registrarCompra, DetalleCompra } from "@/functions/productos";
 
 export default function NuevoActivoPage() {
-    // Lista maestra de productos harcodeada (simulando BD)
-    const productosBD = [
-        { id: "p1", nombre: "Cloro Magia Blanca", categoria: "Suministros de limpieza", unidad: "Galones" },
-        { id: "p2", nombre: "Café Oro Premium", categoria: "Alimentos y bebidas", unidad: "Libras" },
-        { id: "p3", nombre: "Edredón King Size", categoria: "Muebles / Ropa de cama", unidad: "Piezas" },
-        { id: "p4", nombre: "Limpia Vidrios Industrial", categoria: "Suministros de limpieza", unidad: "Botellas" },
-        { id: "p5", nombre: "Toallas de baño (Piso 4)", categoria: "Muebles / Ropa de cama", unidad: "Piezas" }
-    ];
+    const [cargando, setCargando] = useState(true);
+
+    const [proveedores, setProveedores] = useState<Proveedor>([]);
+    const [proveedorSeleccionado, setProveedorSeleccionado] = useState<number>();
+    const [factura, setFactura] = useState<string>('');
+    const [productos, setProductos] = useState<Producto>([]);
+
+    useEffect(() => {
+        const cargarProveedores = async () => {
+            try {
+                const data = await getProveedores();
+                console.log("Datos recibidos de la API:", data);
+                setProveedores(data);
+            } catch (error) {
+                console.error("Error cargando la reserva desde la API:", error);
+            } finally {
+                setCargando(false);
+            }
+        };
+        cargarProveedores();
+    }, []);
+
+    useEffect(() => {
+        const cargarProductos = async () => {
+            try {
+                const data = await getProductos(proveedorSeleccionado);
+                console.log("Datos recibidos de la API:", data);
+                setProductos(data);
+            } catch (error) {
+                console.error("Error cargando los productos desde la API:", error);
+            } finally {
+                setCargando(false);
+            }
+        };
+        cargarProductos();
+    }, [proveedorSeleccionado])
 
     // Fecha por defecto del sistema (Hoy)
     const today = new Date().toISOString().split('T')[0];
     const [fechaEntrada, setFechaEntrada] = useState(today);
 
     // Estado para manejar la tabla de productos comprados
-    const [entradas, setEntradas] = useState<EntradaProducto[]>([
-        { id: "1", productoId: "p1", cantidad: 50, costoUnitario: 8.50 },
-        { id: "2", productoId: "p2", cantidad: 100, costoUnitario: 4.20 }
+    const [entradas, setEntradas] = useState<Producto[]>([
+        { id: "1", producto_id: 0, cantidad: 25, costo_unitario: 8.50 },
     ]);
 
     // Agregar nueva fila vacía
     const agregarFila = () => {
-        const nuevaFila: EntradaProducto = {
-            id: Math.random().toString(),
-            productoId: "",
+        const nuevaFila: Producto = {
+            id: crypto.randomUUID(),
+            producto_id: 0,
             cantidad: 1,
-            costoUnitario: 0
+            costo_unitario: 0
         };
         setEntradas([...entradas, nuevaFila]);
     };
@@ -51,7 +73,7 @@ export default function NuevoActivoPage() {
     };
 
     // Actualizar valores reactivos de la tabla
-    const actualizarValor = (id: string, campo: keyof EntradaProducto, valor: string | number) => {
+    const actualizarValor = (id: string, campo: keyof Producto, valor: any) => {
         setEntradas(entradas.map(item => {
             if (item.id === id) {
                 return { ...item, [campo]: valor };
@@ -62,7 +84,46 @@ export default function NuevoActivoPage() {
 
     // Cálculos totales
     const totalItems = entradas.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0);
-    const costoTotalFactura = entradas.reduce((acc, item) => acc + ((Number(item.cantidad) || 0) * (Number(item.costoUnitario) || 0)), 0);
+    const costoTotalFactura = entradas.reduce((acc, item) => acc + ((Number(item.cantidad) || 0) * (Number(item.costo_unitario) || 0)), 0);
+
+    // Esta función se ejecutaría, por ejemplo, al hacer submit en tu formulario
+    async function handleGuardarCompra() {
+        try {
+            // 1. Limpiamos y formateamos los detalles del estado 'entradas'
+            // Desestructuramos para quitar el 'id' local de la tabla y quedarnos con el resto
+            const detallesFormateados: DetalleCompra[] = entradas.map(({ id, ...resto }) => ({
+                producto_id: Number(resto.producto_id),
+                cantidad: Number(resto.cantidad),
+                costo_unitario: Number(resto.costo_unitario)
+            }));
+
+            // Opcional: Validación rápida antes de enviar
+            if (detallesFormateados.some(d => d.producto_id === 0 || d.cantidad <= 0)) {
+                alert("Por favor, asegúrate de seleccionar un producto y colocar cantidades válidas.");
+                return;
+            }
+
+            // 2. Armamos el objeto final combinando tus estados
+            const nuevaCompra: Compra = {
+                proveedor_id: proveedorSeleccionado!, // Tu estado del proveedor
+                numero_factura_proveedor: "FAC-2026-001",
+                fecha_compra: new Date().toISOString(),
+                detalles: detallesFormateados // Los detalles ya limpios sin el id temporal
+            };
+
+            // 3. Enviamos a la API
+            const respuesta = await registrarCompra(nuevaCompra);
+
+            alert(`¡Compra guardada con éxito! ID: ${respuesta.compra_id}`);
+
+            // Opcional: Reiniciar la tabla a su estado inicial tras guardar con éxito
+            setEntradas([{ id: crypto.randomUUID(), producto_id: 0, cantidad: 1, costo_unitario: 0 }]);
+
+        } catch (error) {
+            console.error("Error al guardar la compra:", error);
+            alert("Hubo un error al registrar la compra.");
+        }
+    }
 
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
@@ -93,6 +154,21 @@ export default function NuevoActivoPage() {
                         </button>
                     </div>
 
+                    <div className="p-6 flex gap-5 items-center justify-start">
+                        <p className="font-bold">Proveedor: </p>
+                        <select
+                            value={proveedorSeleccionado}
+                            onChange={(e) => setProveedorSeleccionado(Number(e.target.value))}
+                            className="w-1/3 px-3 py-2 bg-slate-50 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-950 rounded-lg text-sm transition-colors"
+                        >
+                            <option value="" disabled>-- Seleccione un proveedor --</option>
+                            {proveedores.map((p: Proveedor) => (
+                                <option key={p.proveedor_id} value={p.proveedor_id}>{p.nombre}</option>
+                            ))}
+                        </select>
+                        <input type="text" className='px-3 py-2 bg-slate-50 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-950 rounded-lg text-sm transition-colors' value={factura} onChange={(e) => setFactura(e.target.value)} placeholder="Número de factura" />
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -107,18 +183,18 @@ export default function NuevoActivoPage() {
                             </thead>
                             <tbody className="text-slate-800 divide-y divide-slate-100">
                                 {entradas.map((item) => {
-                                    const prodSeleccionado = productosBD.find(p => p.id === item.productoId);
+                                    const prodSeleccionado = productos.find((p: Producto) => p.producto_id === item.producto_id);
                                     return (
                                         <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="py-3 px-6">
                                                 <select
-                                                    value={item.productoId}
-                                                    onChange={(e) => actualizarValor(item.id, "productoId", e.target.value)}
+                                                    value={item.producto_id}
+                                                    onChange={(e) => actualizarValor(item.id, "producto_id", Number(e.target.value))}
                                                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-950 rounded-lg text-sm transition-colors"
                                                 >
                                                     <option value="" disabled>-- Seleccione un producto --</option>
-                                                    {productosBD.map(p => (
-                                                        <option key={p.id} value={p.id}>{p.nombre} ({p.categoria})</option>
+                                                    {productos.map((p: Producto) => (
+                                                        <option key={p.producto_id} value={p.producto_id}>{p.nombre} ({p.categoria})</option>
                                                     ))}
                                                 </select>
                                             </td>
@@ -136,19 +212,19 @@ export default function NuevoActivoPage() {
                                             </td>
                                             <td className="py-3 px-6">
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">L.</span>
                                                     <input
                                                         type="number"
                                                         step="0.01"
                                                         min="0"
-                                                        value={item.costoUnitario}
-                                                        onChange={(e) => actualizarValor(item.id, "costoUnitario", parseFloat(e.target.value) || 0)}
+                                                        value={item.costo_unitario}
+                                                        onChange={(e) => actualizarValor(item.id, "costo_unitario", parseFloat(e.target.value) || 0)}
                                                         className="w-full text-right pl-6 pr-3 py-2 bg-slate-50 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-950 rounded-lg text-sm font-semibold"
                                                     />
                                                 </div>
                                             </td>
                                             <td className="py-3 px-6 text-right font-bold text-slate-950 text-sm">
-                                                ${((item.cantidad || 0) * (item.costoUnitario || 0)).toFixed(2)}
+                                                L. {((item.cantidad || 0) * (item.costo_unitario || 0)).toFixed(2)}
                                             </td>
                                             <td className="py-3 px-6 text-center">
                                                 <button
@@ -219,7 +295,7 @@ export default function NuevoActivoPage() {
                             </div>
                         </div>
 
-                        <button className="w-full mt-2 flex items-center justify-center gap-2 bg-white text-slate-950 py-3.5 px-4 rounded-xl text-sm leading-4 font-bold tracking-wide hover:bg-slate-100 transition-all active:scale-98 shadow-md">
+                        <button onClick={handleGuardarCompra} className="w-full mt-2 flex items-center justify-center gap-2 bg-white text-slate-950 py-3.5 px-4 rounded-xl text-sm leading-4 font-bold tracking-wide hover:bg-slate-100 transition-all active:scale-98 shadow-md">
                             <span className="material-symbols-outlined text-[18px]">save</span> Guardar en Inventario
                         </button>
                     </div>
