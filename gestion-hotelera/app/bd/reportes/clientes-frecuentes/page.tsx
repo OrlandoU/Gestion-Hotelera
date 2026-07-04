@@ -99,7 +99,7 @@ export default function Page() {
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader 
-            name="Clientes Frecuentes" 
+            name="Listado de Clientes Frecuentes" 
             subtitle="Análisis de huéspedes recurrentes y patrones de visita"
           />
         </div>
@@ -282,7 +282,7 @@ export default function Page() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${nivel.color} inline-flex items-center gap-1`}>
-                          <span className="material-symbols-outlined text-[14px]">{nivel.icon}</span>
+                          {/* <span className="material-symbols-outlined text-[14px]">{nivel.icon}</span> */}
                           {nivel.label}
                         </span>
                       </td>

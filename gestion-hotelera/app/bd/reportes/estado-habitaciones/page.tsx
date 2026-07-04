@@ -89,8 +89,8 @@ export default function Page() {
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader
-          name="Estado de Habitaciones"
+        <PageHeader 
+          name="Lista Detallada del Estado de las Habitaciones" 
           subtitle="Visualización y gestión del inventario de espacios disponibles"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -115,8 +115,8 @@ export default function Page() {
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader
-            name="Estado de Habitaciones"
+          <PageHeader 
+            name="Lista del estado de las Habitaciones" 
             subtitle="Visualización y gestión del inventario de espacios disponibles"
           />
         </div>

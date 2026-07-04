@@ -7,7 +7,7 @@ import { useActividadesMantenimiento } from "@/functions/reportes-api"; // Ajust
 
 export default function Page() {
   const { data: actividadesApi, loading, error, refetch } = useActividadesMantenimiento();
-
+  
   const [busqueda, setBusqueda] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [fechaFiltro, setFechaFiltro] = useState<string>(""); // "" representa "Todas las fechas"
@@ -53,7 +53,7 @@ export default function Page() {
     // 3. Búsqueda por Espacio, Responsable o Descripción
     if (busqueda) {
       const b = busqueda.toLowerCase();
-      resultado = resultado.filter(a =>
+      resultado = resultado.filter(a => 
         a.numero_espacio?.toLowerCase().includes(b) ||
         a.nombre_responsable?.toLowerCase().includes(b) ||
         a.descripcion?.toLowerCase().includes(b)
@@ -100,8 +100,8 @@ export default function Page() {
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader
-          name="Actividades de Mantenimiento"
+        <PageHeader 
+          name="Actividades de Mantenimiento" 
           subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -109,7 +109,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error al solicitar bitácora de actividades</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button
+            <button 
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -127,19 +127,19 @@ export default function Page() {
       {/* Encabezado y Acción Global */}
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader
-            name="Reporte de Actividades Mantenimiento/Limpieza Diarias"
+          <PageHeader 
+            name="Reporte de Actividades Mantenimiento/Limpieza Diarias" 
             subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
           />
         </div>
-
+        
         {loading ? (
           <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
             <span className="material-symbols-outlined animate-spin text-blue-600">refresh</span>
             <span className="text-blue-700 text-sm font-medium">Sincronizando logs...</span>
           </div>
         ) : (
-          <button
+          <button 
             onClick={refetch}
             className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
           >
@@ -192,14 +192,14 @@ export default function Page() {
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 shadow-level-1">
         <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-4">Filtros de Auditoría</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
+          
           {/* Nuevo Criterio: Filtro Cronológico */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="block text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha de Ejecución</label>
               {fechaFiltro && (
-                <button
-                  onClick={() => setFechaFiltro("")}
+                <button 
+                  onClick={() => setFechaFiltro("")} 
                   className="text-[11px] text-[#008cc7] font-semibold hover:underline"
                 >
                   Ver Todas

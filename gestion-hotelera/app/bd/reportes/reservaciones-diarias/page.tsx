@@ -121,8 +121,8 @@ export default function Page() {
       {/* Encabezado y Acción Global */}
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader
-            name="Reservaciones Diarias"
+          <PageHeader 
+            name="Reporte de Reservaciones Diarias" 
             subtitle="Monitoreo y control de ingresos, salidas y ocupación programada"
           />
         </div>
@@ -143,6 +143,61 @@ export default function Page() {
           </button>
         )}
       </div>
+
+      {/* Paneles KPI Cuantitativos */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        {/* Total Reservaciones */}
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Reservas en Fecha</span>
+            <div className="p-2 bg-[#c9e6ff] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#008cc7]">calendar_today</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {loading ? <span className="animate-pulse">--</span> : stats.totalReservas}
+          </h2>
+        </div>
+
+        {/* Ingresos Totales del Día */}
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ingresos Brutos</span>
+            <div className="p-2 bg-[#d5e3fd] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#008cc7]">monetization_on</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {loading ? <span className="animate-pulse">--</span> : `${stats.ingresosDelDia.toLocaleString()} Lps`}
+          </h2>
+        </div>
+
+        {/* Tarifa Promedio por Transacción */}
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Precio Promedio de Reservacion</span>
+            <div className="p-2 bg-[#ffdad6] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#93000a]">analytics</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {loading ? <span className="animate-pulse">--</span> : `${stats.promedioTarifa.toLocaleString()} Lps`}
+          </h2>
+        </div>
+
+        {/* Tasa Operativa Acumulada */}
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Efectividad Operativa</span>
+            <div className="p-2 bg-[#e0e3e5] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#565e74]">verified_user</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {stats.porEstado["Finalizada"] || 0} Completadas
+          </h2>
+        </div>
+      </section>
 
       {/* Segmento de Segmentación y Filtros de Búsqueda */}
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6">
@@ -258,7 +313,7 @@ export default function Page() {
                       </td>
                       <td className="px-6 py-4">
                         <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${colorEstado.bg} inline-flex items-center gap-1`}>
-                          <span className="material-symbols-outlined text-[14px]">{colorEstado.icon}</span>
+                          {/* <span className="material-symbols-outlined text-[14px]">{colorEstado.icon}</span> */}
                           {reserva.estado}
                         </span>
                       </td>
@@ -274,7 +329,7 @@ export default function Page() {
                       <td className="px-6 py-4 text-[14px] font-medium text-slate-600">
                         {reserva.precio_unidad} Lps
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">
+                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7] text-nowrap">
                         {reserva.total_pagar} Lps
                       </td>
                     </tr>

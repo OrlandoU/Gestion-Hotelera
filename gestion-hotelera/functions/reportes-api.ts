@@ -2,8 +2,8 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // URL base de la API - usa variable de entorno o localhost como fallback
-//const API_BASE_URL = "https://fluffy-barnacle-rv579j5wxrfx6jp-8000.app.github.dev";
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://gestion-hotelera.fastapicloud.dev";
+
 // ============================================
 // TIPOS E INTERFACES
 // ============================================
@@ -182,7 +182,7 @@ export async function getActividadesMantenimiento(
   fecha_inicio?: string
 ): Promise<ActividadMantenimiento[]> {
   return fetchAPI<ActividadMantenimiento[]>(
-    '/reportes/actividades-mantenimientos-diarias',
+    '/reportes/actividades-mantenimientos-diarios',
     {
       params: { fecha_inicio },
     }
@@ -219,9 +219,14 @@ export async function getIngresosTipoHabitacion(): Promise<IngresoTipoHabitacion
 
 /**
  * Obtiene consumo de amenidades mensual
+ * @param fecha
  */
-export async function getConsumoAmenidadesMensual(): Promise<ConsumoAmenidades[]> {
-  return fetchAPI<ConsumoAmenidades[]>('/reportes/consumo-amenidades-mensual');
+export async function getConsumoAmenidadesMensual(fecha?: string): Promise<ConsumoAmenidades[]> {
+  return fetchAPI<ConsumoAmenidades[]>('/reportes/consumo-amenidades-mensual',
+    {
+      params: { fecha },
+    }
+  );
 }
 
 // ============================================
@@ -426,7 +431,7 @@ export function useOcupacionMensual() {
 /**
  * Hook para obtener ingresos por tipo de habitación
  */
-export function useIngresosTipoHabitacion() {
+export function useIngresosTipoHabitacion(fecha: string) {
   const [state, setState] = useState<UseReporteState<IngresoTipoHabitacion[]>>({
     data: null,
     loading: true,
@@ -453,7 +458,7 @@ export function useIngresosTipoHabitacion() {
 /**
  * Hook para obtener consumo de amenidades
  */
-export function useConsumoAmenidadesMensual() {
+export function useConsumoAmenidadesMensual(fecha?:string) {
   const [state, setState] = useState<UseReporteState<ConsumoAmenidades[]>>({
     data: null,
     loading: true,
@@ -463,12 +468,12 @@ export function useConsumoAmenidadesMensual() {
   const refetch = useCallback(async () => {
     setState({ data: null, loading: true, error: null });
     try {
-      const data = await getConsumoAmenidadesMensual();
+      const data = await getConsumoAmenidadesMensual(fecha);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error as Error });
     }
-  }, []);
+  }, [fecha]);
 
   useEffect(() => {
     refetch();

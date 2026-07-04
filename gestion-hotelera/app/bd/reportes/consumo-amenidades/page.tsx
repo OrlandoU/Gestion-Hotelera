@@ -4,15 +4,15 @@ import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { useConsumoAmenidadesMensual } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
-import {
-  LineChart, Line, BarChart, Bar, XAxis, YAxis,
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer
+import { 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, 
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer 
 } from 'recharts';
 
 export default function Page() {
   // Inicializamos en abril de 2026 de acuerdo al set de datos de muestra
   const [mesFiltro, setMesFiltro] = useState<string>("2026-04-25");
-
+  
   const { data: consumoApi, loading, error, refetch } = useConsumoAmenidadesMensual();
 
   // Fallback seguro de arreglo
@@ -38,9 +38,9 @@ export default function Page() {
         const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         const etiquetaFecha = `${dia} ${meses[parseInt(mes) - 1]}`;
 
-        agrupadoPorFecha[item.fecha] = {
+        agrupadoPorFecha[item.fecha] = { 
           fechaOriginal: item.fecha,
-          name: etiquetaFecha
+          name: etiquetaFecha 
         };
       }
       // Asignar la cantidad gastada al producto correspondiente en esa fecha
@@ -48,7 +48,7 @@ export default function Page() {
     });
 
     // Ordenar cronológicamente por la fecha original
-    return Object.values(agrupadoPorFecha).sort((a, b) =>
+    return Object.values(agrupadoPorFecha).sort((a, b) => 
       a.fechaOriginal.localeCompare(b.fechaOriginal)
     );
   }, [consumoData]);
@@ -86,8 +86,8 @@ export default function Page() {
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader
-          name="Resumen de Consumo Mensual de Insumos y Amenidades"
+        <PageHeader 
+          name="Resumen de Consumo Mensual de Insumos y Amenidades" 
           subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -95,7 +95,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error al cargar el histórico de consumos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button
+            <button 
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -113,24 +113,24 @@ export default function Page() {
       {/* Encabezado Principal y Selector de Mes */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <PageHeader
-            name="Resumen de Consumo Mensual de Insumos y Amenidades"
+          <PageHeader 
+            name="Resumen de Consumo Mensual de Insumos y Amenidades" 
             subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
           />
         </div>
-
+        
         <div className="flex items-center gap-3 self-end sm:self-auto">
           <div className="flex flex-col">
             <label className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider mb-1">Periodo Analítico</label>
-            <input
-              type="month"
+            <input 
+              type="month" 
               value={mesFiltro}
               onChange={(e) => setMesFiltro(e.target.value)}
               className="px-3 py-1.5 border border-slate-300 rounded-lg text-[14px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             />
           </div>
-          <button
+          <button 
             onClick={refetch}
             className="mt-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
             title="Recargar datos"
@@ -169,7 +169,7 @@ export default function Page() {
 
       {/* Sección de Gráficos Analíticos */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-
+        
         {/* 1. Gráfico de Líneas con Fechas */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 lg:col-span-7 flex flex-col justify-between shadow-level-1">
           <div>
@@ -193,17 +193,17 @@ export default function Page() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="name" stroke="#64748b" />
                   <YAxis stroke="#64748b" />
-                  <Tooltip
+                  <Tooltip 
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px' }}
                     labelStyle={{ fontWeight: 'bold', color: '#000' }}
                   />
-                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '15px' }} layout="vertical" width="100%" />
+                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '15px' }} layout="vertical" width="100%"/>
                   {productosUnicos.map((producto) => (
-                    <Line
-                      key={producto}
-                      type="monotone"
-                      dataKey={producto}
-                      stroke={coloresProductos[producto] || colorFallback}
+                    <Line 
+                      key={producto} 
+                      type="monotone" 
+                      dataKey={producto} 
+                      stroke={coloresProductos[producto] || colorFallback} 
                       strokeWidth={2.5}
                       activeDot={{ r: 6 }}
                     />
@@ -233,29 +233,29 @@ export default function Page() {
           ) : (
             <div className="w-full h-64 text-xs">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={dataGraficoBarras}
-                  layout="vertical"
+                <BarChart 
+                  data={dataGraficoBarras} 
+                  layout="vertical" 
                   margin={{ top: 0, right: 10, left: 20, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
                   {/* Ocultamos el eje Y de texto largo si interfiere, o lo formateamos recortado */}
-                  <YAxis
-                    dataKey="nombre"
-                    type="category"
+                  <YAxis 
+                    dataKey="nombre" 
+                    type="category" 
                     stroke="#64748b"
                     width={80}
                     tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 10)}...` : value}
                   />
                   <XAxis type="number" stroke="#64748b" />
-                  <Tooltip
+                  <Tooltip 
                     cursor={{ fill: '#f1f5f9' }}
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px' }}
                   />
-                  <Bar
-                    dataKey="total"
+                  <Bar 
+                    dataKey="total" 
                     name="Cantidad Gastada"
-                    radius={[0, 4, 4, 0]}
+                    radius={[0, 4, 4, 0]} 
                     barSize={16}
                   />
                 </BarChart>

@@ -65,8 +65,8 @@ export default function Page() {
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader
-          name="Ingresos Mensuales por Tipo de Habitación"
+        <PageHeader 
+          name="Ingresos Mensuales por Tipo de Habitación" 
           subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -89,17 +89,17 @@ export default function Page() {
       {/* Encabezado Principal y Controles de Periodo */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <PageHeader
-            name="Ingresos Mensuales por Tipo de Habitación "
+          <PageHeader 
+            name="Ingresos Mensuales por Tipo de Habitación " 
             subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
           />
         </div>
-
+        
         <div className="flex items-center gap-3 self-end sm:self-auto">
           <div className="flex flex-col">
             <label className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider mb-1">Periodo Mensual</label>
-            <input
-              type="month"
+            <input 
+              type="month" 
               value={periodoFiltro}
               onChange={(e) => setPeriodoFiltro(e.target.value)}
               className="px-3 py-1.5 border border-slate-300 rounded-lg text-[14px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
@@ -201,7 +201,7 @@ export default function Page() {
                     <Tooltip content={<CustomTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
-
+                
                 <div className="absolute flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Mix</span>
                   <span className="text-[16px] font-bold text-black">{ingresosData.length} Tipos</span>
