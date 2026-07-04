@@ -51,7 +51,7 @@ export default function TablePagination({
       </div>
 
       <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center">
-        <div className="inline-flex items-center justify-between gap-2 rounded-xl border border-slate-300 bg-white pl-3 pr-2 py-1 shadow-sm">
+        <div className="inline-flex items-center justify-between gap-2 rounded-lg border border-slate-300 bg-white pl-3 pr-2 shadow-sm">
           <label className="text-[12px] font-bold uppercase tracking-[0.18em] text-slate-500">Mostrar</label>
           <select
             value={pageSize}
