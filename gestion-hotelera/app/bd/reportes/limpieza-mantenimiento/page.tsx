@@ -1,9 +1,12 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
+import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useActividadesMantenimiento } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
+import { exportToExcel } from "@/functions/excel-utils";
+import { toast, Toaster } from "sonner";
 
 export default function Page() {
   const { data: actividadesApi, loading, error, refetch } = useActividadesMantenimiento();
@@ -12,6 +15,8 @@ export default function Page() {
   const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [fechaFiltro, setFechaFiltro] = useState<string>(""); // "" representa "Todas las fechas"
   const [ordenar, setOrdenar] = useState<"reciente" | "espacio" | "responsable">("reciente");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fallback seguro de arreglo
   const actividadesData = actividadesApi || [];
@@ -77,6 +82,15 @@ export default function Page() {
     return resultado;
   }, [actividadesData, fechaFiltro, filtroTipo, busqueda, ordenar]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [fechaFiltro, filtroTipo, busqueda, ordenar, pageSize]);
+
+  const actividadesMostradas = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return actividadesFiltradas.slice(start, start + pageSize);
+  }, [actividadesFiltradas, page, pageSize]);
+
   // Estilización semántica para los tags de actividades
   const getEstiloTipo = (tipo: string) => {
     switch (tipo?.toLowerCase()) {
@@ -95,6 +109,20 @@ export default function Page() {
     if (!isoString) return "--";
     const date = new Date(isoString);
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleExportActividades = () => {
+    const rows = actividadesFiltradas.map((actividad) => ({
+      Espacio: actividad.numero_espacio || "",
+      "ID Log": actividad.mantenimiento_id,
+      Responsable: actividad.nombre_responsable || "",
+      "Tipo Actividad": actividad.tipo || "",
+      "Descripción": actividad.descripcion || "",
+      "Fecha de Inicio": formatFecha(actividad.fecha_inicio),
+    }));
+
+    exportToExcel(rows, `limpieza-mantenimiento-${new Date().toISOString().split("T")[0]}.xlsx`, "Actividades");
+    toast.success("Exportación completada exitosamente!")
   };
 
   if (error && !loading) {
@@ -139,18 +167,30 @@ export default function Page() {
             <span className="text-blue-700 text-sm font-medium">Sincronizando logs...</span>
           </div>
         ) : (
-          <button 
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
-          >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Actualizar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button 
+              onClick={refetch}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Actualizar
+            </button>
+            <button
+              onClick={handleExportActividades}
+              disabled={actividadesFiltradas.length === 0}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Exportar los datos filtrados a Excel"
+            >
+              <span className="material-symbols-outlined text-[18px]">file_upload</span>
+              Exportar
+            </button>
+          </div>
         )}
       </div>
+      <Toaster richColors expand/>
 
       {/* Bloque Informativo de KPIs Cuantitativos */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300 shadow-level-1">
           <div className="flex justify-between items-start flex-col-reverse">
             <span className="text-[14px] font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Órdenes Ejecutadas</span>
@@ -186,11 +226,11 @@ export default function Page() {
             {loading ? <span className="animate-pulse">--</span> : `${stats.staffActivo} Encargados`}
           </h2>
         </div>
-      </section>
+      </section> */}
 
       {/* Módulo de Filtros y Segmentación Extendida */}
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 shadow-level-1">
-        <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-4">Filtros de Auditoría</h3>
+        <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           
           {/* Nuevo Criterio: Filtro Cronológico */}
@@ -210,7 +250,7 @@ export default function Page() {
               type="date"
               value={fechaFiltro}
               onChange={(e) => setFechaFiltro(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -223,7 +263,7 @@ export default function Page() {
               placeholder="Ej: H-211, Luis, jabón..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -234,7 +274,7 @@ export default function Page() {
             <select
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             >
               <option value="Todos">Todos los tipos</option>
@@ -250,7 +290,7 @@ export default function Page() {
             <select
               value={ordenar}
               onChange={(e) => setOrdenar(e.target.value as any)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             >
               <option value="reciente">Cronológico (Más reciente)</option>
@@ -283,56 +323,65 @@ export default function Page() {
             <p className="text-[16px] font-medium text-[#515f74]">Ninguna orden coincide con la fecha o parámetros aplicados</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Espacio</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">ID Log</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Responsable</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Tipo Actividad</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Descripción / Detalle de Insumos</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha / Hora de Inicio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {actividadesFiltradas.map((actividad, index) => {
-                  const estiloTipo = getEstiloTipo(actividad.tipo || "");
-                  return (
-                    <tr key={`${actividad.mantenimiento_id}-${index}`} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
-                      <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${estiloTipo.border}`}>
-                        {actividad.numero_espacio}
-                      </td>
-                      <td className="px-6 py-4 text-[13px] text-slate-500 font-mono">
-                        #{actividad.mantenimiento_id}
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-semibold text-slate-900">
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center justify-center">
-                            {actividad.nombre_responsable?.charAt(0)}
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-300 bg-[#f7f9fb]">
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Espacio</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">ID Log</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Responsable</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Tipo Actividad</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Descripción / Detalle de Insumos</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha / Hora de Inicio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {actividadesMostradas.map((actividad, index) => {
+                    const estiloTipo = getEstiloTipo(actividad.tipo || "");
+                    return (
+                      <tr key={`${actividad.mantenimiento_id}-${index}`} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
+                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${estiloTipo.border}`}>
+                          {actividad.numero_espacio}
+                        </td>
+                        <td className="px-6 py-4 text-[13px] text-slate-500 font-mono">
+                          #{actividad.mantenimiento_id}
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-semibold text-slate-900">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center justify-center">
+                              {actividad.nombre_responsable?.charAt(0)}
+                            </span>
+                            <span>{actividad.nombre_responsable}</span>
+                            <span className="text-[11px] font-medium text-slate-400">(UID: {actividad.usuario_id})</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[14px] font-bold px-3 py-1 rounded-full ${estiloTipo.bg} inline-flex items-center gap-1`}>
+                            {actividad.tipo}
                           </span>
-                          <span>{actividad.nombre_responsable}</span>
-                          <span className="text-[11px] font-medium text-slate-400">(UID: {actividad.usuario_id})</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[14px] font-bold px-2.5 py-1.5 rounded-full ${estiloTipo.bg} inline-flex items-center gap-1`}>
-                          <span className="material-symbols-outlined text-[13px]">{estiloTipo.icon}</span>
-                          {actividad.tipo}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-[13px] text-slate-700 max-w-xs truncate" title={actividad.descripcion}>
-                        {actividad.descripcion}
-                      </td>
-                      <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
-                        {formatFecha(actividad.fecha_inicio)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td className="px-6 py-4 text-[13px] text-slate-700 max-w-xs truncate" title={actividad.descripcion}>
+                          {actividad.descripcion}
+                        </td>
+                        <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
+                          {formatFecha(actividad.fecha_inicio)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              page={page}
+              setPage={setPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalItems={actividadesFiltradas.length}
+              label="actividades"
+            />
+          </>
         )}
       </section>
 

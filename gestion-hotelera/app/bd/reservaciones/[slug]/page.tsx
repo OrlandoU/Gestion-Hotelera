@@ -1,7 +1,8 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { RESERVATIONS_DETAIL } from "@/data/reservations";
+import React, { useEffect, useState } from "react";
+import { getReserva } from "@/functions/reservas";
 import { ViewTransition } from "react";
 import Link from "next/link";
 
@@ -12,15 +13,122 @@ const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string 
     Completed: { label: "Finalizada", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" },
 };
 
+type ReservationDetailNormalized = {
+    bookingId: string;
+    guest: { name?: string; email?: string; phone?: string; loyalty?: { tier?: string } };
+    status?: string;
+    createdAt?: string;
+    stay?: { checkIn?: string; checkOut?: string; checkInTime?: string; checkOutTime?: string; nights?: number; specialRequests?: string };
+    room?: { type?: string; number?: string };
+    party?: { adults?: number };
+    internalNotes?: Array<{ id?: string; text?: string; author?: string; createdAt?: string }>;
+    payment?: { breakdown?: { roomRate?: number; taxesAndFees?: number; extras?: number }; total?: number; amountPaid?: number; guaranteeMethod?: string };
+    activity?: Array<{ time?: string; text?: string }>;
+};
+
+function normalizeReserva(data: any): ReservationDetailNormalized {
+    const name = data.guest?.name ?? (([data.nombres, data.apellidos].filter(Boolean).join(" ")) || data.nombre_huesped || "Huésped desconocido");
+    const email = data.guest?.email ?? data.email_huesped ?? data.email ?? "";
+    const phone = data.guest?.phone ?? data.telefono_huesped ?? data.phone ?? "";
+    const bookingId = data.bookingId ?? data.numero_reserva ?? (data.reserva_id ? `RES-${data.reserva_id}` : "—");
+    const status = data.status ?? data.reserva_estado ?? data.reservationStatus ?? "Pending";
+
+    return {
+        bookingId,
+        guest: {
+            name,
+            email,
+            phone,
+            loyalty: { tier: data.guest?.loyalty?.tier ?? data.loyalty_tier ?? data.tier ?? "" },
+        },
+        status,
+        createdAt: data.createdAt ?? data.fecha_creacion ?? data.fecha_entrada,
+        stay: {
+            checkIn: data.stay?.checkIn ?? data.fecha_entrada ?? "",
+            checkOut: data.stay?.checkOut ?? data.fecha_salida ?? "",
+            checkInTime: data.stay?.checkInTime ?? "",
+            checkOutTime: data.stay?.checkOutTime ?? "",
+            nights: data.stay?.nights ?? data.cantidad_unidades ?? 0,
+            specialRequests: data.stay?.specialRequests ?? data.solicitudes_especiales ?? "",
+        },
+        room: {
+            type: data.room?.type ?? data.tipo_espacio ?? data.tipo ?? "",
+            number: data.room?.number ?? String(data.numero_espacio ?? data.espacio_id ?? ""),
+        },
+        party: {
+            adults: data.party?.adults ?? data.numero_huespedes ?? data.cantidad_huespedes ?? data.cantidad_unidades ?? 0,
+        },
+        internalNotes: data.internalNotes ?? data.notas_internas ?? [],
+        payment: {
+            breakdown: {
+                roomRate: data.payment?.breakdown?.roomRate ?? data.tarifa ?? data.precio_unidad ?? 0,
+                taxesAndFees: data.payment?.breakdown?.taxesAndFees ?? data.impuestos ?? 0,
+                extras: data.payment?.breakdown?.extras ?? data.extras ?? 0,
+            },
+            total: data.payment?.total ?? data.total_pagar ?? 0,
+            amountPaid: data.payment?.amountPaid ?? data.monto_pagado ?? 0,
+            guaranteeMethod: data.payment?.guaranteeMethod ?? data.metodo_garantia ?? "",
+        },
+        activity: data.activity ?? data.historial_actividad ?? [],
+    };
+}
+
 export default function ReservationPage() {
     const params = useParams();
     const rawId = params?.slug as string | string[] | undefined;
-    const id = (Array.isArray(rawId) ? rawId[0] : rawId);
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
 
-    const data = id ? RESERVATIONS_DETAIL[id] : null;
+    const [data, setData] = useState<any | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    if (!data) {
-        return <div className="p-6">Reservación no encontrada.</div>;
+    useEffect(() => {
+        const fetchReserva = async () => {
+            if (!id) {
+                setError("ID de reservación inválido.");
+                setLoading(false);
+                return;
+            }
+
+            const numericId = Number(id);
+            if (Number.isNaN(numericId)) {
+                setError("El identificador de reserva debe ser numérico.");
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const reserva = await getReserva(numericId);
+                if (!reserva) {
+                    setError("No se encontró la reservación con ese ID.");
+                } else {
+                    setData(normalizeReserva(reserva));
+                }
+            } catch (fetchError) {
+                console.error("Error cargando la reserva desde la API:", fetchError);
+                setError("Error cargando la reservación desde la API.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchReserva();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="p-6">
+                <p className="text-slate-600 font-medium">Cargando información de la reservación...</p>
+            </div>
+        );
+    }
+
+    if (error || !data) {
+        return (
+            <div className="p-6">
+                <p className="text-red-600 font-medium">{error || "Reservación no encontrada."}</p>
+            </div>
+        );
     }
 
     const { bookingId, guest, status, createdAt, stay, room, party, internalNotes, payment, activity } = data;

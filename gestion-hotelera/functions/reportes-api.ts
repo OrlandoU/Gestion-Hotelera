@@ -182,7 +182,7 @@ export async function getActividadesMantenimiento(
   fecha_inicio?: string
 ): Promise<ActividadMantenimiento[]> {
   return fetchAPI<ActividadMantenimiento[]>(
-    '/reportes/actividades-mantenimientos-diarios',
+    '/reportes/actividades-mantenimientos-diarias',
     {
       params: { fecha_inicio },
     }

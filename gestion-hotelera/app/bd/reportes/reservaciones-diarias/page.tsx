@@ -1,9 +1,12 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
+import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useReservacionesDiarias } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
+import { exportToExcel } from "@/functions/excel-utils";
+import {Toaster, toast} from "sonner";
 
 export default function Page() {
   // Inicializamos la fecha con el día de hoy en formato YYYY-MM-DD
@@ -16,6 +19,8 @@ export default function Page() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<string>("Todos");
   const [ordenar, setOrdenar] = useState<"reserva" | "total" | "noches">("reserva");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Fallback de arreglo seguro
   const reservacionesData = reservacionesApi || [];
@@ -49,6 +54,15 @@ export default function Page() {
 
     return resultado;
   }, [reservacionesData, filtroEstado, busqueda, ordenar]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [filtroEstado, busqueda, ordenar, pageSize]);
+
+  const reservacionesMostradas = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return reservacionesFiltradas.slice(start, start + pageSize);
+  }, [reservacionesFiltradas, page, pageSize]);
 
   // KPIs Estratégicos calculados dinámicamente sobre la data del día
   const stats = useMemo(() => {
@@ -88,6 +102,23 @@ export default function Page() {
     if (!isoString) return "--";
     const date = new Date(isoString);
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+
+  const handleExportReservaciones = () => {
+    const rows = reservacionesFiltradas.map((reserva) => ({
+      "Código Reserva": reserva.numero_reserva || "",
+      "Huésped ID": reserva.huesped_id || "",
+      "Espacio ID": reserva.espacio_id || "",
+      Estado: reserva.estado || "",
+      "Check In": formatFecha(reserva.fecha_entrada),
+      "Check Out": formatFecha(reserva.fecha_salida),
+      Noches: reserva.cantidad_unidades || 0,
+      "Monto Noche": reserva.precio_unidad || 0,
+      Total: reserva.total_pagar || 0,
+    }));
+
+    exportToExcel(rows, `reservaciones-diarias-${fechaFiltro || new Date().toISOString().split("T")[0]}.xlsx`, "ReservacionesDiarias");
+    toast.success("Exportación completada exitosamente!")
   };
 
   // Renderizado defensivo en caso de error crítico de la API
@@ -133,20 +164,31 @@ export default function Page() {
             <span className="text-blue-700 text-sm font-medium">Sincronizando...</span>
           </div>
         ) : (
-          <button
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
-            title="Sincronizar data con el servidor"
-          >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Actualizar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={refetch}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
+              title="Sincronizar data con el servidor"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Actualizar
+            </button>
+            <button
+              onClick={handleExportReservaciones}
+              disabled={reservacionesFiltradas.length === 0}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Exportar los datos filtrados a Excel"
+            >
+              <span className="material-symbols-outlined text-[18px]">file_upload</span>
+              Exportar
+            </button>
+          </div>
         )}
       </div>
+      <Toaster richColors expand/>
 
       {/* Paneles KPI Cuantitativos */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-        {/* Total Reservaciones */}
+      {/* <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Reservas en Fecha</span>
@@ -159,7 +201,6 @@ export default function Page() {
           </h2>
         </div>
 
-        {/* Ingresos Totales del Día */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ingresos Brutos</span>
@@ -172,7 +213,6 @@ export default function Page() {
           </h2>
         </div>
 
-        {/* Tarifa Promedio por Transacción */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Precio Promedio de Reservacion</span>
@@ -185,7 +225,6 @@ export default function Page() {
           </h2>
         </div>
 
-        {/* Tasa Operativa Acumulada */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Efectividad Operativa</span>
@@ -197,11 +236,11 @@ export default function Page() {
             {stats.porEstado["Finalizada"] || 0} Completadas
           </h2>
         </div>
-      </section>
+      </section> */}
 
       {/* Segmento de Segmentación y Filtros de Búsqueda */}
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6">
-        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Parámetros del Reporte</h3>
+        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
           {/* Criterio 1: Fecha Focal de Consulta (Parámetro API) */}
@@ -211,7 +250,7 @@ export default function Page() {
               type="date"
               value={fechaFiltro}
               onChange={(e) => setFechaFiltro(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -224,7 +263,7 @@ export default function Page() {
               placeholder="Ej: RES-2026-0081"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -235,7 +274,7 @@ export default function Page() {
             <select
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
               <option value="Todos">Todos los estados</option>
@@ -251,7 +290,7 @@ export default function Page() {
             <select
               value={ordenar}
               onChange={(e) => setOrdenar(e.target.value as "reserva" | "total" | "noches")}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
               <option value="reserva">Código de Reserva</option>
@@ -284,60 +323,68 @@ export default function Page() {
             <p className="text-[16px] font-medium text-[#515f74]">No existen reservaciones vinculadas a la fecha o filtros aplicados</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Código Reserva</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">IDs (Huésped / Espacio)</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Estado</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Check In</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Check Out</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Noches</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Monto Noche</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reservacionesFiltradas.map((reserva) => {
-                  const colorEstado = getColorEstado(reserva.estado || "");
-                  return (
-                    <tr key={reserva.reserva_id} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
-                      {/* Aplicamos tu patrón de acento en el borde izquierdo según estado */}
-                      <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>
-                        {reserva.numero_reserva}
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
-                        <span className="bg-slate-100 px-2 py-0.5 rounded text-xs mr-1">H: {reserva.huesped_id}</span>
-                        <span className="bg-slate-200 px-2 py-0.5 rounded text-xs">E: {reserva.espacio_id}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${colorEstado.bg} inline-flex items-center gap-1`}>
-                          {/* <span className="material-symbols-outlined text-[14px]">{colorEstado.icon}</span> */}
-                          {reserva.estado}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
-                        {formatFecha(reserva.fecha_entrada)}
-                      </td>
-                      <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
-                        {formatFecha(reserva.fecha_salida)}
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
-                        {reserva.cantidad_unidades}
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-medium text-slate-600">
-                        {reserva.precio_unidad} Lps
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7] text-nowrap">
-                        {reserva.total_pagar} Lps
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-300 bg-[#f7f9fb]">
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Código Reserva</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">IDs (Huésped / Espacio)</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Estado</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Check In</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Check Out</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Noches</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Monto Noche</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reservacionesMostradas.map((reserva) => {
+                    const colorEstado = getColorEstado(reserva.estado || "");
+                    return (
+                      <tr key={reserva.reserva_id} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
+                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>
+                          {reserva.numero_reserva}
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
+                          <span className="bg-slate-100 px-2 py-0.5 rounded text-xs mr-1">H: {reserva.huesped_id}</span>
+                          <span className="bg-slate-200 px-2 py-0.5 rounded text-xs">E: {reserva.espacio_id}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${colorEstado.bg} inline-flex items-center gap-1`}>
+                            {reserva.estado}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
+                          {formatFecha(reserva.fecha_entrada)}
+                        </td>
+                        <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
+                          {formatFecha(reserva.fecha_salida)}
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
+                          {reserva.cantidad_unidades}
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-medium text-slate-600">
+                          {reserva.precio_unidad} Lps
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7] text-nowrap">
+                          {reserva.total_pagar} Lps
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              page={page}
+              setPage={setPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalItems={reservacionesFiltradas.length}
+              label="reservaciones"
+            />
+          </>
         )}
       </section>
 

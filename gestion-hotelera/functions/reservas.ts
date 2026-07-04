@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 // URL base de la API - usa variable de entorno o localhost como fallback
 //const API_BASE_URL = "https://gestion-hotelera.fastapicloud.dev";
-const API_BASE_URL = "http://127.0.0.1:8000";
+const API_BASE_URL = "https://gestion-hotelera.fastapicloud.dev";
 
 // ============================================
 // TIPOS E INTERFACES

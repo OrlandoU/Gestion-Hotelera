@@ -1,14 +1,19 @@
 'use client';
 import PageHeader from "@/components/pageheader";
+import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useClientesFrecuentes } from "@/functions/reportes-api";
+import { exportToExcel } from "@/functions/excel-utils";
+import {Toaster, toast} from "sonner";
 
 export default function Page() {
   const { data: clientesApi, loading, error, refetch } = useClientesFrecuentes();
   const [busqueda, setBusqueda] = useState("");
   const [ordenar, setOrdenar] = useState<"nombre" | "frecuencia" | "id">("frecuencia");
   const [filtroFrecuenciaMin, setFiltroFrecuenciaMin] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Usar datos de API si existen, sino array vacío
   const clientesData = clientesApi || [];
@@ -45,6 +50,15 @@ export default function Page() {
     return resultado;
   }, [clientesData, busqueda, ordenar, filtroFrecuenciaMin]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [busqueda, ordenar, filtroFrecuenciaMin, pageSize]);
+
+  const clientesMostrados = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return clientesFiltrados.slice(start, start + pageSize);
+  }, [clientesFiltrados, page, pageSize]);
+
   // Estadísticas
   const stats = useMemo(() => {
     const totalClientes = clientesData.length;
@@ -66,6 +80,20 @@ export default function Page() {
     if (frecuencia >= 7) return { label: "VIP", color: "bg-purple-100 text-purple-800", icon: "star" };
     if (frecuencia >= 6) return { label: "Premium", color: "bg-blue-100 text-blue-800", icon: "favorite" };
     return { label: "Regular", color: "bg-slate-100 text-slate-800", icon: "person" };
+  };
+
+  const handleExportClientes = () => {
+    const rows = clientesFiltrados.map((cliente) => ({
+      ID: cliente.huesped_id,
+      "Nombre completo": `${cliente.nombres || ""} ${cliente.apellidos || ""}`.trim(),
+      "Teléfono": cliente.telefono || "",
+      "Cantidad de visitas": cliente.frecuencia || 0,
+      "Cantidad de noches": cliente.total_noches || 0,
+      Nivel: getNivelFrecuencia(cliente.frecuencia || 0).label,
+    }));
+
+    exportToExcel(rows, `clientes-frecuentes-${new Date().toISOString().split("T")[0]}.xlsx`, "ClientesFrecuentes");
+    toast.success("Exportación completada exitosamente!");
   };
 
   // Renderizar error
@@ -110,18 +138,29 @@ export default function Page() {
           </div>
         )}
         {!loading && (
-          <button 
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
-            title="Actualizar datos de la API"
-          >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Actualizar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={refetch}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
+              title="Actualizar datos de la API"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Actualizar
+            </button>
+            <button
+              onClick={handleExportClientes}
+              disabled={clientesFiltrados.length === 0}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Exportar los datos filtrados a Excel"
+            >
+              <span className="material-symbols-outlined text-[18px]">file_upload</span>
+              Exportar
+            </button>
+          </div>
         )}
       </div>
-
-      {/* Métricas KPI */}
+      <Toaster richColors expand/>
+      {/* Métricas KPI
       <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
@@ -170,13 +209,13 @@ export default function Page() {
             {loading ? <span className="animate-pulse">--</span> : stats.distribucion["7+ visitas"]}
           </h2>
         </div>
-      </section>
+      </section> */}
 
       
 
       {/* Filtros y búsqueda */}
       <section className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
-        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Filtros</h3>
+        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Buscar por nombre, apellido o teléfono</label>
@@ -185,7 +224,7 @@ export default function Page() {
               placeholder="ej: Carlos Mejía o 9988-1122"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -195,7 +234,7 @@ export default function Page() {
             <select
               value={filtroFrecuenciaMin}
               onChange={(e) => setFiltroFrecuenciaMin(Number(e.target.value))}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
               <option value={0}>Todos</option>
@@ -210,7 +249,7 @@ export default function Page() {
             <select
               value={ordenar}
               onChange={(e) => setOrdenar(e.target.value as "nombre" | "frecuencia" | "id")}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
               <option value="frecuencia">Frecuencia (Mayor a menor)</option>
@@ -243,55 +282,64 @@ export default function Page() {
             <p className="text-[16px] font-medium text-[#515f74]">No se encontraron clientes</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nombre Completo</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Teléfono</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Visitas</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Noches</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nivel</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clientesFiltrados.map((cliente) => {
-                  const nivel = getNivelFrecuencia(cliente.frecuencia || 0);
-                  return (
-                    <tr key={cliente.huesped_id} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">#{cliente.huesped_id}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-[14px] font-semibold text-[#000000]">{cliente.nombres}</span>
-                          <span className="text-[12px] text-[#515f74]">{cliente.apellidos}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">{cliente.telefono}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px] text-[#008cc7]">event_repeat</span>
-                          <span className="text-[14px] font-bold text-[#000000]">{cliente.frecuencia}x</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px] text-[#008cc7]">bed</span>
-                          <span className="text-[14px] font-bold text-[#000000]">{cliente.total_noches || 0}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${nivel.color} inline-flex items-center gap-1`}>
-                          {/* <span className="material-symbols-outlined text-[14px]">{nivel.icon}</span> */}
-                          {nivel.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-300 bg-[#f7f9fb]">
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nombre Completo</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Teléfono</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Visitas</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Noches</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nivel</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientesMostrados.map((cliente) => {
+                    const nivel = getNivelFrecuencia(cliente.frecuencia || 0);
+                    return (
+                      <tr key={cliente.huesped_id} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
+                        <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">#{cliente.huesped_id}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="text-[14px] font-semibold text-[#000000]">{cliente.nombres}</span>
+                            <span className="text-[12px] text-[#515f74]">{cliente.apellidos}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">{cliente.telefono}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px] text-[#008cc7]">event_repeat</span>
+                            <span className="text-[14px] font-bold text-[#000000]">{cliente.frecuencia}x</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-[16px] text-[#008cc7]">bed</span>
+                            <span className="text-[14px] font-bold text-[#000000]">{cliente.total_noches || 0}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${nivel.color} inline-flex items-center gap-1`}>
+                            {nivel.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              page={page}
+              setPage={setPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalItems={clientesFiltrados.length}
+              label="clientes"
+            />
+          </>
         )}
       </section>
 
@@ -337,7 +385,7 @@ export default function Page() {
         </div>
       </section>
       {/* Top clientes y distribución */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Top 5 Clientes Más Frecuentes</h3>
           <div className="space-y-3">
@@ -429,7 +477,7 @@ export default function Page() {
             )}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Estado de la API */}
       <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
