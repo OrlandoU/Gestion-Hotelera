@@ -9,10 +9,10 @@ export default function Page() {
   // Inicializamos la fecha con el día de hoy en formato YYYY-MM-DD
   const hoyStr = new Date().toISOString().split('T')[0];
   const [fechaFiltro, setFechaFiltro] = useState(hoyStr);
-  
+
   // Consumo de la API pasando el parámetro de fecha reactivo
   const { data: reservacionesApi, loading, error, refetch } = useReservacionesDiarias(fechaFiltro);
-  
+
   const [busqueda, setBusqueda] = useState("");
   const [filtroEstado, setFiltroEstado] = useState<string>("Todos");
   const [ordenar, setOrdenar] = useState<"reserva" | "total" | "noches">("reserva");
@@ -32,7 +32,7 @@ export default function Page() {
     // Filtro por búsqueda textual (ID de huésped o número de reserva)
     if (busqueda) {
       const b = busqueda.toLowerCase();
-      resultado = resultado.filter(r => 
+      resultado = resultado.filter(r =>
         r.numero_reserva?.toLowerCase().includes(b) ||
         String(r.huesped_id)?.includes(b) ||
         String(r.espacio_id)?.includes(b)
@@ -55,7 +55,7 @@ export default function Page() {
     const totalReservas = reservacionesData.length;
     const ingresosDelDia = reservacionesData.reduce((sum, r) => sum + (r.total_pagar || 0), 0);
     const promedioTarifa = totalReservas > 0 ? Math.round(ingresosDelDia / totalReservas) : 0;
-    
+
     // Contadores de estados para los selectores y métricas
     const porEstado = reservacionesData.reduce((acc: Record<string, number>, r) => {
       const est = r.estado || "Desconocido";
@@ -94,8 +94,8 @@ export default function Page() {
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Reservaciones Diarias" 
+        <PageHeader
+          name="Reservaciones Diarias"
           subtitle="Monitoreo y control de ingresos, salidas y ocupación programada"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -103,7 +103,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error al solicitar flujo de reservaciones</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button 
+            <button
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -126,14 +126,14 @@ export default function Page() {
             subtitle="Monitoreo y control de ingresos, salidas y ocupación programada"
           />
         </div>
-        
+
         {loading ? (
           <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
             <span className="material-symbols-outlined animate-spin text-blue-600">refresh</span>
             <span className="text-blue-700 text-sm font-medium">Sincronizando...</span>
           </div>
         ) : (
-          <button 
+          <button
             onClick={refetch}
             className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
             title="Sincronizar data con el servidor"
@@ -203,7 +203,7 @@ export default function Page() {
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6">
         <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Parámetros del Reporte</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          
+
           {/* Criterio 1: Fecha Focal de Consulta (Parámetro API) */}
           <div>
             <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Fecha de Consulta</label>
@@ -228,7 +228,7 @@ export default function Page() {
               disabled={loading}
             />
           </div>
-          
+
           {/* Criterio 3: Discriminador por Estado de Reserva */}
           <div>
             <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Filtrar Estado</label>
@@ -367,6 +367,62 @@ export default function Page() {
           </div>
         </div>
       </section>
+
+      {/* Paneles KPI Cuantitativos */}
+      {/*
+      <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        {/* Total Reservaciones 
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Reservas en Fecha</span>
+            <div className="p-2 bg-[#c9e6ff] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#008cc7]">calendar_today</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {loading ? <span className="animate-pulse">--</span> : stats.totalReservas}
+          </h2>
+        </div>
+
+        {/* Ingresos Totales del Día 
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ingresos Brutos</span>
+            <div className="p-2 bg-[#d5e3fd] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#008cc7]">monetization_on</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {loading ? <span className="animate-pulse">--</span> : `$${stats.ingresosDelDia.toLocaleString()}`}
+          </h2>
+        </div>
+
+        {/* Tarifa Promedio por Transacción 
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ticket Promedio</span>
+            <div className="p-2 bg-[#ffdad6] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#93000a]">analytics</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {loading ? <span className="animate-pulse">--</span> : `$${stats.promedioTarifa.toLocaleString()}`}
+          </h2>
+        </div>
+
+        {/* Tasa Operativa Acumulada 
+        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+          <div className="flex justify-between items-start gap-4 flex-col-reverse">
+            <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Efectividad Operativa</span>
+            <div className="p-2 bg-[#e0e3e5] rounded-lg flex items-center">
+              <span className="material-symbols-outlined text-[20px] text-[#565e74]">verified_user</span>
+            </div>
+          </div>
+          <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
+            {stats.porEstado["Finalizada"] || 0} Completadas
+          </h2>
+        </div>
+      </section> */}
 
       {/* Footer Informativo de Transparencia de la API */}
       <section className="bg-slate-50 border border-slate-300 rounded-xl p-4 mt-4">

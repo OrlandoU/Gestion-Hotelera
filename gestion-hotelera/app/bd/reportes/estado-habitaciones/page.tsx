@@ -24,7 +24,7 @@ export default function Page() {
     }
 
     if (busqueda) {
-      resultado = resultado.filter(h => 
+      resultado = resultado.filter(h =>
         h.numero_espacio?.toLowerCase().includes(busqueda.toLowerCase())
       );
     }
@@ -45,7 +45,7 @@ export default function Page() {
     const totalHabitaciones = habitacionesData.length;
     const ingresoTotal = habitacionesData.reduce((sum, h) => sum + (h.precio_unidad || 0), 0);
     const ingresoPromedio = totalHabitaciones > 0 ? Math.round(ingresoTotal / totalHabitaciones) : 0;
-    
+
     const porTipo = habitacionesData.reduce((acc: Record<string, number>, h) => {
       const tipo = h.tipo || "Sin tipo";
       acc[tipo] = (acc[tipo] || 0) + 1;
@@ -98,7 +98,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error cargando datos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button 
+            <button
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -127,7 +127,7 @@ export default function Page() {
           </div>
         )}
         {!loading && (
-          <button 
+          <button
             onClick={refetch}
             className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
             title="Actualizar datos de la API"
@@ -204,7 +204,7 @@ export default function Page() {
               disabled={loading}
             />
           </div>
-          
+
           <div>
             <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Tipo de habitación</label>
             <select
@@ -302,7 +302,7 @@ export default function Page() {
         )}
       </section>
 
-      
+
 
       {/* Distribución por tipo */}
       {/* grid grid-cols-1 lg:grid-cols-3 */}
@@ -327,14 +327,13 @@ export default function Page() {
                     <span className="text-[14px] font-bold text-[#000000]">{cantidad} habitaciones</span>
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        tipo === "Básica" ? "bg-blue-500" :
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${tipo === "Básica" ? "bg-blue-500" :
                         tipo === "Doble-Básica" ? "bg-cyan-500" :
-                        tipo === "Estandar" ? "bg-purple-500" :
-                        tipo === "Doble-Estandar" ? "bg-indigo-500" :
-                        "bg-slate-500"
-                      }`}
+                          tipo === "Estandar" ? "bg-purple-500" :
+                            tipo === "Doble-Estandar" ? "bg-indigo-500" :
+                              "bg-slate-500"
+                        }`}
                       style={{ width: `${stats.totalHabitaciones > 0 ? (cantidad / stats.totalHabitaciones) * 100 : 0}%` }}
                     />
                   </div>
@@ -345,7 +344,7 @@ export default function Page() {
             )}
           </div>
         </div>
-{/* 
+        {/* 
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Leyenda de Estados</h3>
           <div className="flex flex-col gap-3">
@@ -364,7 +363,7 @@ export default function Page() {
         </div> */}
       </section>
 
-      
+
 
       {/* Resumen */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -412,7 +411,7 @@ export default function Page() {
             <span>Datos obtenidos desde API en tiempo real</span>
             {loading && <span className="animate-pulse">• Actualizando...</span>}
           </div>
-          <button 
+          <button
             onClick={refetch}
             className="text-[#008cc7] hover:text-[#006fa0] font-semibold hover:underline text-[12px] flex items-center gap-1"
           >

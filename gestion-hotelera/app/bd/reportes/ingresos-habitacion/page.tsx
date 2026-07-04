@@ -159,7 +159,7 @@ export default function Page() {
 
       {/* Fila de Reporte Gráfico e Histograma */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        
+
         {/* Componente: Gráfico de Torta con Recharts */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 lg:col-span-5 flex flex-col justify-between shadow-level-1">
           <div>

@@ -5,14 +5,130 @@ import img3 from '@/public/img3.jpg';
 import img4 from '@/public/img4.jpg';
 import logo from '@/public/logo.png';
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useHabitacionesDisponibles, crearReserva, Reserva } from "@/functions/reservas"
+
+type TipoHabitacion = "Básica" | "Doble-Básica" | "Estandar" | "Doble-Estandar";
 
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [visibleSections, setVisibleSections] = useState<{ [key: string]: boolean }>({});
 
+  const [isActive, setIsActive] = useState(false); // Controla la apertura del Modal
+  const [cargando, setCargando] = useState(false);
+
+  // Estados del Formulario del Huésped dentro del Modal
+  // 1. Datos de contacto
+  const [nombreHuesped, setNombreHuesped] = useState('');
+  const [apellidoHuesped, setApellidoHuesped] = useState('');
+  const [emailHuesped, setEmailHuesped] = useState('');
+  const [telefonoHuesped, setTelefonoHuesped] = useState('');
+  const [dniHuesped, setDniHuesped] = useState('');
+
+  // 2. Detalles de la estancia
+  const obtenerFechaHoy = () => new Date().toISOString().split('T')[0];
+  const obtenerFechaManana = () => {
+    const manana = new Date();
+    manana.setDate(manana.getDate() + 1);
+    return manana.toISOString().split('T')[0];
+  };
+  const [fechaIn, setFechaIn] = useState(obtenerFechaHoy());
+  const [fechaOut, setFechaOut] = useState(obtenerFechaManana());
+  const [numeroHuespedes, setNumeroHuespedes] = useState(1);
+  const [horaLlegada, setHoraLlegada] = useState('15:00');
+
+  // 3. Datos adicionales
+  const [peticionesCama, setPeticionesCama] = useState('Indiferente');
+
+  const [tipoSeleccionado, setTipoSeleccionado] = useState<TipoHabitacion>("Estandar");
+
+  // Tarifas fijas mapeadas estéticamente
+  const tarifas: Record<TipoHabitacion, { nombre: string; precio: number; desc: string }> = {
+    'Básica': { nombre: 'Habitación Básica', precio: 350, desc: 'Esencial, cómoda y funcional.' },
+    'Estandar': { nombre: 'Habitación Estándar', precio: 500, desc: 'Espaciosa, ideal para ejecutivos.' },
+    'Doble-Básica': { nombre: 'Doble Básica', precio: 500, desc: 'Perfecta para estadías familiares cortas.' },
+    'Doble-Estandar': { nombre: 'Doble Estándar', precio: 650, desc: 'Confort prémium con espacio optimizado.' },
+  };
+
+  const { data: habitacionesApi, refetch } = useHabitacionesDisponibles(fechaIn, fechaOut);
+  const habitacionesData = habitacionesApi || [];
+
+  // LÓGICA DE PRODUCTO: Buscar qué habitaciones físicas están "Disponibles" para el tipo seleccionado
+  const habitacionFisicaAsignable = useMemo(() => {
+    return habitacionesData;
+    /*return habitacionesData.find(
+      h => h.tipo === tipoSeleccionado && h.estado?.toLowerCase() === "disponible"
+    );*/
+  }, [habitacionesData, tipoSeleccionado]);
+
+  // Cálculos dinámicos del desglose de precios
+  const calculosReserva = useMemo(() => {
+    const checkIn = new Date(fechaIn);
+    const checkOut = new Date(fechaOut);
+    const diferenciaTiempo = checkOut.getTime() - checkIn.getTime();
+    const noches = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24)) || 1;
+
+    const precioPorNoche = tarifas[tipoSeleccionado].precio;
+    const subtotal = precioPorNoche * noches;
+    const impuestos = subtotal * 0.15; // 15% ISV de Honduras
+    const total = subtotal + impuestos;
+
+    return { noches, precioPorNoche, subtotal, impuestos, total };
+  }, [fechaIn, fechaOut, tipoSeleccionado]);
+
+  const handleHabitacionesDisponibles = () => {
+    setIsActive(true);
+
+    refetch();
+  };
+
+  const handleFinalizarReserva = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    console.log("habitacionFisicaAsignable", habitacionFisicaAsignable);
+    console.log("id de la habitacion asignable", habitacionFisicaAsignable[0].espacio_id);
+
+    if (!habitacionFisicaAsignable) {
+      alert(`Lo sentimos, no quedan habitaciones físicas disponibles de tipo "${tipoSeleccionado}" para las fechas seleccionadas.`);
+      return;
+    }
+
+    // Estructura adaptada incluyendo los nuevos datos capturados
+    const nuevaReserva: Reserva & Record<string, any> = {
+      //id_huesped: 2, // ID harcodeado temporalmente según tu requerimiento
+      espacio_id: habitacionFisicaAsignable[0].espacio_id,
+      fecha_entrada: fechaIn,
+      fecha_salida: fechaOut,
+      nombre_huesped: nombreHuesped,
+      apellido_huesped: apellidoHuesped,
+      email_huesped: emailHuesped,
+      telefono_huesped: telefonoHuesped,
+      huesped_dni: dniHuesped,
+      numero_huespedes: numeroHuespedes,
+      //hora_llegada: horaLlegada,
+      //peticiones_cama: peticionesCama
+    };
+
+    setCargando(true);
+    try {
+      const respuesta = await crearReserva(nuevaReserva);
+      alert(respuesta.message || "¡Reserva creada exitosamente!");
+      setIsActive(false);
+      // Limpiar formulario
+      setNombreHuesped('');
+      setEmailHuesped('');
+      setTelefonoHuesped('');
+      setNumeroHuespedes(1);
+      setHoraLlegada('15:00');
+      setPeticionesCama('Indiferente');
+    } catch (error) {
+      alert("No se pudo procesar la reserva. Inténtalo de nuevo.");
+    } finally {
+      setCargando(false);
+    }
+  };
+
   useEffect(() => {
-    // 1. Control de scroll clásico optimizado
     const handleScroll = () => {
       const scrolled = window.scrollY;
       const heroImg = document.querySelector('.hero-parallax') as HTMLImageElement | null;
@@ -25,13 +141,7 @@ export default function HomePage() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
 
-    // 2. Intersection Observer para revelar secciones al hacer scroll de forma limpia
-    const observerOptions = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 0.12,
-    };
-
+    const observerOptions = { root: null, rootMargin: "0px", threshold: 0.12 };
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
@@ -48,55 +158,30 @@ export default function HomePage() {
       targets.forEach((target) => observer.unobserve(target));
     };
   }, []);
-
   return (
     <div className="bg-[#ffffff] text-[#0f172a] font-['Hanken_Grotesk'] overflow-x-hidden selection:bg-blue-100 selection:text-[#0f172a] scroll-smooth">
-      
-      {/* Estilos embebidos rápidos para la curva fluida personalizada y animaciones de entrada sin flashes */}
+
       <style jsx global>{`
-        .cubic-fluid {
-          transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes customFadeUp {
-          from { opacity: 0; transform: translateY(40px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes heroReveal {
-          from { transform: scale(1.15); filter: brightness(0.4); }
-          to { transform: scale(1.05); filter: brightness(0.75); }
-        }
-        .animate-fade-up {
-          animation: customFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-        .animate-hero-img {
-          animation: heroReveal 2s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
+        .cubic-fluid { transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes customFadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes heroReveal { from { transform: scale(1.15); filter: brightness(0.4); } to { transform: scale(1.05); filter: brightness(0.75); } }
+        .animate-fade-up { animation: customFadeUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .animate-hero-img { animation: heroReveal 2s cubic-bezier(0.16, 1, 0.3, 1) both; }
       `}</style>
 
       {/* HEADER */}
-      <header className={`fixed p-1 sm:p-2 md:p-4 top-0 w-full z-50 flex items-center transition-all duration-500 cubic-fluid `}>
-        <div className={`w-full transition-all duration-300 ease-linear rounded-lg  py-1 sm:py-2 md:py-4 px-4 sm:px-8 md:px-16 flex justify-between items-center text-white ${
-        isScrolled ? 'bg-[#0f172a]/40 backdrop-blur-md h-20 shadow-xl ' : 'bg-transparent'
-      }`}>
+      <header className="fixed p-1 sm:p-2 md:p-4 top-0 w-full z-50 flex items-center transition-all duration-500 cubic-fluid">
+        <div className={`w-full transition-all duration-300 ease-linear rounded-lg py-1 sm:py-2 md:py-4 px-4 sm:px-8 md:px-16 flex justify-between items-center text-white ${isScrolled ? 'bg-[#0f172a]/40 backdrop-blur-md h-20 shadow-xl' : 'bg-transparent'}`}>
           <div className="h-10 transition-transform duration-500 cubic-fluid hover:scale-105">
             <Image width={66} height={80} alt="Hotel San Pedro" className="invert brightness-0" src={logo} />
           </div>
           <nav className="hidden md:flex items-center gap-16 text-xs font-['Hanken_Grotesk'] uppercase tracking-[0.2em]">
-            <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#about">
-              Historia
-              <span className="absolute bottom-0 left-0 w-0 h-px bg-white transition-all duration-300 group-hover:w-full" />
-            </a>
-            <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#mission">
-              Filosofía
-              <span className="absolute bottom-0 left-0 w-0 h-px bg-white transition-all duration-300 group-hover:w-full" />
-            </a>
-            <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#contact">
-              Contacto
-              <span className="absolute bottom-0 left-0 w-0 h-px bg-white transition-all duration-300 group-hover:w-full" />
-            </a>
-            <a className="bg-white text-[#0f172a] px-8 py-4 ml-8 hover:bg-[#0f172a] hover:text-white border border-white transition-all duration-300 rounded-xl transform hover:-translate-y-0.5 active:translate-y-0 shadow-md" href="#reservation">
+            <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#about">Historia</a>
+            <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#mission">Filosofía</a>
+            <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#contact">Contacto</a>
+            <button onClick={() => { setIsActive(true); refetch(); }} className="bg-white text-[#0f172a] px-8 py-4 ml-8 hover:bg-[#0f172a] hover:text-white border border-white transition-all duration-300 rounded-xl shadow-md">
               Reservar
-            </a>
+            </button>
           </nav>
         </div>
       </header>
@@ -110,10 +195,10 @@ export default function HomePage() {
             </div>
             <div className="absolute inset-0 bg-linear-to-t from-[#0f172a] via-[#0f172a]/40 to-transparent z-10" />
           </div>
-          
+
           <div className="relative z-20 w-full px-4 sm:px-8 md:px-16 grid grid-cols-12 gap-4 animate-fade-up">
             <div className="col-span-12 lg:col-span-8 lg:col-start-2">
-              <span className="text-white/60 font-['Hanken_Grotesk'] uppercase tracking-[0.4em] block mb-4 sm:mb-6 text-xs sm:text-sm delay-100">Establecido en 1960</span>
+              <span className="text-white/60 font-['Hanken_Grotesk'] uppercase tracking-[0.4em] block mb-4 sm:mb-6 text-xs sm:text-sm">Establecido en 1960</span>
               <h1 className="text-white font-['Hanken_Grotesk'] text-[clamp(1.875rem,9vw,11rem)] leading-[0.85] uppercase tracking-tighter mix-blend-overlay pr-4">
                 Herencia<br />Moderna
               </h1>
@@ -123,36 +208,211 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Buscador/Widget horizontal */}
+          {/* BUSCADOR INTERACTIVO */}
           <div className="sm:mx-8 md:mx-16 w-full sm:rounded-4xl max-w-5xl bg-[#0f172a]/40 backdrop-blur-xl border border-white/10 text-white p-4 sm:p-6 md:px-12 shadow-2xl z-30 animate-fade-up delay-300 self-center lg:self-auto">
             <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-8 md:gap-12 max-w-360 mx-auto">
               <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full flex-1">
                 <div className="flex-1 border-b border-white/20 pb-2 focus-within:border-white transition-colors duration-300">
                   <label className="block text-[10px] uppercase tracking-widest mb-1 text-white/60">Entrada</label>
-                  <input className="bg-transparent border-none text-white p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500" type="date" defaultValue="2026-05-20" />
+                  <input className="bg-transparent border-none text-white p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500" type="date" value={fechaIn} min={obtenerFechaHoy()} onChange={(e) => setFechaIn(e.target.value)} />
                 </div>
                 <div className="flex-1 border-b border-white/20 pb-2 focus-within:border-white transition-colors duration-300">
                   <label className="block text-[10px] uppercase tracking-widest mb-1 text-white/60">Salida</label>
-                  <input className="bg-transparent border-none text-white p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500" type="date" defaultValue="2026-05-25" />
+                  <input className="bg-transparent border-none text-white p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500" type="date" value={fechaOut} min={fechaIn} onChange={(e) => setFechaOut(e.target.value)} />
                 </div>
               </div>
-              <button className="rounded-2xl bg-white text-[#0f172a] px-6 sm:px-16 py-4 sm:py-6 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-[#0f172a] text-xs sm:text-sm hover:text-white border border-white transition-all duration-500 cubic-fluid w-full md:w-auto shadow-xl hover:shadow-2xl hover:-translate-y-1 active:translate-y-0 cursor-pointer">
+              <button onClick={handleHabitacionesDisponibles} className="rounded-2xl bg-white text-[#0f172a] px-6 sm:px-16 py-4 sm:py-6 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-[#0f172a] text-xs sm:text-sm hover:text-white border border-white transition-all duration-500 w-full md:w-auto shadow-xl hover:-translate-y-1 cursor-pointer">
                 Explorar Habitaciones
               </button>
             </div>
           </div>
         </section>
 
+        {/* ================= MODAL DE RESERVAS ESTILIZADO ================= */}
+        {isActive && (
+          <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-500">
+            <section className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transform animate-fade-up">
+
+              {/* Encabezado elegante a juego con la marca oscura */}
+              <div className="px-8 py-5 bg-[#0f172a] text-white flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold uppercase tracking-wider text-white">Solicitud de Reserva</h2>
+                  <p className="text-xs text-white/60">Personaliza tus datos y confirma tu estadía tradicional</p>
+                </div>
+                <button onClick={() => setIsActive(false)} className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
+                  ✕
+                </button>
+              </div>
+
+              {/* Formulario en dos columnas */}
+              <form onSubmit={handleFinalizarReserva} className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12">
+
+                {/* Columna Izquierda: Formulario */}
+                <div className="p-8 md:col-span-7 space-y-6">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">1. Datos de Contacto</h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Nombre Completo *</label>
+                        <input type="text" required value={nombreHuesped} onChange={e => setNombreHuesped(e.target.value)} placeholder="Ej. Jeferson Alexander" className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Apellido Completo *</label>
+                        <input type="text" required value={apellidoHuesped} onChange={e => setApellidoHuesped(e.target.value)} placeholder="Ej. Umanzor Lagos" className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Email *</label>
+                          <input type="email" required value={emailHuesped} onChange={e => setEmailHuesped(e.target.value)} placeholder="huesped@gmail.com" className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Teléfono *</label>
+                          <input type="tel" required value={telefonoHuesped} onChange={e => setTelefonoHuesped(e.target.value)} placeholder="+504 2550-0000" className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">DNI *</label>
+                          <input type="tel" required value={dniHuesped} onChange={e => setDniHuesped(e.target.value)} placeholder="0501-2000-01234" className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100" />
+
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">2. Detalles de la Estancia</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-4">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Fecha de Entrada *</label>
+                        <input type="date" required value={fechaIn} min={obtenerFechaHoy()} onChange={e => setFechaIn(e.target.value)} className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Fecha de Salida *</label>
+                        <input type="date" required value={fechaOut} min={fechaIn} onChange={e => setFechaOut(e.target.value)} className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Número de Huéspedes *</label>
+                        <input type="number" required min={1} max={6} value={numeroHuespedes} onChange={e => setNumeroHuespedes(Number(e.target.value))} className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Hora Estimada de Llegada *</label>
+                        <input type="time" required value={horaLlegada} onChange={e => setHoraLlegada(e.target.value)} className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100" />
+
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">3. Datos Adicionales</h3>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-2">Preferencia de Cama</label>
+                      <select value={peticionesCama} onChange={e => setPeticionesCama(e.target.value)} className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:border-[#0f172a] focus:outline-none bg-white text-[#0f172a]">
+                        <option value="Indiferente">Sin preferencia</option>
+                        <option value="Una Cama Matrimonial / King">Una Cama Grande (Matrimonial/King)</option>
+                        <option value="Dos Camas Individuales">Dos Camas Separadas</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <hr className="border-slate-100" />
+
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">4. Categoría de Alojamiento</h3>
+                    <div>
+                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-2">Selecciona tu habitación ideal</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {(Object.keys(tarifas) as TipoHabitacion[]).map((key) => (
+                          <div
+                            key={key}
+                            onClick={() => setTipoSeleccionado(key)}
+                            className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${tipoSeleccionado === key ? 'border-[#0f172a] bg-slate-50 shadow-sm' : 'border-slate-200 hover:border-slate-400'}`}
+                          >
+                            <p className="text-sm font-bold text-[#0f172a]">{tarifas[key].nombre}</p>
+                            <p className="text-[11px] text-slate-400 mb-2 leading-tight">{tarifas[key].desc}</p>
+                            <p className="text-xs font-semibold text-blue-700">{tarifas[key].precio}.00 Lps. <span className="text-[10px] font-normal text-slate-400">/ noche</span></p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Columna Derecha: Checkout Sidebar */}
+                <div className="p-8 bg-slate-50 md:col-span-5 border-t md:border-t-0 md:border-l border-slate-100 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Resumen del Viaje</h3>
+
+                    <div className="bg-white p-4 rounded-xl border border-slate-200 grid grid-cols-2 text-center divide-x divide-slate-100 mb-6 shadow-xs">
+                      <div>
+                        <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Check-In</p>
+                        <p className="text-xs font-bold text-slate-700">{fechaIn}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Check-Out</p>
+                        <p className="text-xs font-bold text-slate-700">{fechaOut}</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 text-xs text-slate-600 px-1">
+                      <div className="flex justify-between">
+                        <span>{tarifas[tipoSeleccionado].nombre}</span>
+                        <span className="font-bold text-[#0f172a]">${calculosReserva.precioPorNoche}.00</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Huéspedes</span>
+                        <span className="font-semibold text-slate-700">{numeroHuespedes} {numeroHuespedes === 1 ? 'persona' : 'personas'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Estadía completa</span>
+                        <span className="font-semibold text-slate-700">{calculosReserva.noches} {calculosReserva.noches === 1 ? 'noche' : 'noches'}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Subtotal</span>
+                        <span>${calculosReserva.subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Impuestos locales (15%)</span>
+                        <span>${calculosReserva.impuestos.toFixed(2)}</span>
+                      </div>
+
+                      <hr className="border-dashed border-slate-200 my-4" />
+
+                      <div className="flex justify-between text-sm font-bold text-[#0f172a]">
+                        <span className="uppercase tracking-wider">Total Final</span>
+                        <span className="text-lg text-emerald-700">${calculosReserva.total.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-6">
+                    <button
+                      type="submit"
+                      disabled={cargando}
+                      className="w-full bg-[#0f172a] hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-xl shadow-lg uppercase tracking-widest text-xs transition-all disabled:opacity-50"
+                    >
+                      {cargando ? "Procesando..." : "Confirmar Mi Estadía"}
+                    </button>
+                    <p className="text-[9px] text-center text-slate-400 mt-3 leading-tight">
+                      Al presionar confirmar se enviará una solicitud directa a recepción para asegurar tu espacio.
+                    </p>
+                  </div>
+                </div>
+
+              </form>
+            </section>
+          </div>
+        )}
+
         {/* SECTION: ABOUT */}
         <section className="bg-[#ffffff] overflow-hidden" id="about">
           <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
             <div className="relative bg-slate-50 p-4 sm:p-8 md:p-16 lg:p-30 flex flex-col justify-center">
-              
-              {/* Número gigante desvanecido con sutil desplazamiento interactivo */}
               <div className="absolute top-0 left-0 p-4 sm:p-8 text-[#0f172a]/5 text-[80px] sm:text-[120px] md:text-[200px] font-bold leading-none select-none transition-transform duration-1000 cubic-fluid transform hover:scale-105">
                 1960
               </div>
-              
               <div className={`relative z-10 transition-all duration-1000 cubic-fluid ${visibleSections['about'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
                 <span className="text-blue-700 font-['Hanken_Grotesk'] uppercase tracking-[0.3em] block mb-4 sm:mb-8 text-xs sm:text-sm">Nuestra Trayectoria</span>
                 <h2 className="text-[#0f172a] font-['Hanken_Grotesk'] text-[clamp(1.75rem,6vw,4.5rem)] leading-tight mb-8 sm:mb-16">Resiliencia y Tradición Sampedrana</h2>
@@ -160,33 +420,26 @@ export default function HomePage() {
                   <p>Como el tercer hotel fundado en la capital industrial, hemos sido testigos silenciosos de la evolución de una ciudad. Nuestra historia está escrita con la fuerza de quienes no se rinden.</p>
                   <p>Tras superar el incendio de 2012, renacimos manteniendo la esencia: ser el hogar fuera de casa para cada viajero que busca no solo una cama, sino una experiencia humana real.</p>
                 </div>
-                
-                {/* Contadores Estadísticos */}
                 <div className="mt-8 sm:mt-16 flex gap-8 sm:gap-16 items-center border-t border-[#0f172a]/10 pt-8 sm:pt-16">
                   <div className="text-center group cursor-default">
-                    <span className="text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 transform group-hover:scale-110 inline-block cubic-fluid">50+</span>
+                    <span className="text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 inline-block">50+</span>
                     <span className="block text-[10px] uppercase tracking-widest opacity-60 mt-1">Años</span>
                   </div>
                   <div className="h-12 w-px bg-[#0f172a]/10"></div>
                   <div className="text-center group cursor-default">
-                    <span className="text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 transform group-hover:scale-110 inline-block cubic-fluid">03</span>
+                    <span className="text-2xl sm:text-4xl font-['Hanken_Grotesk'] text-[#0f172a] group-hover:text-blue-700 transition-colors duration-300 inline-block">03</span>
                     <span className="block text-[10px] uppercase tracking-widest opacity-60 mt-1">Fundación</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Imagen de historia y tarjeta flotante */}
             <div className="relative h-64 sm:h-96 lg:h-auto overflow-hidden group">
-              <Image fill alt="Historic San Pedro" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 cubic-fluid group-hover:scale-105" src={img3} />
-              <div className="absolute inset-0 bg-[#0f172a]/10 transition-opacity duration-500 group-hover:bg-[#0f172a]/20" />
-              
-              {/* Tarjeta flotante con animación interactiva */}
-              <div className={`absolute bottom-4 sm:bottom-12 right-4 sm:right-12 bg-white p-6 sm:p-8 shadow-2xl max-w-xs transition-all duration-1000 cubic-fluid delay-300 ${
-                visibleSections['about'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-              } hover:-translate-y-2`}>
+              <Image fill alt="Historic San Pedro" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src={img3} />
+              <div className="absolute inset-0 bg-[#0f172a]/10 transition-opacity duration-500" />
+              <div className={`absolute bottom-4 sm:bottom-12 right-4 sm:right-12 bg-white p-6 sm:p-8 shadow-2xl max-w-xs transition-all duration-1000 delay-300 ${visibleSections['about'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'} hover:-translate-y-2`}>
                 <p className="font-['Hanken_Grotesk'] italic text-slate-700 text-xs sm:text-sm md:text-base leading-relaxed">
-                  “Queremos que cada huésped se sienta en casa, rodeado de respeto y calidez.”
+                  “Queremos que cada huésped se sientan en casa, rodeado de respeto y calidez.”
                 </p>
               </div>
             </div>
@@ -196,14 +449,12 @@ export default function HomePage() {
         {/* SECTION: MISSION */}
         <section className="bg-[#0f172a] text-white py-16 sm:py-24 md:py-40 relative overflow-hidden" id="mission">
           <div className="absolute right-0 top-0 opacity-5 pointer-events-none overflow-hidden select-none">
-            <span className="text-[clamp(100px,20vw,400px)] font-bold leading-none -mr-40 block transition-transform duration-1000 transform hover:translate-x-5">2030</span>
+            <span className="text-[clamp(100px,20vw,400px)] font-bold leading-none -mr-40 block">2030</span>
           </div>
           <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 relative z-10">
-            <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-16 items-start transition-all duration-1000 cubic-fluid ${
-              visibleSections['mission'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'
-            }`}>
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-16 items-start transition-all duration-1000 ${visibleSections['mission'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'}`}>
               <div className="space-y-8 sm:space-y-16 group">
-                <div className="p-2 group-hover:translate-x-2 transition-transform duration-500 cubic-fluid">
+                <div className="p-2 group-hover:translate-x-2 transition-transform duration-500">
                   <span className="inline-block px-4 py-1 border border-white/30 text-white/80 text-[10px] uppercase tracking-[0.3em] mb-4 sm:mb-6 rounded-full">Nuestra Misión</span>
                   <h3 className="font-['Hanken_Grotesk'] text-[clamp(1.25rem,4vw,2.25rem)] font-light mb-4 sm:mb-8 text-white">El hogar fuera del hogar.</h3>
                   <p className="text-white/70 text-sm sm:text-lg leading-relaxed max-w-md">
@@ -212,7 +463,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="space-y-8 sm:space-y-16 md:mt-40 group">
-                <div className="p-2 group-hover:translate-x-2 transition-transform duration-500 cubic-fluid delay-150">
+                <div className="p-2 group-hover:translate-x-2 transition-transform duration-500 delay-150">
                   <span className="inline-block px-4 py-1 border border-white/30 text-white/80 text-[10px] uppercase tracking-[0.3em] mb-4 sm:mb-6 rounded-full">Visión 2030</span>
                   <h3 className="font-['Hanken_Grotesk'] text-[clamp(1.25rem,4vw,2.25rem)] font-light mb-4 sm:mb-8 text-white">Innovar sin perder la esencia.</h3>
                   <p className="text-white/70 text-sm sm:text-lg leading-relaxed max-w-md">
@@ -224,7 +475,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SECTION: PILARES (GRID INTERACTIVO) */}
+        {/* SECTION: PILARES */}
         <section className="py-16 sm:py-24 md:py-40 bg-slate-50">
           <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 data-reveal">
             <div className="flex flex-col md:flex-row justify-between items-end mb-12 sm:mb-20 gap-4 sm:gap-8">
@@ -235,7 +486,6 @@ export default function HomePage() {
               <p className="text-slate-500 max-w-xs text-right hidden md:block uppercase tracking-widest text-[10px]">Compromiso con la excelencia desde el primer día.</p>
             </div>
 
-            {/* Grid de Pilares con efectos hover 3D fluidos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-12 reveal-on-scroll">
               {[
                 { icon: "verified", id: "01", title: "Responsabilidad", desc: "Nuestro compromiso con el entorno y cada uno de nuestros huéspedes." },
@@ -245,15 +495,9 @@ export default function HomePage() {
                 { icon: "apartment", id: "05", title: "Hospitalidad", desc: "La esencia sampedrana de dar la bienvenida con el corazón." },
                 { icon: "lock", id: "06", title: "Confianza", desc: "Construyendo relaciones seguras y duraderas por generaciones." }
               ].map((pilar, index) => (
-                <div 
-                  key={index} 
-                  className="group border-t border-[#0f172a]/10 pt-6 sm:pt-8 hover:border-[#0f172a] transition-all duration-500 cubic-fluid transform hover:-translate-y-2 cursor-default"
-                >
+                <div key={index} className="group border-t border-[#0f172a]/10 pt-6 sm:pt-8 hover:border-[#0f172a] transition-all duration-500 transform hover:-translate-y-2 cursor-default">
                   <div className="flex justify-between items-start mb-4 sm:mb-6">
-                    <span className="material-symbols-outlined text-3xl sm:text-4xl text-[#0f172a] group-hover:text-blue-700 transition-colors duration-500 transform group-hover:scale-110 cubic-fluid">
-                      {pilar.icon}
-                    </span>
-                    <span className="text-[10px] font-bold text-[#0f172a]/20 group-hover:text-[#0f172a]/60 transition-colors duration-500">{pilar.id}</span>
+                    <span className="text-xl font-bold text-[#0f172a]/20 group-hover:text-[#0f172a]/60 transition-colors duration-500">{pilar.id}</span>
                   </div>
                   <h4 className="text-[#0f172a] font-['Hanken_Grotesk'] uppercase tracking-wider mb-2 sm:mb-4 text-sm group-hover:text-blue-700 transition-colors duration-300">
                     {pilar.title}
@@ -269,24 +513,24 @@ export default function HomePage() {
 
         {/* SECTION: EXPERIENCIAS */}
         <section className="relative min-h-screen sm:h-[60vh] md:h-[80vh] flex items-center overflow-hidden group">
-          <Image fill alt="Dining Area" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 cubic-fluid group-hover:scale-105" src={img4} />
-          <div className="absolute inset-0 bg-[#0f172a]/40 transition-opacity duration-700 group-hover:bg-[#0f172a]/50" />
-          
+          <Image fill alt="Dining Area" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" src={img4} />
+          <div className="absolute inset-0 bg-[#0f172a]/40" />
+
           <div className="relative z-10 w-full px-4 sm:px-8 md:px-16 flex justify-start sm:justify-end">
-            <div className="bg-white p-6 sm:p-8 md:p-16 max-w-xl shadow-2xl transition-transform duration-700 cubic-fluid hover:-translate-y-1">
+            <div className="bg-white p-6 sm:p-8 md:p-16 max-w-xl shadow-2xl transition-transform duration-700 hover:-translate-y-1">
               <span className="text-blue-700 font-['Hanken_Grotesk'] uppercase tracking-[0.3em] block mb-3 sm:mb-6 text-xs sm:text-sm">Experiencias</span>
               <h3 className="text-[#0f172a] font-['Hanken_Grotesk'] text-2xl sm:text-3xl md:text-4xl mb-4 sm:mb-8 leading-tight">Atención que Reconforta</h3>
               <p className="text-slate-600 text-sm sm:text-lg mb-8 sm:mb-12 leading-relaxed">
                 No solo ofrecemos una habitación; brindamos la calidez de un hogar. Contamos con residentes que han hecho del Hotel San Pedro su residencia permanente, testimonio fiel de nuestro trato cercano.
               </p>
-              <button className="bg-[#0f172a] text-white px-8 py-4 sm:py-5 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-blue-700 transition-all duration-300 cubic-fluid transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl cursor-pointer text-xs sm:text-sm">
+              <button onClick={() => { setIsActive(true); refetch(); }} className="bg-[#0f172a] text-white px-8 py-4 sm:py-5 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-blue-700 transition-all duration-300 shadow-lg cursor-pointer text-xs sm:text-sm">
                 Descubra Más
               </button>
             </div>
           </div>
         </section>
 
-        {/* SECTION: CONTACTO & FORMULARIO */}
+        {/* SECTION: CONTACTO */}
         <section className="pt-16 sm:pt-24 md:pt-40 bg-linear-to-b from-slate-50 to-blue-50" id="contact">
           <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-16 items-start">
             <div className="lg:col-span-4 space-y-8">
@@ -294,45 +538,43 @@ export default function HomePage() {
               <div className="space-y-6 sm:space-y-8">
                 <div className="group cursor-default">
                   <h4 className="text-[10px] uppercase tracking-widest text-blue-700 font-bold mb-1 sm:mb-2">Ubicación</h4>
-                  <p className="text-sm sm:text-lg text-slate-600 transition-colors group-hover:text-black">3 calle entre la 1 y 2 avenida, San Pedro Sula, Cortés, Honduras.</p>
+                  <p className="text-sm sm:text-lg text-slate-600">3 calle entre la 1 y 2 avenida, San Pedro Sula, Cortés, Honduras.</p>
                 </div>
                 <div className="group cursor-default">
                   <h4 className="text-[10px] uppercase tracking-widest text-blue-700 font-bold mb-1 sm:mb-2">Reservaciones</h4>
-                  <p className="text-lg sm:text-xl text-[#0f172a] font-semibold transition-transform duration-300 inline-block group-hover:translate-x-1">+504 2550-0000</p>
+                  <p className="text-lg sm:text-xl text-[#0f172a] font-semibold">+504 2550-0000</p>
                 </div>
                 <div className="group cursor-default">
                   <h4 className="text-[10px] uppercase tracking-widest text-blue-700 font-bold mb-1 sm:mb-2">Email</h4>
-                  <p className="text-sm sm:text-lg text-slate-600 underline transition-colors group-hover:text-blue-700 decoration-blue-200">info@hotelsanpedro.com</p>
+                  <p className="text-sm sm:text-lg text-slate-600 underline decoration-blue-200">info@hotelsanpedro.com</p>
                 </div>
               </div>
             </div>
 
-            {/* Formulario Interactivo */}
-            <div className="lg:col-span-8 bg-white p-6 sm:p-8 md:p-16 border border-[#0f172a]/5 shadow-xl rounded-2xl transition-all duration-500 hover:shadow-2xl">
+            <div className="lg:col-span-8 bg-white p-6 sm:p-8 md:p-16 border border-[#0f172a]/5 shadow-xl rounded-2xl">
               <form className="space-y-8 sm:space-y-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                   <div className="space-y-2 relative group">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-slate-500 group-focus-within:text-blue-700 transition-colors">Nombre</label>
-                    <input className="w-full bg-transparent border-b border-[#0f172a]/20 focus:border-blue-700 focus:ring-0 p-2 transition-all outline-hidden text-[#0f172a]" type="text" />
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Nombre</label>
+                    <input className="w-full bg-transparent border-b border-[#0f172a]/20 focus:border-blue-700 focus:ring-0 p-2 outline-hidden text-[#0f172a]" type="text" />
                   </div>
                   <div className="space-y-2 relative group">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-slate-500 group-focus-within:text-blue-700 transition-colors">Email</label>
-                    <input className="w-full bg-transparent border-b border-[#0f172a]/20 focus:border-blue-700 focus:ring-0 p-2 transition-all outline-hidden text-[#0f172a]" type="email" />
+                    <label className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Email</label>
+                    <input className="w-full bg-transparent border-b border-[#0f172a]/20 focus:border-blue-700 focus:ring-0 p-2 outline-hidden text-[#0f172a]" type="email" />
                   </div>
                 </div>
                 <div className="space-y-2 relative group">
-                  <label className="text-[10px] uppercase tracking-widest font-bold text-slate-500 group-focus-within:text-blue-700 transition-colors">Mensaje</label>
-                  <textarea className="w-full bg-transparent border-b border-[#0f172a]/20 focus:border-blue-700 focus:ring-0 p-2 transition-all outline-hidden text-[#0f172a]" rows={4}></textarea>
+                  <label className="text-[10px] uppercase tracking-widest font-bold text-slate-500">Mensaje</label>
+                  <textarea className="w-full bg-transparent border-b border-[#0f172a]/20 focus:border-blue-700 focus:ring-0 p-2 outline-hidden text-[#0f172a]" rows={4}></textarea>
                 </div>
-                <button className="w-full bg-[#0f172a] text-white py-4 sm:py-5 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-blue-700 transition-all duration-500 cubic-fluid transform hover:-translate-y-0.5 shadow-lg cursor-pointer text-xs sm:text-sm rounded-xl">
+                <button className="w-full bg-[#0f172a] text-white py-4 sm:py-5 uppercase font-['Hanken_Grotesk'] tracking-widest hover:bg-blue-700 transition-all duration-500 shadow-lg text-xs sm:text-sm rounded-xl">
                   Enviar Mensaje
                 </button>
               </form>
             </div>
           </div>
-          
-          {/* Iframe con contenedor controlado */}
-          <div className="mt-8 sm:mt-16 h-64 sm:h-96 md:h-125 w-full overflow-hidden shadow-inner opacity-90 hover:opacity-100 transition-opacity duration-500">
+
+          <div className="mt-8 sm:mt-16 h-64 sm:h-96 md:h-125 w-full overflow-hidden opacity-90">
             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3844.637075276313!2d-88.02565002494666!3d15.503941685096555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8f665b4536eb25d9%3A0xff3dffbffeb793e6!2sHotel%20San%20Pedro!5e0!3m2!1ses-419!2shn!4v1781505597298!5m2!1ses-419!2shn" width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
           </div>
         </section>
@@ -342,39 +584,18 @@ export default function HomePage() {
       <footer className="bg-[#0f172a] text-white py-12 sm:py-16 md:py-20 border-t border-white/5">
         <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 flex flex-col md:flex-row justify-between items-start gap-12 sm:gap-16">
           <div className="space-y-4 sm:space-y-6">
-            <Image width={66} height={80} alt="Hotel San Pedro Test" className=" invert brightness-0 transition-transform duration-500 hover:scale-105" src={logo} />
-            <p className="text-white/40 text-xs sm:text-sm max-w-xs leading-relaxed">Liderando la hospitalidad tradicional desde 1960. Un refugio de resiliencia y calidez en la capital industrial.</p>
+            <Image width={66} height={80} alt="Hotel San Pedro Test" className="invert brightness-0" src={logo} />
+            <p className="text-white/40 text-xs sm:text-sm max-w-xs">Liderando la hospitalidad tradicional desde 1960. Un refugio de resiliencia y calidez en la capital industrial.</p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8 sm:gap-16">
             <div className="space-y-4 sm:space-y-6">
               <h5 className="text-[10px] uppercase tracking-widest text-white/50 font-bold">El Hotel</h5>
               <ul className="space-y-2 text-xs sm:text-sm text-white/60">
-                <li><a className="hover:text-white transition-colors duration-300" href="#">Habitaciones</a></li>
-                <li><a className="hover:text-white transition-colors duration-300" href="#">Restaurante</a></li>
-                <li><a className="hover:text-white transition-colors duration-300" href="#">Salones</a></li>
+                <li><a className="hover:text-white" href="#">Habitaciones</a></li>
+                <li><a className="hover:text-white" href="#">Restaurante</a></li>
+                <li><a className="hover:text-white" href="#">Salones</a></li>
               </ul>
             </div>
-            <div className="space-y-4 sm:space-y-6">
-              <h5 className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Empresa</h5>
-              <ul className="space-y-2 text-xs sm:text-sm text-white/60">
-                <li><a className="hover:text-white transition-colors duration-300" href="#">Carreras</a></li>
-                <li><a className="hover:text-white transition-colors duration-300" href="#">Noticias</a></li>
-              </ul>
-            </div>
-            <div className="space-y-4 sm:space-y-6">
-              <h5 className="text-[10px] uppercase tracking-widest text-white/50 font-bold">Legal</h5>
-              <ul className="space-y-2 text-xs sm:text-sm text-white/60">
-                <li><a className="hover:text-white transition-colors duration-300" href="#">Privacidad</a></li>
-                <li><a className="hover:text-white transition-colors duration-300" href="#">Términos</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className="max-w-360 mx-auto px-4 sm:px-8 md:px-16 mt-12 sm:mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-[10px] uppercase tracking-widest text-white/30">
-          <p>© 2026 Hotel San Pedro.</p>
-          <div className="flex gap-6 sm:gap-8">
-            <a className="hover:text-white transition-all duration-300 hover:scale-110" href="#">FB</a>
-            <a className="hover:text-white transition-all duration-300 hover:scale-110" href="#">IG</a>
           </div>
         </div>
       </footer>
