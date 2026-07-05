@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { ViewTransition } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/pageheader";
 import { CLIENTS_LIST } from "@/data/clients";
+import { getHuespedes, Huesped } from "@/functions/huesped"
 
 const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
   Active: { label: "Activo", badge: "bg-blue-100 text-blue-800 border-blue-300", dot: "bg-blue-500" },
@@ -13,6 +14,16 @@ const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string 
 };
 
 export default function ClientesPage() {
+  const [huespedes, setHuespedes] = useState<Huesped[]>()
+
+  useEffect(() => {
+    const fetchHuespedes = async () => {
+      const data = await getHuespedes()
+      setHuespedes(data)
+    }
+    fetchHuespedes()
+  }, [])
+
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -25,11 +36,11 @@ export default function ClientesPage() {
     );
   }, [query]);
 
-  const totalClients = CLIENTS_LIST.length;
-  const inHouseCount = CLIENTS_LIST.filter((c) => c.status === "InHouse").length;
-  const totalSpent = CLIENTS_LIST.reduce((sum, c) => sum + c.totalSpent, 0);
+  const totalClients = huespedes?.length;
+  const inHouseCount = huespedes?.filter((c) => c.status === "InHouse").length;
+  const totalSpent = huespedes?.reduce((sum, c) => sum + c.total_gastado!, 0);
   const avgStays = totalClients
-    ? (CLIENTS_LIST.reduce((sum, c) => sum + c.totalStays, 0) / totalClients).toFixed(1)
+    ? (huespedes?.reduce((sum, c) => sum + c.estancias!, 0) / totalClients).toFixed(1)
     : "0";
 
   return (
@@ -93,7 +104,7 @@ export default function ClientesPage() {
               </div>
             </div>
             <div>
-              <span className="text-2xl font-bold text-slate-950">${totalSpent.toLocaleString()}</span>
+              <span className="text-2xl font-bold text-slate-950">{totalSpent?.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}</span>
               <span className="text-xs text-slate-400 ml-2">Histórico</span>
             </div>
           </div>
@@ -130,29 +141,29 @@ export default function ClientesPage() {
                 </tr>
               </thead>
               <tbody className="text-slate-800 divide-y divide-slate-100">
-                {filtered.map((client) => {
+                {huespedes?.map((client) => {
                   const cfg = STATUS_CONFIG[client.status] || STATUS_CONFIG.Inactive;
-                  console.log(client)
+
                   return (
-                    <tr key={client.id} className="hover:bg-slate-50/80 transition-colors">
+                    <tr key={client.huesped_id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-6">
-                        <div className="font-medium text-slate-900">{client.name}</div>
+                        <div className="font-medium text-slate-900">{client.nombre}</div>
                         <div className="text-xs text-slate-400">
-                          Última visita: {client.lastVisit}
+                          Última visita: {'2026-06-03'}
                         </div>
                       </td>
                       <td className="py-3.5 px-6 text-slate-500">
                         <div>{client.email}</div>
-                        <div className="text-xs">{client.phone}</div>
+                        <div className="text-xs">{client.telefono}</div>
                       </td>
                       <td className="py-3.5 px-6">
                         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
                           <span className="material-symbols-outlined text-[14px]">star</span>
-                          {client.loyaltyTier}
+                          {client.estancias}
                         </span>
                       </td>
-                      <td className="py-3.5 px-6 text-right font-semibold">{client.totalStays}</td>
-                      <td className="py-3.5 px-6 text-right font-bold text-slate-900">${client.totalSpent.toLocaleString()}</td>
+                      <td className="py-3.5 px-6 text-right font-semibold">{client.estancias}</td>
+                      <td className="py-3.5 px-6 text-right font-bold text-slate-900">{client.total_gastado!.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}</td>
                       <td className="py-3.5 px-6">
                         <span className={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border ${cfg.badge}`}>
                           <span className={`w-2 h-2 rounded-full ${cfg.dot}`}></span>
@@ -160,7 +171,7 @@ export default function ClientesPage() {
                         </span>
                       </td>
                       <td className="py-3.5 px-6 text-right">
-                        <Link href={`/bd/clientes/${client.id}`} className="text-sm text-[#008cc7] hover:underline font-semibold">
+                        <Link href={`/bd/clientes/${client.huesped_id}`} className="text-sm text-[#008cc7] hover:underline font-semibold">
                           Ver perfil
                         </Link>
                       </td>

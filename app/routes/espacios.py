@@ -20,3 +20,15 @@ async def read_habitaciones_disponibles(db = Depends(get_db)):
         return habitaciones
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener habitaciones disponibles: {str(e)}")
+
+@router.get("/habitaciones")
+async def read_habitaciones(db = Depends(get_db)):
+    try:
+        cursor = db.cursor(as_dict=True)
+        cursor.execute("SELECT * FROM vw_habitaciones")
+        habitaciones = cursor.fetchall()
+        cursor.close()
+        return habitaciones
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener habitaciones: {str(e)}")

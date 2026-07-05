@@ -1,7 +1,9 @@
+'use client'
+
 import PageHeader from "@/components/pageheader";
 import Link from "next/link";
-import { ViewTransition } from "react";
-import { ROOMS_LIST, getRoomCurrentReservation, getRoomNextReservation } from "@/data/rooms";
+import { ViewTransition, useState, useEffect } from "react";
+import { getHabitaciones, Habitacion } from "@/functions/espacios";
 
 function getStatusBadge(status: string) {
   switch (status) {
@@ -19,10 +21,19 @@ function getStatusBadge(status: string) {
 }
 
 export default function Page() {
-  const totalRooms = ROOMS_LIST.length;
-  const occupiedRooms = ROOMS_LIST.filter((room) => room.status === "Occupied").length;
-  const availableRooms = ROOMS_LIST.filter((room) => room.status === "Available").length;
-  const maintenanceRooms = ROOMS_LIST.filter((room) => room.status === "Maintenance").length;
+
+  const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
+
+  useEffect(() => {
+    getHabitaciones().then((data) => {
+      setHabitaciones(data);
+    });
+  }, []);
+
+  const totalRooms = habitaciones.length;
+  const occupiedRooms = habitaciones.filter((room) => room.estado_habitacion === "Ocupado").length;
+  const availableRooms = habitaciones.filter((room) => room.estado_habitacion === "Disponible").length;
+  const maintenanceRooms = habitaciones.filter((room) => room.estado_habitacion === "Mantenimiento").length;
 
   return (
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
@@ -77,35 +88,33 @@ export default function Page() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
-              {ROOMS_LIST.map((room) => {
-                const currentReservation = getRoomCurrentReservation(room.id);
-                const nextReservation = getRoomNextReservation(room.id);
+              {habitaciones.map((room) => {
                 return (
-                  <tr key={room.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-slate-900">{room.number}</td>
-                    <td className="px-6 py-4 text-slate-600">{room.type}</td>
+                  <tr key={room.espacio_id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-semibold text-slate-900">{room.numero_espacio}</td>
+                    <td className="px-6 py-4 text-slate-600">{room.tipo}</td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusBadge(room.status)}`}>
+                      <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusBadge(room.estado_habitacion!)}`}>
                         <span className="w-2 h-2 rounded-full bg-current"></span>
-                        {room.status === "Available" ? "Disponible" : room.status === "Occupied" ? "Ocupada" : room.status === "Dirty" ? "Sucio" : room.status === "Maintenance" ? "Mantenimiento" : room.status}
+                        {room.estado_habitacion === "Available" ? "Disponible" : room.estado_habitacion === "Occupied" ? "Ocupada" : room.estado_habitacion === "Dirty" ? "Sucio" : room.estado_habitacion === "Maintenance" ? "Mantenimiento" : room.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-700">
-                      {currentReservation ? (
-                        <span>{currentReservation.guest} · {currentReservation.status === "InHouse" ? "En estancia" : currentReservation.status === "Confirmed" ? "Confirmada" : "Pendiente"}</span>
+                      {room ? (
+                        <span>{room.huesped_actual_nombres} · {room.estado_reserva === "InHouse" ? "En estancia" : room.estado_reserva === "Confirmed" ? "Confirmada" : "Pendiente"}</span>
                       ) : (
                         <span className="text-slate-400">Libre</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-slate-700">
-                      {nextReservation ? (
-                        <span>{new Date(nextReservation.start).toLocaleDateString()} · {nextReservation.guest}</span>
+                      {room ? (
+                        <span>{room.proxima_fecha_entrada} · {room.proximo_huesped_nombres}</span>
                       ) : (
                         <span className="text-slate-400">Sin próximas reservas</span>
                       )}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <Link href={`/bd/habitaciones/${room.id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-950 text-white text-xs font-semibold hover:bg-slate-800 transition-colors">
+                      <Link href={`/bd/habitaciones/${room.espacio_id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-950 text-white text-xs font-semibold hover:bg-slate-800 transition-colors">
                         Ver detalles
                       </Link>
                     </td>
