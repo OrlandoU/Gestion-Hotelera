@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
+
+// Optional: Increase timeout if your page takes a moment to render
+export const maxDuration = 60; // Configures Netlify/Vercel timeout limits (if supported by your tier)
 
 export async function GET(request: NextRequest) {
     try {
@@ -16,16 +20,38 @@ export async function GET(request: NextRequest) {
             ordenar,
         }).toString();
 
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        });
+        const isLocal = process.env.NODE_ENV === 'development';
+        let launchOptions = {};
+
+        if (isLocal) {
+            // Local Windows configuration using your installed Chrome
+            launchOptions = {
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                defaultViewport: { width: 1440, height: 900 },
+                executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+                headless: true,
+            };
+        } else {
+            // Serverless configuration for Netlify/Linux containers
+            launchOptions = {
+                args: chromium.args ?? [],
+                defaultViewport: { width: 1440, height: 900 },
+                executablePath: await chromium.executablePath(),
+                headless: true,
+            };
+        }
+
+        // Launch browser using the environment-specific configurations
+        const browser = await puppeteer.launch(launchOptions);
 
         const page = await browser.newPage();
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
         const targetUrl = `${baseUrl}/api/reservas-pdf?${query}`;
 
-        await page.goto(targetUrl, { waitUntil: 'networkidle0' });
+        await page.goto(targetUrl, {
+            waitUntil: 'networkidle0',
+            timeout: 15000 // 15 seconds max to prevent infinite hangs
+        });
 
         const pdfBuffer = await page.pdf({
             format: 'A4',
@@ -35,6 +61,7 @@ export async function GET(request: NextRequest) {
 
         await browser.close();
 
+        // Uint8Array/Buffer works directly with NextResponse
         return new NextResponse(Buffer.from(pdfBuffer), {
             status: 200,
             headers: {
@@ -43,7 +70,10 @@ export async function GET(request: NextRequest) {
             },
         });
     } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: 'No se pudo generar el PDF' }, { status: 500 });
+        console.error('Error generating PDF:', error);
+        return NextResponse.json({
+            error: 'No se pudo generar el PDF',
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
