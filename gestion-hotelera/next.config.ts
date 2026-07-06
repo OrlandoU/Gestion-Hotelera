@@ -25,7 +25,10 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
   },
-  serverExternalPackages: ['@sparticuz/chromium'],
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
+  outputFileTracingIncludes: {
+    "/api/reservas-pdf": ["node_modules/@sparticuz/chromium/bin/"],
+  },
 };
 
 export default nextConfig;
