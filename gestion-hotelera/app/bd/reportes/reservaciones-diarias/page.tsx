@@ -3,10 +3,10 @@
 import PageHeader from "@/components/pageheader";
 import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useReservacionesDiarias } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
 import { exportToExcel } from "@/functions/excel-utils";
-import {Toaster, toast} from "sonner";
+import { Toaster, toast } from "sonner";
 
 export default function Page() {
   // Inicializamos la fecha con el día de hoy en formato YYYY-MM-DD
@@ -21,9 +21,36 @@ export default function Page() {
   const [ordenar, setOrdenar] = useState<"reserva" | "total" | "noches">("reserva");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Fallback de arreglo seguro
-  const reservacionesData = reservacionesApi || [];
+  const reservacionesData = useMemo(() => reservacionesApi || [], [reservacionesApi]);
+
+  const normalizarEstadoHabitacion = (estado?: string) => {
+    const valor = (estado || "").trim().toLowerCase();
+
+    if (["finalizada", "finalizado", "completada", "completado", "completed", "done"].includes(valor)) {
+      return "Finalizada";
+    }
+
+    if (["reservada", "reservado", "reserva", "confirmada", "confirmado", "activa", "active", "booked"].includes(valor)) {
+      return "Reservada";
+    }
+
+    if (["no asistio", "no asistió", "noasistio", "noshow", "no-show", "no_show"].includes(valor)) {
+      return "No asistio";
+    }
+
+    if (["cancelada", "cancelado", "cancel", "canceled", "cancellation"].includes(valor)) {
+      return "Cancelada";
+    }
+
+    if (["hospedado", "hospedada", "ocupado", "checked-in", "checkin", "check-in"].includes(valor)) {
+      return "Hospedado";
+    }
+
+    return "Desconocido";
+  };
 
   // Filtrado y Ordenamiento Avanzado en memoria
   const reservacionesFiltradas = useMemo(() => {
@@ -31,7 +58,8 @@ export default function Page() {
 
     // Filtro por estado
     if (filtroEstado !== "Todos") {
-      resultado = resultado.filter(r => r.estado?.toLowerCase() === filtroEstado.toLowerCase());
+      const estadoSeleccionado = normalizarEstadoHabitacion(filtroEstado);
+      resultado = resultado.filter(r => normalizarEstadoHabitacion(r.reserva_estado) === estadoSeleccionado);
     }
 
     // Filtro por búsqueda textual (ID de huésped o número de reserva)
@@ -55,10 +83,6 @@ export default function Page() {
     return resultado;
   }, [reservacionesData, filtroEstado, busqueda, ordenar]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [filtroEstado, busqueda, ordenar, pageSize]);
-
   const reservacionesMostradas = useMemo(() => {
     const start = (page - 1) * pageSize;
     return reservacionesFiltradas.slice(start, start + pageSize);
@@ -72,7 +96,7 @@ export default function Page() {
 
     // Contadores de estados para los selectores y métricas
     const porEstado = reservacionesData.reduce((acc: Record<string, number>, r) => {
-      const est = r.estado || "Desconocido";
+      const est = normalizarEstadoHabitacion(r.reserva_estado);
       acc[est] = (acc[est] || 0) + 1;
       return acc;
     }, {});
@@ -83,15 +107,14 @@ export default function Page() {
   // Mapeo semántico de colores para los badges de estado
   const getColorEstado = (estado: string) => {
     switch (estado?.toLowerCase()) {
-      case "finalizada":
-        return { bg: "bg-emerald-100 text-emerald-800", border: "border-l-4 border-emerald-500", icon: "task_alt", text: "text-emerald-700" };
-      case "activa":
-      case "confirmada":
+      case "reservada":
         return { bg: "bg-blue-100 text-blue-800", border: "border-l-4 border-blue-500", icon: "check_circle", text: "text-blue-700" };
-      case "pendiente":
-        return { bg: "bg-amber-100 text-amber-800", border: "border-l-4 border-amber-500", icon: "hourglass_empty", text: "text-amber-700" };
+      case "no asistio":
+        return { bg: "bg-amber-100 text-amber-800", border: "border-l-4 border-amber-500", icon: "event_busy", text: "text-amber-700" };
       case "cancelada":
         return { bg: "bg-rose-100 text-rose-800", border: "border-l-4 border-rose-500", icon: "cancel", text: "text-rose-700" };
+      case "hospedado":
+        return { bg: "bg-emerald-100 text-emerald-800", border: "border-l-4 border-emerald-500", icon: "task_alt", text: "text-emerald-700" };
       default:
         return { bg: "bg-slate-100 text-slate-800", border: "border-l-4 border-slate-300", icon: "info", text: "text-slate-700" };
     }
@@ -121,13 +144,49 @@ export default function Page() {
     toast.success("Exportación completada exitosamente!")
   };
 
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      params.set("fecha", fechaFiltro);
+      if (filtroEstado !== "Todos") {
+        params.set("estado", filtroEstado);
+      }
+      if (busqueda.trim()) {
+        params.set("busqueda", busqueda.trim());
+      }
+      params.set("ordenar", ordenar);
+
+      const response = await fetch(`/api/reservas-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `reservaciones-diarias-${fechaFiltro || new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   // Renderizado defensivo en caso de error crítico de la API
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
-          name="Reservaciones Diarias"
-          subtitle="Monitoreo y control de ingresos, salidas y ocupación programada"
+          name="Reservaciones Creadas"
+          subtitle="Listado de reservaciones registradas en la fecha seleccionada"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
           <span className="material-symbols-outlined text-[32px] text-red-600">error</span>
@@ -152,9 +211,9 @@ export default function Page() {
       {/* Encabezado y Acción Global */}
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader 
-            name="Reporte de Reservaciones Diarias" 
-            subtitle="Monitoreo y control de ingresos, salidas y ocupación programada"
+          <PageHeader
+            name="Reporte Diario de Reservaciones Creadas"
+            subtitle="Listado de reservaciones registradas en la fecha seleccionada"
           />
         </div>
 
@@ -182,10 +241,18 @@ export default function Page() {
               <span className="material-symbols-outlined text-[18px]">file_upload</span>
               Exportar
             </button>
+            <button
+              onClick={handleGeneratePdf}
+              disabled={reservacionesFiltradas.length === 0 || isGeneratingPdf}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              title="Generar PDF con los filtros actuales"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
+              {isGeneratingPdf ? "Generando..." : "PDF"}
+            </button>
           </div>
         )}
       </div>
-      <Toaster richColors expand/>
 
       {/* Paneles KPI Cuantitativos */}
       {/* <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -245,7 +312,7 @@ export default function Page() {
 
           {/* Criterio 1: Fecha Focal de Consulta (Parámetro API) */}
           <div>
-            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Fecha de Consulta</label>
+            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Fecha de Creación</label>
             <input
               type="date"
               value={fechaFiltro}
@@ -305,10 +372,10 @@ export default function Page() {
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-300 bg-[#f7f9fb] flex justify-between items-center">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000]">
-            Flujo de Reservaciones {filtroEstado !== "Todos" && `(${filtroEstado})`}
+            Reservaciones creadas en la fecha seleccionada {filtroEstado !== "Todos" && `(${filtroEstado})`}
           </h3>
           <span className="text-[14px] font-semibold text-[#515f74]">
-            {reservacionesFiltradas.length} encontradas
+            {reservacionesFiltradas.length} Registros encontrados
           </span>
         </div>
 
@@ -340,7 +407,8 @@ export default function Page() {
                 </thead>
                 <tbody>
                   {reservacionesMostradas.map((reserva) => {
-                    const colorEstado = getColorEstado(reserva.estado || "");
+                    const estadoTexto = normalizarEstadoHabitacion(reserva.reserva_estado);
+                    const colorEstado = getColorEstado(estadoTexto);
                     return (
                       <tr key={reserva.reserva_id} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
                         <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>
@@ -352,7 +420,7 @@ export default function Page() {
                         </td>
                         <td className="px-6 py-4">
                           <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${colorEstado.bg} inline-flex items-center gap-1`}>
-                            {reserva.estado}
+                            {estadoTexto}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
@@ -472,17 +540,24 @@ export default function Page() {
       </section> */}
 
       {/* Footer Informativo de Transparencia de la API */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4 mt-4">
+      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
             <span className="material-symbols-outlined text-[16px]">info</span>
-            <span>Auditoría de reservaciones parametrizada por fecha en tiempo real</span>
+            <span>Datos obtenidos desde API en tiempo real</span>
+            {loading && <span className="animate-pulse">• Actualizando...</span>}
           </div>
-          <span className="text-[12px] font-semibold text-slate-500">
-            Filtro base: {fechaFiltro}
-          </span>
+          <button
+            onClick={refetch}
+            className="text-[#008cc7] hover:text-[#006fa0] font-semibold hover:underline text-[12px] flex items-center gap-1"
+          >
+            <span className="material-symbols-outlined text-[14px]">refresh</span>
+            Actualizar
+          </button>
         </div>
       </section>
+      <Toaster richColors expand />
+
     </ViewTransition>
   );
 }

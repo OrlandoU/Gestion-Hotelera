@@ -2,7 +2,7 @@
 import PageHeader from "@/components/pageheader";
 import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useEstadoHabitaciones } from "@/functions/reportes-api";
 import { exportToExcel } from "@/functions/excel-utils";
 import { Toaster, toast } from "sonner";
@@ -18,7 +18,7 @@ export default function Page() {
   const [pageSize, setPageSize] = useState(10);
 
   // Usar datos de API si existen, sino array vacío
-  const habitacionesData = habitacionesApi || [];
+  const habitacionesData = useMemo(() => habitacionesApi || [], [habitacionesApi]);
 
   // Cálculos y filtrados
   const habitacionesFiltradas = useMemo(() => {
@@ -44,15 +44,6 @@ export default function Page() {
 
     return resultado;
   }, [habitacionesData, filtroTipo, busqueda, ordenar]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [filtroTipo, busqueda, ordenar, pageSize]);
-
-  const habitacionesMostradas = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return habitacionesFiltradas.slice(start, start + pageSize);
-  }, [habitacionesFiltradas, page, pageSize]);
 
   // Estadísticas
   const stats = useMemo(() => {
@@ -112,12 +103,19 @@ export default function Page() {
     toast.success("Exportación completada exitosamente!")
   };
 
+  const totalPaginas = Math.max(1, Math.ceil(habitacionesFiltradas.length / pageSize));
+  const paginaValida = Math.min(page, totalPaginas);
+  const habitacionesMostradas = useMemo(() => {
+    const start = (paginaValida - 1) * pageSize;
+    return habitacionesFiltradas.slice(start, start + pageSize);
+  }, [habitacionesFiltradas, paginaValida, pageSize]);
+
   // Renderizar error
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Lista Detallada del Estado de las Habitaciones" 
+        <PageHeader
+          name="Lista Detallada del Estado de las Habitaciones"
           subtitle="Visualización y gestión del inventario de espacios disponibles"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -142,8 +140,8 @@ export default function Page() {
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader 
-            name="Lista del estado de las Habitaciones" 
+          <PageHeader
+            name="Lista del estado de las Habitaciones"
             subtitle="Visualización y gestión del inventario de espacios disponibles"
           />
         </div>
@@ -175,7 +173,6 @@ export default function Page() {
           </div>
         )}
       </div>
-      <Toaster richColors expand/>
 
       {/* Métricas KPI */}
       {/* <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -282,7 +279,7 @@ export default function Page() {
             Habitaciones {filtroTipo !== "Todos" && `(${filtroTipo})`}
           </h3>
           <span className="text-[14px] font-semibold text-[#515f74]">
-            {habitacionesFiltradas.length} de {stats.totalHabitaciones}
+            {habitacionesFiltradas.length} Registros encontrados
           </span>
         </div>
 
@@ -393,7 +390,7 @@ export default function Page() {
             )}
           </div>
         </div> */}
-        {/* 
+      {/* 
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Leyenda de Estados</h3>
           <div className="flex flex-col gap-3">
@@ -469,6 +466,8 @@ export default function Page() {
           </button>
         </div>
       </section>
+      <Toaster richColors expand />
+
     </ViewTransition>
   );
 }

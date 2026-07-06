@@ -2,10 +2,10 @@
 import PageHeader from "@/components/pageheader";
 import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useClientesFrecuentes } from "@/functions/reportes-api";
 import { exportToExcel } from "@/functions/excel-utils";
-import {Toaster, toast} from "sonner";
+import { Toaster, toast } from "sonner";
 
 export default function Page() {
   const { data: clientesApi, loading, error, refetch } = useClientesFrecuentes();
@@ -16,7 +16,7 @@ export default function Page() {
   const [pageSize, setPageSize] = useState(10);
 
   // Usar datos de API si existen, sino array vacío
-  const clientesData = clientesApi || [];
+  const clientesData = useMemo(() => clientesApi || [], [clientesApi]);
 
   // Cálculos y filtrados
   const clientesFiltrados = useMemo(() => {
@@ -25,7 +25,7 @@ export default function Page() {
     // Filtrar por búsqueda (nombre, apellido, teléfono)
     if (busqueda) {
       const busquedaLower = busqueda.toLowerCase();
-      resultado = resultado.filter(c => 
+      resultado = resultado.filter(c =>
         c.nombres?.toLowerCase().includes(busquedaLower) ||
         c.apellidos?.toLowerCase().includes(busquedaLower) ||
         c.telefono?.includes(busqueda)
@@ -50,31 +50,10 @@ export default function Page() {
     return resultado;
   }, [clientesData, busqueda, ordenar, filtroFrecuenciaMin]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [busqueda, ordenar, filtroFrecuenciaMin, pageSize]);
-
   const clientesMostrados = useMemo(() => {
     const start = (page - 1) * pageSize;
     return clientesFiltrados.slice(start, start + pageSize);
   }, [clientesFiltrados, page, pageSize]);
-
-  // Estadísticas
-  const stats = useMemo(() => {
-    const totalClientes = clientesData.length;
-    const visitasTotales = clientesData.reduce((sum, c) => sum + (c.frecuencia || 0), 0);
-    const frecuenciaPromedio = totalClientes > 0 ? (visitasTotales / totalClientes).toFixed(1) : 0;
-    const clientesMasFrequentes = [...clientesData].sort((a, b) => (b.frecuencia || 0) - (a.frecuencia || 0)).slice(0, 5);
-    
-    // Distribución por rango de frecuencia
-    const distribucion = {
-      "5 visitas": clientesData.filter(c =>  (c.frecuencia || 0) <= 5).length,
-      "6 visitas": clientesData.filter(c =>  (c.frecuencia || 0) === 6).length,
-      "7+ visitas": clientesData.filter(c => (c.frecuencia || 0) >= 7).length,
-    };
-
-    return { totalClientes, visitasTotales, frecuenciaPromedio, clientesMasFrequentes, distribucion };
-  }, [clientesData]);
 
   const getNivelFrecuencia = (frecuencia: number) => {
     if (frecuencia >= 7) return { label: "VIP", color: "bg-purple-100 text-purple-800", icon: "star" };
@@ -100,8 +79,8 @@ export default function Page() {
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Clientes Frecuentes" 
+        <PageHeader
+          name="Clientes Frecuentes"
           subtitle="Análisis de huéspedes recurrentes y patrones de visita"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -109,7 +88,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error cargando datos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button 
+            <button
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -126,8 +105,8 @@ export default function Page() {
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader 
-            name="Listado de Clientes Frecuentes" 
+          <PageHeader
+            name="Listado de Clientes Frecuentes"
             subtitle="Análisis de huéspedes recurrentes y patrones de visita"
           />
         </div>
@@ -159,7 +138,7 @@ export default function Page() {
           </div>
         )}
       </div>
-      <Toaster richColors expand/>
+
       {/* Métricas KPI
       <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
@@ -211,7 +190,7 @@ export default function Page() {
         </div>
       </section> */}
 
-      
+
 
       {/* Filtros y búsqueda */}
       <section className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
@@ -228,7 +207,7 @@ export default function Page() {
               disabled={loading}
             />
           </div>
-          
+
           <div>
             <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Frecuencia mínima</label>
             <select
@@ -267,7 +246,7 @@ export default function Page() {
             Listado de Clientes
           </h3>
           <span className="text-[14px] font-semibold text-[#515f74]">
-            {clientesFiltrados.length} de {stats.totalClientes}
+            {clientesFiltrados.length} Registros encontrados
           </span>
         </div>
 
@@ -374,7 +353,7 @@ export default function Page() {
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Frecuencia Promedio</p>
               <h4 className="text-[24px] font-bold text-[#000000]">
-                {clientesFiltrados.length > 0 
+                {clientesFiltrados.length > 0
                   ? (clientesFiltrados.reduce((sum, c) => sum + (c.frecuencia || 0), 0) / clientesFiltrados.length).toFixed(1)
                   : 0}
               </h4>
@@ -487,7 +466,7 @@ export default function Page() {
             <span>Datos obtenidos desde API en tiempo real</span>
             {loading && <span className="animate-pulse">• Actualizando...</span>}
           </div>
-          <button 
+          <button
             onClick={refetch}
             className="text-[#008cc7] hover:text-[#006fa0] font-semibold hover:underline text-[12px] flex items-center gap-1"
           >
@@ -496,6 +475,7 @@ export default function Page() {
           </button>
         </div>
       </section>
+      <Toaster richColors expand />
     </ViewTransition>
   );
 }

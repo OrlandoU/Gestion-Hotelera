@@ -3,14 +3,14 @@
 import PageHeader from "@/components/pageheader";
 import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useActividadesMantenimiento } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
 import { exportToExcel } from "@/functions/excel-utils";
 import { toast, Toaster } from "sonner";
 
 export default function Page() {
   const { data: actividadesApi, loading, error, refetch } = useActividadesMantenimiento();
-  
+
   const [busqueda, setBusqueda] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [fechaFiltro, setFechaFiltro] = useState<string>(""); // "" representa "Todas las fechas"
@@ -19,7 +19,7 @@ export default function Page() {
   const [pageSize, setPageSize] = useState(10);
 
   // Fallback seguro de arreglo
-  const actividadesData = actividadesApi || [];
+  const actividadesData = useMemo(() => actividadesApi || [], [actividadesApi]);
 
   // KPIs Estratégicos calculados en memoria sobre el total de la data cargada
   const stats = useMemo(() => {
@@ -58,7 +58,7 @@ export default function Page() {
     // 3. Búsqueda por Espacio, Responsable o Descripción
     if (busqueda) {
       const b = busqueda.toLowerCase();
-      resultado = resultado.filter(a => 
+      resultado = resultado.filter(a =>
         a.numero_espacio?.toLowerCase().includes(b) ||
         a.nombre_responsable?.toLowerCase().includes(b) ||
         a.descripcion?.toLowerCase().includes(b)
@@ -81,10 +81,6 @@ export default function Page() {
 
     return resultado;
   }, [actividadesData, fechaFiltro, filtroTipo, busqueda, ordenar]);
-
-  useEffect(() => {
-    setPage(1);
-  }, [fechaFiltro, filtroTipo, busqueda, ordenar, pageSize]);
 
   const actividadesMostradas = useMemo(() => {
     const start = (page - 1) * pageSize;
@@ -128,8 +124,8 @@ export default function Page() {
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Actividades de Mantenimiento" 
+        <PageHeader
+          name="Actividades de Mantenimiento"
           subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -137,7 +133,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error al solicitar bitácora de actividades</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button 
+            <button
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -155,12 +151,12 @@ export default function Page() {
       {/* Encabezado y Acción Global */}
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader 
-            name="Reporte de Actividades Mantenimiento/Limpieza Diarias" 
+          <PageHeader
+            name="Reporte de Actividades Mantenimiento/Limpieza Diarias"
             subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
           />
         </div>
-        
+
         {loading ? (
           <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
             <span className="material-symbols-outlined animate-spin text-blue-600">refresh</span>
@@ -168,7 +164,7 @@ export default function Page() {
           </div>
         ) : (
           <div className="flex flex-wrap items-center gap-2">
-            <button 
+            <button
               onClick={refetch}
               className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
             >
@@ -187,7 +183,6 @@ export default function Page() {
           </div>
         )}
       </div>
-      <Toaster richColors expand/>
 
       {/* Bloque Informativo de KPIs Cuantitativos */}
       {/* <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -232,14 +227,14 @@ export default function Page() {
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 shadow-level-1">
         <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
+
           {/* Nuevo Criterio: Filtro Cronológico */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="block text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha de Ejecución</label>
               {fechaFiltro && (
-                <button 
-                  onClick={() => setFechaFiltro("")} 
+                <button
+                  onClick={() => setFechaFiltro("")}
                   className="text-[11px] text-[#008cc7] font-semibold hover:underline"
                 >
                   Ver Todas
@@ -289,7 +284,7 @@ export default function Page() {
             <label className="block text-[11px] font-bold text-[#515f74] mb-2 uppercase tracking-wider">Clasificación de filas</label>
             <select
               value={ordenar}
-              onChange={(e) => setOrdenar(e.target.value as any)}
+              onChange={(e) => setOrdenar(e.target.value as "reciente" | "espacio" | "responsable")}
               className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             >
@@ -308,7 +303,7 @@ export default function Page() {
             Bitácora de Saneamiento y Logística
           </h3>
           <span className="text-[13px] font-semibold text-[#515f74]">
-            {actividadesFiltradas.length} de {stats.totalActividades} registros visibles
+            {actividadesFiltradas.length} Registros encontrados
           </span>
         </div>
 
@@ -386,15 +381,24 @@ export default function Page() {
       </section>
 
       {/* Footer del Reporte */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4 mt-4">
-        <div className="flex items-center justify-between text-[12px] font-medium text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">history_toggle_off</span>
-            <span>Auditoría cronológica. Remueve o selecciona un día específico usando el calendario.</span>
+      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
+            <span className="material-symbols-outlined text-[16px]">info</span>
+            <span>Datos obtenidos desde API en tiempo real</span>
+            {loading && <span className="animate-pulse">• Actualizando...</span>}
           </div>
-          <span>Reporte Operativo</span>
+          <button
+            onClick={refetch}
+            className="text-[#008cc7] hover:text-[#006fa0] font-semibold hover:underline text-[12px] flex items-center gap-1"
+          >
+            <span className="material-symbols-outlined text-[14px]">refresh</span>
+            Actualizar
+          </button>
         </div>
       </section>
+      <Toaster richColors expand />
+
     </ViewTransition>
   );
 }
