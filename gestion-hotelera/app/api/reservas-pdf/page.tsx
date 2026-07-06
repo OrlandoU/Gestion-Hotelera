@@ -1,7 +1,7 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
-import { ViewTransition } from "react";
+import { Suspense, ViewTransition } from "react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useReservacionesDiarias } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
@@ -9,6 +9,14 @@ import Image from "next/image";
 import logo from "@/public/logo.png";
 
 export default function Page() {
+    return (
+        <Suspense fallback={<div className="p-6 text-sm text-slate-500">Cargando reporte…</div>}>
+            <ReservasPdfContent />
+        </Suspense>
+    );
+}
+
+function ReservasPdfContent() {
     const searchParams = useSearchParams();
 
     // Inicializamos la fecha con el día de hoy en formato YYYY-MM-DD
