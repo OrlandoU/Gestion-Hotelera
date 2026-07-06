@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
         const browser = await puppeteer.launch(launchOptions);
 
         const page = await browser.newPage();
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const baseUrl = process.env.URL || 'http://localhost:3000';
         const targetUrl = `${baseUrl}/api/reservas-pdf?${query}`;
 
         await page.goto(targetUrl, {
