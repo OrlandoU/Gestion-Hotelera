@@ -58,7 +58,9 @@ function ReservasPdfContent() {
         if (["hospedado", "hospedada", "ocupado", "checked-in", "checkin", "check-in"].includes(valor)) {
             return "Hospedado";
         }
-
+        if (["pendiente", "pending", "en espera", "waiting"].includes(valor)) {
+            return "Pendiente";
+        }
         return "Desconocido";
     };
 
@@ -98,6 +100,11 @@ function ReservasPdfContent() {
     // Mapeo semántico de colores para los badges de estado
     const getColorEstado = (estado: string) => {
         switch (estado?.toLowerCase()) {
+            case "pendiente":
+                return { bg: "bg-yellow-100 text-yellow-800", border: "border-l-4 border-yellow-500", icon: "hourglass_empty", text: "text-yellow-700" };
+            case "finalizada":
+                return { bg: "bg-emerald-100 text-emerald-800", border: "border-l-4 border-emerald-500", icon: "task_alt", text: "text-emerald-700" };
+
             case "reservada":
                 return { bg: "bg-blue-100 text-blue-800", border: "border-l-4 border-blue-500", icon: "check_circle", text: "text-blue-700" };
             case "no asistio":
@@ -281,7 +288,7 @@ function ReservasPdfContent() {
                                                     <span className="bg-slate-200 px-2 py-0.5 rounded text-nowrap">E: {reserva.espacio_id}</span>
                                                 </td>
                                                 <td className="px-2 py-2">
-                                                    <span className={`text-[10px] font-bold rounded-full ${colorEstado.bg} inline-flex items-center gap-1`}>
+                                                    <span className={`text-[10px] font-bold rounded-full ${colorEstado.bg} inline-flex items-center gap-1 px-2 `}>
                                                         {estadoTexto}
                                                     </span>
                                                 </td>
@@ -312,7 +319,7 @@ function ReservasPdfContent() {
 
             {/* Resumen Final de Impacto Monetario y Operativo */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
+                {/* <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
                     <div className="flex items-start justify-between">
                         <div>
                             <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Muestra Filtrada</p>
@@ -321,7 +328,7 @@ function ReservasPdfContent() {
                         </div>
                         <span className="material-symbols-outlined text-[28px] text-[#008cc7]">segment</span>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
                     <div className="flex items-start justify-between">

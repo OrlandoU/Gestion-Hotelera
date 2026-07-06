@@ -264,7 +264,7 @@ export default function Page() {
 
       {/* Paneles KPI Cuantitativos */}
       {/* <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Reservas en Fecha</span>
             <div className="p-2 bg-[#c9e6ff] rounded-lg flex items-center">
@@ -276,7 +276,7 @@ export default function Page() {
           </h2>
         </div>
 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ingresos Brutos</span>
             <div className="p-2 bg-[#d5e3fd] rounded-lg flex items-center">
@@ -288,7 +288,7 @@ export default function Page() {
           </h2>
         </div>
 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Precio Promedio de Reservacion</span>
             <div className="p-2 bg-[#ffdad6] rounded-lg flex items-center">
@@ -300,7 +300,7 @@ export default function Page() {
           </h2>
         </div>
 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Efectividad Operativa</span>
             <div className="p-2 bg-[#e0e3e5] rounded-lg flex items-center">
@@ -314,7 +314,7 @@ export default function Page() {
       </section> */}
 
       {/* Segmento de Segmentación y Filtros de Búsqueda */}
-      <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6">
+      <section className="bg-white card-shadow border border-slate-300 rounded-xl p-6">
         <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
@@ -377,7 +377,7 @@ export default function Page() {
       </section>
 
       {/* Matriz / Tabla Estructurada de Datos */}
-      <section className="bg-[#ffffff] border border-slate-300 rounded-xl overflow-hidden">
+      <section className="bg-white card-shadow border border-slate-300 rounded-xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-300 bg-[#f7f9fb] flex justify-between items-center">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000]">
             Reservaciones creadas en la fecha seleccionada {filtroEstado !== "Todos" && `(${filtroEstado})`}
@@ -466,7 +466,7 @@ export default function Page() {
 
       {/* Resumen Final de Impacto Monetario y Operativo */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Muestra Filtrada</p>
@@ -477,7 +477,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingresos de la Selección</p>
@@ -495,7 +495,7 @@ export default function Page() {
       {/*
       <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         {/* Total Reservaciones 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Reservas en Fecha</span>
             <div className="p-2 bg-[#c9e6ff] rounded-lg flex items-center">
@@ -508,7 +508,7 @@ export default function Page() {
         </div>
 
         {/* Ingresos Totales del Día 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ingresos Brutos</span>
             <div className="p-2 bg-[#d5e3fd] rounded-lg flex items-center">
@@ -521,7 +521,7 @@ export default function Page() {
         </div>
 
         {/* Tarifa Promedio por Transacción 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Ticket Promedio</span>
             <div className="p-2 bg-[#ffdad6] rounded-lg flex items-center">
@@ -534,7 +534,7 @@ export default function Page() {
         </div>
 
         {/* Tasa Operativa Acumulada 
-        <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
+        <div className="bg-white card-shadow border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Efectividad Operativa</span>
             <div className="p-2 bg-[#e0e3e5] rounded-lg flex items-center">
