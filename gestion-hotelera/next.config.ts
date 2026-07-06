@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
   },
+  serverExternalPackages: ['@sparticuz/chromium'],
 };
 
 export default nextConfig;

@@ -33,10 +33,14 @@ export async function GET(request: NextRequest) {
             };
         } else {
             // Serverless configuration for Netlify/Linux containers
+            const prodExecutablePath = await chromium.executablePath(
+                '/var/task/node_modules/@sparticuz/chromium/bin'
+            );
+
             launchOptions = {
                 args: chromium.args ?? [],
                 defaultViewport: { width: 1440, height: 900 },
-                executablePath: await chromium.executablePath(),
+                executablePath: prodExecutablePath,
                 headless: true,
             };
         }
