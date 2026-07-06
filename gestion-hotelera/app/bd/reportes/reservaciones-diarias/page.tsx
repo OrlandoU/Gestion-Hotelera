@@ -49,6 +49,10 @@ export default function Page() {
       return "Hospedado";
     }
 
+    if (["pendiente", "pending", "en espera", "waiting"].includes(valor)) {
+      return "Pendiente";
+    }
+
     return "Desconocido";
   };
 
@@ -107,6 +111,10 @@ export default function Page() {
   // Mapeo semántico de colores para los badges de estado
   const getColorEstado = (estado: string) => {
     switch (estado?.toLowerCase()) {
+      case "pendiente":
+        return { bg: "bg-yellow-100 text-yellow-800", border: "border-l-4 border-yellow-500", icon: "hourglass_empty", text: "text-yellow-700" };
+      case "finalizada":
+        return { bg: "bg-emerald-100 text-emerald-800", border: "border-l-4 border-emerald-500", icon: "task_alt", text: "text-emerald-700" };
       case "reservada":
         return { bg: "bg-blue-100 text-blue-800", border: "border-l-4 border-blue-500", icon: "check_circle", text: "text-blue-700" };
       case "no asistio":
