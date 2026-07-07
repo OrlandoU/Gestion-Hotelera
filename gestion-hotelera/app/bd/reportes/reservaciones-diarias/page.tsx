@@ -404,7 +404,7 @@ export default function Page() {
                 <thead>
                   <tr className="border-b border-slate-300 bg-[#f7f9fb]">
                     <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Código Reserva</th>
-                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">IDs (Huésped / Espacio)</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Huésped / Espacio</th>
                     <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Estado</th>
                     <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Check In</th>
                     <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Check Out</th>
@@ -423,8 +423,8 @@ export default function Page() {
                           {reserva.numero_reserva}
                         </td>
                         <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
-                          <span className="bg-slate-100 px-2 py-0.5 rounded text-xs mr-1">H: {reserva.huesped_id}</span>
-                          <span className="bg-slate-200 px-2 py-0.5 rounded text-xs">E: {reserva.espacio_id}</span>
+                          <span className="bg-slate-100 px-2 py-0.5 rounded text-xs mr-1">{reserva.nombres}</span>
+                          <span className="bg-slate-200 px-2 py-0.5 rounded text-xs">{reserva.numero_espacio}</span>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${colorEstado.bg} inline-flex items-center gap-1`}>

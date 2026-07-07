@@ -209,7 +209,7 @@ export default function Page() {
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Frecuencia mínima</label>
+            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Cantidad de visitas</label>
             <select
               value={filtroFrecuenciaMin}
               onChange={(e) => setFiltroFrecuenciaMin(Number(e.target.value))}
@@ -351,7 +351,7 @@ export default function Page() {
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Frecuencia Promedio</p>
+              <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Cantidad de Visitas Promedio</p>
               <h4 className="text-[24px] font-bold text-[#000000]">
                 {clientesFiltrados.length > 0
                   ? (clientesFiltrados.reduce((sum, c) => sum + (c.frecuencia || 0), 0) / clientesFiltrados.length).toFixed(1)

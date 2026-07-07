@@ -37,10 +37,10 @@ export default function Page() {
   // Paleta de colores consistente para identificar de manera fija cada amenidad/producto
   const coloresProductos: Record<string, string> = useMemo(() => {
     return {
-      "Jabón de Tocador Hotelero Barra 20g": "#008cc7",
-      "shampoo Hotelero Sachet 30ml": "#10b981",
-      "Cloro en Gel Maxiclean": "#f59e0b",
-      "Desinfectante de Lavanda Fabuloso": "#ec4899"
+      "Jabón de Tocador Hotelero Barra 20g": "#00a8f0",
+      "shampoo Hotelero Sachet 30ml": "#0086c0",
+      "Cloro en Gel Maxiclean": "#006894",
+      "Desinfectante de Lavanda Fabuloso": "#004d6e"
     };
   }, []);
   const colorFallback = "#64748b";
@@ -63,6 +63,7 @@ export default function Page() {
       }
       // Asignar la cantidad gastada al producto correspondiente en esa fecha
       agrupadoPorFecha[item.fecha][item.nombre] = item.cantidad_gastada;
+      console.log(agrupadoPorFecha)
     });
 
     // Ordenar cronológicamente por la fecha original
