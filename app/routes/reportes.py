@@ -10,13 +10,13 @@ router = APIRouter(
 )
 
 @router.get("")
-async def read_reportes():
+def read_reportes():
     return {"Hello": "World"}
 
 
 # REPORTES 
 @router.get("/clientes")
-async def read_huespedes_frecuentes(db = Depends(get_db)):
+def read_huespedes_frecuentes(db = Depends(get_db)):
     try:
         # Usamos DictCursor para que devuelva diccionarios automáticamente
         cursor = db.cursor(as_dict=True)
@@ -29,7 +29,7 @@ async def read_huespedes_frecuentes(db = Depends(get_db)):
 
 
 @router.get("/reservaciones-diarias")
-async def read_reporte_reservaciones_diarias(
+def read_reporte_reservaciones_diarias(
     fecha: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
     db = Depends(get_db)
 ):
@@ -45,7 +45,7 @@ async def read_reporte_reservaciones_diarias(
 
 
 @router.get("/estado-de-habitaciones")
-async def read_reporte_habitaciones(db = Depends(get_db)):
+def read_reporte_habitaciones(db = Depends(get_db)):
     try:
         cursor = db.cursor(as_dict=True)
         cursor.execute("SELECT * FROM vw_reporte_habitaciones")
@@ -57,7 +57,7 @@ async def read_reporte_habitaciones(db = Depends(get_db)):
 
 
 @router.get("/actividades-mantenimientos-diarias")
-async def read_reporte_actividades_mantenimiento(
+def read_reporte_actividades_mantenimiento(
     tipo: str = Query(default=None, description="Tipo de actividad"),
     usuario_id: int = Query(default=None, description="ID del usuario"),
     fecha_inicio: date = Query(default=None, description="Formato YYYY-MM-DD"),
@@ -78,7 +78,7 @@ async def read_reporte_actividades_mantenimiento(
 
 
 @router.get("/pagos-realizados")
-async def read_pagos_realizados(
+def read_pagos_realizados(
     fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
     db = Depends(get_db)
 ):
@@ -93,7 +93,7 @@ async def read_pagos_realizados(
 
 
 @router.get("/consumo-stock-semanal")
-async def read_consumo_stock_semanal(
+def read_consumo_stock_semanal(
     fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
     db = Depends(get_db)
 ):
@@ -108,7 +108,7 @@ async def read_consumo_stock_semanal(
 
 
 @router.get("/estadistica-ocupacion-mensual")
-async def read_estadistica_ocupacion_mensual(
+def read_estadistica_ocupacion_mensual(
     fecha: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
     db = Depends(get_db)
 ):
@@ -123,7 +123,7 @@ async def read_estadistica_ocupacion_mensual(
 
 
 @router.get("/ingresos-tipo-habitacion")
-async def read_ingresos_tipo_habitacion(
+def read_ingresos_tipo_habitacion(
     fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
     db = Depends(get_db)
 ):
@@ -138,7 +138,7 @@ async def read_ingresos_tipo_habitacion(
     
 
 @router.get("/consumo-amenidades-mensual")
-async def read_consumo_amenidades_mensual(
+def read_consumo_amenidades_mensual(
     fecha: date = Query(default=None, description="Formato YYYY-MM-DD"),
     db = Depends(get_db)
 ):

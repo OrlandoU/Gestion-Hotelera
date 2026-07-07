@@ -49,12 +49,13 @@ export default function Page() {
 
   const stats = useMemo(() => {
     if (ocupacionData.length === 0) return null;
-
+    
     const totalHabitaciones = 25;
-    const diasDelMes = new Date(new Date(fechaSeleccionada).getFullYear(), new Date(fechaSeleccionada).getMonth() + 1, 0).getDate();
+    const diasDelMes = new Date(new Date(fechaSeleccionada).getFullYear(), new Date(fechaSeleccionada).getMonth() + 2, 0).getDate();
     const diasDelMesReales = new Date(new Date(fechaSeleccionada).getFullYear(), new Date(fechaSeleccionada).getMonth() + 2, 0).getDate();
     const capacidadTotalDias = totalHabitaciones * diasDelMes;
     const totalReservas = ocupacionData.reduce((sum, d) => sum + d.cantidad_unidades, 0);
+    console.log(fechaSeleccionada, new Date(fechaSeleccionada).getMonth())
 
     // Ocupación general = (total_dias_mes / (25 habitaciones * días del mes)) * 100
     const ocupacionGeneral = (ocupacionData[0]?.total_dias_mes || 0) / capacidadTotalDias * 100;
