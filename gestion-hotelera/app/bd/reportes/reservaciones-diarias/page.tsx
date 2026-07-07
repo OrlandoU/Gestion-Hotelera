@@ -361,7 +361,7 @@ export default function Page() {
 
           {/* Criterio 4: Clasificación del Listado */}
           <div>
-            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Ordenar registros</label>
+            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Ordenar por</label>
             <select
               value={ordenar}
               onChange={(e) => setOrdenar(e.target.value as "reserva" | "total" | "noches")}

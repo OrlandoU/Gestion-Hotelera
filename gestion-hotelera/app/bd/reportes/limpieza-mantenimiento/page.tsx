@@ -281,7 +281,7 @@ export default function Page() {
 
           {/* Criterio de Ordenamiento */}
           <div>
-            <label className="block text-[11px] font-bold text-[#515f74] mb-2 uppercase tracking-wider">Clasificación de filas</label>
+            <label className="block text-[11px] font-bold text-[#515f74] mb-2 uppercase tracking-wider">Ordenar por</label>
             <select
               value={ordenar}
               onChange={(e) => setOrdenar(e.target.value as "reciente" | "espacio" | "responsable")}
