@@ -27,7 +27,6 @@ function OcupacionMensualContent() {
     const fechaFiltro = searchParams.get("fecha") || mesActualStr;
     const fechaCompleta = `${fechaFiltro}-01`;
 
-    const [paginaActual, setPaginaActual] = useState(1);
     const elementosPorPagina = 8;
     const { data: ocupacionApi, loading, error } = useOcupacionMensual(fechaCompleta);
 
@@ -92,11 +91,6 @@ function OcupacionMensualContent() {
     }, [ocupacionData]);
 
     const totalPaginas = Math.max(1, Math.ceil(ocupacionData.length / elementosPorPagina));
-    const paginaValida = Math.min(paginaActual, totalPaginas);
-    const datosPaginados = useMemo(() => {
-        const inicio = (paginaValida - 1) * elementosPorPagina;
-        return ocupacionData.slice(inicio, inicio + elementosPorPagina);
-    }, [ocupacionData, paginaValida]);
 
     if (error && !loading) {
         return (

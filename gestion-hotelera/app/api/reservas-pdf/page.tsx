@@ -138,6 +138,12 @@ function ReservasPdfContent() {
         year: 'numeric',
     });
 
+    const fechaComprendida = new Date(fechaFiltro).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
+
     // Renderizado defensivo en caso de error crítico de la API
     if (error && !loading) {
         return (
@@ -195,7 +201,7 @@ function ReservasPdfContent() {
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
                         <div className="text-center sm:text-left">
                             <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Fecha</p>
-                            <p className="text-[13px] font-semibold text-[#000000] mt-0.5">{fechaFiltro}</p>
+                            <p className="text-[13px] font-semibold text-[#000000] mt-0.5">{fechaComprendida}</p>
                         </div>
                         <div className="text-center sm:text-left">
                             <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Estado</p>
