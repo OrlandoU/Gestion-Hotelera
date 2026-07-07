@@ -33,4 +33,6 @@ export default function KeyboardShortcuts() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [router]);
 
+    return ""
+
 }
