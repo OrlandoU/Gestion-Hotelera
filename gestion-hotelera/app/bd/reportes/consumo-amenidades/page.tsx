@@ -51,7 +51,7 @@ export default function Page() {
 
     consumoData.forEach(item => {
       if (!agrupadoPorFecha[item.fecha]) {
-        // Formatear la fecha visualmente corta (Ej: "06 Abr")
+        // Formatear la fecha visualmente corta 
         const [, mes, dia] = item.fecha.split('-');
         const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         const etiquetaFecha = `${dia} ${meses[parseInt(mes) - 1]}`;

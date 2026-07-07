@@ -11,7 +11,6 @@ export default function Modal({ open, onClose, title, children }: { open: boolea
         function onKey(e: KeyboardEvent) {
             if (e.key === "Escape") onClose();
             if (e.key === "Tab") {
-                // basic focus trap
                 const focusable = containerRef.current?.querySelectorAll<HTMLElement>(
                     'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
                 );
@@ -31,7 +30,6 @@ export default function Modal({ open, onClose, title, children }: { open: boolea
 
         document.addEventListener("keydown", onKey);
 
-        // focus the first input/button in modal
         const timer = setTimeout(() => {
             const first = containerRef.current?.querySelector<HTMLElement>(
                 'input, textarea, select, button'

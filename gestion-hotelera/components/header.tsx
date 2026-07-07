@@ -7,7 +7,6 @@ import Link from "next/link";
 
 export default function Header() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // Estado para controlar el menú desplegable de notificaciones
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
     const adminData = {
@@ -20,7 +19,6 @@ export default function Header() {
         since: "2026"
     };
 
-    // Notificación estática solicitada
     const notifications = [
         {
             id: 1,

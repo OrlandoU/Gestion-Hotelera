@@ -3,7 +3,7 @@
 import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
-import { useIngresosTipoHabitacion } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
+import { useIngresosTipoHabitacion } from "@/functions/reportes-api"; 
 import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 type TooltipPayload = {
