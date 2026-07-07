@@ -159,29 +159,66 @@ function ReservasPdfContent() {
 
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-            <div className="rounded-[24px] border border-slate-200 bg-white p-6">
-                <div className="flex flex-col items-center border-slate-200">
-                    <Image width={86} height={100} alt="Hotel San Pedro Logo" className="h-12 drop-shadow-lg object-contain" src={logo} />
-                    <div className="mt-2 text-center">
-                        <h1 className="text-[20px] leading-7 font-['Hanken_Grotesk'] font-bold text-[#000000]">Hotel San Pedro</h1>
-                        <p className="text-[12px] leading-3.5 font-medium font-['Hanken_Grotesk'] text-[#515f74] uppercase tracking-wider">Hospitalidad &amp; Comodidad</p>
+            <div className="rounded-[24px] border border-slate-300 bg-white p-6">
+                {/* Encabezado tipo membrete */}
+                <div className="flex flex-wrap items-center justify-between gap-6 pb-5 border-b border-slate-300">
+                    <div className="flex items-center gap-3">
+                        <Image
+                            width={56}
+                            height={56}
+                            alt="Hotel San Pedro Logo"
+                            className="h-14 w-14 object-contain drop-shadow-md"
+                            src={logo}
+                        />
+                        <div>
+                            <h1 className="text-[19px] leading-6 font-['Hanken_Grotesk'] font-bold text-[#000000]">
+                                Hotel San Pedro
+                            </h1>
+                            <p className="text-[11px] leading-4 font-medium font-['Hanken_Grotesk'] text-[#515f74] uppercase tracking-wider">
+                                Hospitalidad &amp; Comodidad
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="text-right">
+                        <h2 className="text-[16px] leading-5 font-['Hanken_Grotesk'] font-bold text-[#000000]">
+                            Reporte Diario de Reservaciones Creadas
+                        </h2>
+                        <p className="text-[11px] leading-4 font-medium text-[#515f74] mt-0.5">
+                            Listado de reservaciones registradas en la fecha seleccionada
+                        </p>
                     </div>
                 </div>
 
-                <div className="mt-5 flex flex-col items-center justify-center text-center">
-                    <PageHeader
-                        name="Reporte Diario de Reservaciones Creadas"
-                        subtitle="Listado de reservaciones registradas en la fecha seleccionada"
-                    />
-                </div>
-
-                <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                    <div className="flex flex-wrap items-center justify-center gap-4">
-                        <span><strong>Fecha:</strong> {fechaFiltro}</span>
-                        <span><strong>Estado:</strong> {filtroEstado === "Todos" ? "Todos" : filtroEstado}</span>
-                        <span><strong>Búsqueda:</strong> {busqueda || "Sin filtro"}</span>
-                        <span><strong>Orden:</strong> {ordenar === "reserva" ? "Código de reserva" : ordenar === "total" ? "Monto total" : "Cantidad de noches"}</span>
-                        <span><strong>Reporte emitido el:</strong> {fechaEmitido}</span>
+                {/* Metadatos del reporte */}
+                <div className="mt-5 rounded-xl border border-slate-300 bg-[#f7f9fb] px-5 py-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                        <div className="text-center sm:text-left">
+                            <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Fecha</p>
+                            <p className="text-[13px] font-semibold text-[#000000] mt-0.5">{fechaFiltro}</p>
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Estado</p>
+                            <p className="text-[13px] font-semibold text-[#000000] mt-0.5">
+                                {filtroEstado === "Todos" ? "Todos" : filtroEstado}
+                            </p>
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Búsqueda</p>
+                            <p className="text-[13px] font-semibold text-[#000000] mt-0.5">
+                                {busqueda || "Sin filtro"}
+                            </p>
+                        </div>
+                        <div className="text-center sm:text-left">
+                            <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Orden</p>
+                            <p className="text-[13px] font-semibold text-[#000000] mt-0.5">
+                                {ordenar === "reserva" ? "Código de reserva" : ordenar === "total" ? "Monto total" : "Cantidad de noches"}
+                            </p>
+                        </div>
+                        <div className="col-span-2 sm:col-span-1 text-center sm:text-left">
+                            <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Emitido</p>
+                            <p className="text-[13px] font-semibold text-[#000000] mt-0.5">{fechaEmitido}</p>
+                        </div>
                     </div>
                 </div>
             </div>

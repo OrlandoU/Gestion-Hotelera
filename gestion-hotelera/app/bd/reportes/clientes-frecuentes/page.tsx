@@ -231,7 +231,7 @@ export default function Page() {
               className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
-              <option value="frecuencia">Frecuencia (Mayor a menor)</option>
+              <option value="frecuencia">Cantidad de Visitas</option>
               <option value="nombre">Nombre (A-Z)</option>
               <option value="id">ID Cliente</option>
             </select>

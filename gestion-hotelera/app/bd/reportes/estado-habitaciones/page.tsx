@@ -251,7 +251,7 @@ export default function Page() {
             >
               <option value="Todos">Todos los tipos</option>
               {Object.keys(stats.porTipo).map((tipo) => (
-                <option key={tipo} value={tipo}>{tipo}</option>
+                <option key={tipo} value={tipo}>{tipo == "Estandar" ? "Estándar" : tipo == "Doble-Estandar" ? "Doble Estándar" : tipo}</option>
               ))}
             </select>
           </div>
@@ -314,7 +314,8 @@ export default function Page() {
                         <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>{habitacion.numero_espacio}</td>
                         <td className="px-6 py-4">
                           <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${getColorTipo(habitacion.tipo || "")}`}>
-                            {habitacion.tipo}
+                            {habitacion.tipo == "Estandar" ? "Estándar" : habitacion.tipo == "Doble-Estandar" ? "Doble Estándar" : habitacion.tipo || "Sin tipo"}
+                            
                           </span>
                         </td>
                         <td className="px-6 py-4">

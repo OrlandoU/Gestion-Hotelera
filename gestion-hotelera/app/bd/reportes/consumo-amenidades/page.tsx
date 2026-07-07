@@ -38,7 +38,7 @@ export default function Page() {
   const coloresProductos: Record<string, string> = useMemo(() => {
     return {
       "Jabón de Tocador Hotelero Barra 20g": "#00a8f0",
-      "shampoo Hotelero Sachet 30ml": "#0086c0",
+      "Shampoo Hotelero Sachet 30ml": "#0086c0",
       "Cloro en Gel Maxiclean": "#006894",
       "Desinfectante de Lavanda Fabuloso": "#004d6e"
     };
@@ -148,7 +148,7 @@ export default function Page() {
         </div>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-linear-to-r from-slate-50 to-blue-50/70 p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-white  p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#008cc7] text-white">

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
-import fs from 'fs';
-import path from 'path';
 
 // Optional: Increase timeout if your page takes a moment to render
 export const maxDuration = 60; // Configures Netlify/Vercel timeout limits (if supported by your tier)
@@ -11,15 +9,9 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const fecha = searchParams.get('fecha') || '';
-        const estado = searchParams.get('estado') || 'Todos';
-        const busqueda = searchParams.get('busqueda') || '';
-        const ordenar = searchParams.get('ordenar') || 'reserva';
 
         const query = new URLSearchParams({
             fecha,
-            estado,
-            busqueda,
-            ordenar,
         }).toString();
 
         const isLocal = process.env.NODE_ENV === 'development';
@@ -52,18 +44,34 @@ export async function GET(request: NextRequest) {
 
         const page = await browser.newPage();
         const baseUrl = process.env.URL || 'http://localhost:3000';
-        const targetUrl = `${baseUrl}/api/reservas-pdf?${query}`;
+        const targetUrl = `${baseUrl}/api/ocupacion-mensual-pdf?${query}`;
 
         await page.goto(targetUrl, {
             waitUntil: 'networkidle0',
-            timeout: 15000 // 15 seconds max to prevent infinite hangs
+            timeout: 15000
         });
+
+        // Recharts usa ResizeObserver para calcular el tamaño del SVG después del montaje.
+        // networkidle0 no garantiza que ya haya terminado ese cálculo, así que esperamos
+        // explícitamente a que los SVGs de los gráficos tengan dimensiones reales.
+        await page.waitForFunction(() => {
+            const svgs = document.querySelectorAll('.recharts-wrapper svg');
+            if (svgs.length === 0) return false;
+            return Array.from(svgs).every(
+                (svg) => svg.getAttribute('width') && parseFloat(svg.getAttribute('width')!) > 0
+            );
+        }, { timeout: 10000 }).catch(() => {
+            // Si no hay gráficos en la página o falla la espera, seguimos igual
+        });
+
+        // Pequeño margen adicional para asegurar el pintado final del layout
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true,
             landscape: true,
-            margin: { top: '12mm', right: '12mm', bottom: '18mm', left: '12mm' },
+            margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' },
             displayHeaderFooter: true,
             headerTemplate: `<div></div>`,
             footerTemplate: `
@@ -85,7 +93,7 @@ export async function GET(request: NextRequest) {
             status: 200,
             headers: {
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': 'attachment; filename="reservaciones-diarias.pdf"',
+                'Content-Disposition': 'attachment; filename="ocupacion-mensual.pdf"',
             },
         });
     } catch (error) {

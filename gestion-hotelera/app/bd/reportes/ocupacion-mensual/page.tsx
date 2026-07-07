@@ -4,10 +4,12 @@ import { useOcupacionMensual } from "@/functions/reportes-api";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { toast } from "sonner";
 
 export default function Page() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState<string>("2026-06-01");
   const [paginaActual, setPaginaActual] = useState(1);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const elementosPorPagina = 8;
   const { data: ocupacionApi, loading, error, refetch } = useOcupacionMensual();
 
@@ -37,21 +39,20 @@ export default function Page() {
   //   }
   // };
 
-  // Cargar datos al montar componente y cuando cambia la fecha
   const handleFechaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("Fecha seleccionada:", e.target.value);
+    
     const nuevaFecha = e.target.value;
     setFechaSeleccionada(nuevaFecha);
+    refetch(nuevaFecha + "-01");
     setPaginaActual(1);
-    refetch(nuevaFecha + "-01"); // Agregar día para formar una fecha completa
   };
 
-  // Cálculos estadísticos
   const stats = useMemo(() => {
     if (ocupacionData.length === 0) return null;
 
     const totalHabitaciones = 25;
     const diasDelMes = new Date(new Date(fechaSeleccionada).getFullYear(), new Date(fechaSeleccionada).getMonth() + 1, 0).getDate();
+    const diasDelMesReales = new Date(new Date(fechaSeleccionada).getFullYear(), new Date(fechaSeleccionada).getMonth() + 2, 0).getDate();
     const capacidadTotalDias = totalHabitaciones * diasDelMes;
     const totalReservas = ocupacionData.reduce((sum, d) => sum + d.cantidad_unidades, 0);
 
@@ -65,6 +66,7 @@ export default function Page() {
     return {
       totalHabitaciones,
       diasDelMes,
+      diasDelMesReales,
       capacidadTotalDias,
       totalReservas,
       ocupacionGeneral: Math.round(ocupacionGeneral * 100) / 100,
@@ -98,6 +100,35 @@ export default function Page() {
     const inicio = (paginaValida - 1) * elementosPorPagina;
     return ocupacionData.slice(inicio, inicio + elementosPorPagina);
   }, [ocupacionData, paginaValida]);
+
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      params.set("fecha", fechaSeleccionada);
+
+      const response = await fetch(`/api/ocupacion-mensual-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `ocupacion-mensual-${fechaSeleccionada || new Date().toISOString().split("T")[0].slice(0, 7)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   // Renderizar error
   if (error && !loading) {
@@ -134,9 +165,20 @@ export default function Page() {
             subtitle="Análisis sintetizado de ocupación por mes"
           />
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleGeneratePdf}
+            disabled={isGeneratingPdf || loading}
+            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+            title="Generar PDF con los filtros actuales"
+          >
+            <span className="material-symbols-outlined text-[18px]">print</span>
+            {isGeneratingPdf ? "Generando..." : "PDF"}
+          </button>
+        </div>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-linear-to-r from-slate-50 to-blue-50/70 p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-white  p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row  lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#008cc7] text-white">
@@ -222,7 +264,7 @@ export default function Page() {
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] leading-10 tracking-[-0.02em] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : stats?.diasDelMes}
+            {loading ? <span className="animate-pulse">--</span> : stats?.diasDelMesReales}
           </h2>
 
         </div>
@@ -248,7 +290,7 @@ export default function Page() {
                   cx="50%"
                   cy="50%"
                   labelLine={true}
-                  label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                  label={({ name, value }) => `${name}: ${value.toFixed(2)}%`}
                   outerRadius={100}
                   fill="#8b86e6"
                   dataKey="value"
@@ -373,9 +415,9 @@ export default function Page() {
               <thead>
                 <tr className="border-b border-slate-300 bg-[#f7f9fb]">
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Habitación</th>
+                      <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Descripción de la habitación</th>
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Veces reservada</th>
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Participación del mes</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Progreso</th>
                 </tr>
               </thead>
               <tbody>
@@ -392,21 +434,11 @@ export default function Page() {
                           <span className="text-[12px] text-[#515f74]">ID {item.espacio_id}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-[14px] font-semibold text-[#000000]">{item.cantidad_unidades} reservas</td>
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#000000]">{porcentajeParticipacion.toFixed(1)}%</td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-full max-w-45 bg-slate-200 rounded-full h-2 overflow-hidden">
-                            <div
-                              className="h-full bg-[#008cc7] rounded-full transition-all duration-300"
-                              style={{ width: `${Math.min(porcentajeParticipacion, 100)}%` }}
-                            />
-                          </div>
-                          <span className="text-[12px] font-semibold text-[#515f74] min-w-10.5">
-                            {porcentajeParticipacion.toFixed(0)}%
-                          </span>
-                        </div>
+                        <span className="text-[14px] text-[#515f74]">{item.descripcion || "Sin descripción"}</span>
                       </td>
+                      <td className="px-6 py-4 text-[14px] font-semibold text-[#000000]">{item.cantidad_unidades} reservas</td>
+                      <td className="px-6 py-4 text-[14px] font-bold text-[#000000]">{porcentajeParticipacion.toFixed(2)}%</td>
                     </tr>
                   );
                 })}
@@ -451,7 +483,6 @@ export default function Page() {
             <p className="font-semibold mb-1">Cómo se interpreta esta tabla:</p>
             <p>La cantidad de reservas representa cuántas veces se ocupó una habitación durante el mes.</p>
             <p>El total del mes es la suma de todas esas reservas en todas las habitaciones.</p>
-            <p className="mt-1">El porcentaje mostrado corresponde a la participación de cada habitación sobre ese total mensual.</p>
           </div>
         </div>
       </section>

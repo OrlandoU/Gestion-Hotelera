@@ -58,7 +58,7 @@ export default function Page() {
 
   // Paleta de azules distintivos de la aplicación para el gráfico y la tabla
   const esquemaColores: Record<string, { hex: string; bg: string; text: string; border: string }> = {
-    "Básica": { hex: "#008cc7", bg: "bg-sky-100", text: "text-sky-800", border: "border-l-4 border-sky-600" },
+    "Básica": { hex: "#9591DF", bg: "bg-purple-100", text: "text-purple-800", border: "border-l-4 border-purple-400" },
     "Estandar": { hex: "#0f7db8", bg: "bg-cyan-100", text: "text-cyan-800", border: "border-l-4 border-cyan-600" },
     "Doble-Básica": { hex: "#005f8a", bg: "bg-blue-100", text: "text-blue-800", border: "border-l-4 border-blue-700" },
     "Doble-Estandar": { hex: "#003f5c", bg: "bg-indigo-100", text: "text-indigo-800", border: "border-l-4 border-indigo-900" },
@@ -120,7 +120,7 @@ export default function Page() {
         </div>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-linear-to-r from-slate-50 to-blue-50/70 p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-linear-to-r bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#008cc7] text-white">
@@ -185,7 +185,7 @@ export default function Page() {
 
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300 shadow-level-1">
           <div className="flex justify-between items-start flex-col-reverse">
-            <span className="text-[14px] font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Noches Pernoctadas</span>
+            <span className="text-[14px] font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Noches en Estancia</span>
             <div className="p-2 bg-[#e0e3e5] rounded-lg mb-4">
               <span className="material-symbols-outlined text-[20px] text-[#565e74]">bedtime</span>
             </div>
@@ -202,7 +202,7 @@ export default function Page() {
         {/* Componente: Gráfico de Torta con Recharts */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 lg:col-span-5 flex flex-col justify-between shadow-level-1">
           <div>
-            <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-1">Participación Comercial</h3>
+            <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-1">Desglose de Ingresos</h3>
             <p className="text-[13px] text-[#515f74] mb-6">Porcentaje de ingresos según categoría de hospedaje</p>
           </div>
 
@@ -311,7 +311,7 @@ export default function Page() {
                       return (
                         <tr key={item.tipo_habitacion} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
                           <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${color.border}`}>
-                            {item.tipo_habitacion}
+                            {item.tipo_habitacion == "Estandar" ? "Estándar" : item.tipo_habitacion == "Doble-Estandar" ? "Doble Estándar" : item.tipo_habitacion}
                           </td>
                           <td className="px-6 py-4 text-right text-[14px] font-medium text-[#515f74]">
                             {item.total_reservas}
