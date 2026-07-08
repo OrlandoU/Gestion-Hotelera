@@ -44,17 +44,17 @@ export default function Page() {
     return [...resultado].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
   }, [incidentesData, busqueda]);
 
-  // Estilo semántico según palabras clave del tipo de incidente
+// Estilo semántico según palabras clave del tipo de incidente
   const getEstiloTipo = (tipo: string) => {
     const t = tipo?.toLowerCase() || "";
     if (t.includes("electric") || t.includes("apagon") || t.includes("apagón")) {
-      return { bg: "bg-amber-100 text-amber-800", ring: "border-amber-300", icon: "bolt" };
+      return { bg: "bg-sky-100 text-sky-800", ring: "border-sky-300", icon: "bolt" };
     }
     if (t.includes("red") || t.includes("servidor") || t.includes("sistema") || t.includes("internet")) {
       return { bg: "bg-blue-100 text-blue-800", ring: "border-blue-300", icon: "dns" };
     }
     if (t.includes("incendio") || t.includes("fuego") || t.includes("humo")) {
-      return { bg: "bg-red-100 text-red-800", ring: "border-red-300", icon: "local_fire_department" };
+      return { bg: "bg-indigo-100 text-indigo-800", ring: "border-indigo-300", icon: "local_fire_department" };
     }
     if (t.includes("agua") || t.includes("fuga") || t.includes("inundacion") || t.includes("inundación")) {
       return { bg: "bg-cyan-100 text-cyan-800", ring: "border-cyan-300", icon: "water_drop" };
@@ -62,7 +62,7 @@ export default function Page() {
     if (t.includes("seguridad") || t.includes("robo") || t.includes("intrusion") || t.includes("intrusión")) {
       return { bg: "bg-purple-100 text-purple-800", ring: "border-purple-300", icon: "shield" };
     }
-    return { bg: "bg-slate-100 text-slate-800", ring: "border-slate-300", icon: "report" };
+    return { bg: "bg-violet-100 text-violet-800", ring: "border-violet-300", icon: "report" };
   };
 
   const formatFecha = (isoString?: string) => {
@@ -106,7 +106,7 @@ export default function Page() {
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader
-            name="Reporte de Excepciones"
+            name="Reporte de Incidentes Anuales"
             subtitle="Registro de incidentes y eventos fuera de lo común"
           />
         </div>
