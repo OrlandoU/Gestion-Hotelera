@@ -14,6 +14,7 @@ export default function Page() {
   const [filtroFrecuenciaMin, setFiltroFrecuenciaMin] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Usar datos de API si existen, sino array vacío
   const clientesData = useMemo(() => clientesApi || [], [clientesApi]);
@@ -75,6 +76,41 @@ export default function Page() {
     toast.success("Exportación completada exitosamente!");
   };
 
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      if (busqueda.trim()) {
+        params.set("busqueda", busqueda.trim());
+      }
+      params.set("ordenar", ordenar);
+      if (filtroFrecuenciaMin > 0) {
+        params.set("frecuenciaMin", String(filtroFrecuenciaMin));
+      }
+
+      const response = await fetch(`/api/clientes-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `clientes-frecuentes-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   // Renderizar error
   if (error && !loading) {
     return (
@@ -134,6 +170,15 @@ export default function Page() {
             >
               <span className="material-symbols-outlined text-[18px]">file_upload</span>
               Exportar
+            </button>
+            <button
+              onClick={handleGeneratePdf}
+              disabled={clientesFiltrados.length === 0 || isGeneratingPdf}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              title="Generar PDF con los filtros actuales"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
+              {isGeneratingPdf ? "Generando..." : "PDF"}
             </button>
           </div>
         )}
@@ -289,13 +334,11 @@ export default function Page() {
                         <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">{cliente.telefono}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[16px] text-[#008cc7]">event_repeat</span>
-                            <span className="text-[14px] font-bold text-[#000000]">{cliente.frecuencia}x</span>
+                            <span className="text-[14px] font-bold text-[#000000]">{cliente.frecuencia}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[16px] text-[#008cc7]">bed</span>
                             <span className="text-[14px] font-bold text-[#000000]">{cliente.total_noches || 0}</span>
                           </div>
                         </td>
@@ -459,7 +502,7 @@ export default function Page() {
       </section> */}
 
       {/* Estado de la API */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+      {/* <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
             <span className="material-symbols-outlined text-[16px]">info</span>
@@ -474,7 +517,7 @@ export default function Page() {
             Actualizar
           </button>
         </div>
-      </section>
+      </section> */}
       <Toaster richColors expand />
     </ViewTransition>
   );

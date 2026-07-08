@@ -16,6 +16,7 @@ export default function Page() {
   const [ordenar, setOrdenar] = useState<"numero" | "tipo" | "precio">("numero");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Usar datos de API si existen, sino array vacío
   const habitacionesData = useMemo(() => habitacionesApi || [], [habitacionesApi]);
@@ -110,6 +111,41 @@ export default function Page() {
     return habitacionesFiltradas.slice(start, start + pageSize);
   }, [habitacionesFiltradas, paginaValida, pageSize]);
 
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      if (filtroTipo !== "Todos") {
+        params.set("tipo", filtroTipo);
+      }
+      if (busqueda.trim()) {
+        params.set("busqueda", busqueda.trim());
+      }
+      params.set("ordenar", ordenar);
+
+      const response = await fetch(`/api/habitaciones-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `estado-habitaciones-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   // Renderizar error
   if (error && !loading) {
     return (
@@ -169,6 +205,15 @@ export default function Page() {
             >
               <span className="material-symbols-outlined text-[18px]">file_upload</span>
               Exportar
+            </button>
+            <button
+              onClick={handleGeneratePdf}
+              disabled={habitacionesFiltradas.length === 0 || isGeneratingPdf}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              title="Generar PDF con los filtros actuales"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
+              {isGeneratingPdf ? "Generando..." : "PDF"}
             </button>
           </div>
         )}
@@ -311,7 +356,7 @@ export default function Page() {
                     const colorEstado = getColorEstado(habitacion.estado || "");
                     return (
                       <tr key={habitacion.numero_espacio} className={`border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors`}>
-                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>{habitacion.numero_espacio}</td>
+                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000]`}>{habitacion.numero_espacio}</td>
                         <td className="px-6 py-4">
                           <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${getColorTipo(habitacion.tipo || "")}`}>
                             {habitacion.tipo == "Estandar" ? "Estándar" : habitacion.tipo == "Doble-Estandar" ? "Doble Estándar" : habitacion.tipo || "Sin tipo"}
@@ -320,13 +365,11 @@ export default function Page() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <span className={`material-symbols-outlined text-[18px] ${colorEstado.text}`}>{colorEstado.icon}</span>
                             <span className={`text-[14px] font-semibold ${colorEstado.text}`}>{habitacion.estado}</span>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
                           <span className="inline-flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">person</span>
                             {habitacion.capacidad_huespedes}
                           </span>
                         </td>
@@ -451,7 +494,7 @@ export default function Page() {
       </section>
 
       {/* Estado de la API */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+      {/* <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
             <span className="material-symbols-outlined text-[16px]">info</span>
@@ -466,7 +509,7 @@ export default function Page() {
             Actualizar
           </button>
         </div>
-      </section>
+      </section> */}
       <Toaster richColors expand />
 
     </ViewTransition>

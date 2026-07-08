@@ -548,7 +548,7 @@ export default function Page() {
       </section> */}
 
       {/* Footer Informativo de Transparencia de la API */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+      {/* <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
             <span className="material-symbols-outlined text-[16px]">info</span>
@@ -563,7 +563,7 @@ export default function Page() {
             Actualizar
           </button>
         </div>
-      </section>
+      </section> */}
       <Toaster richColors expand />
 
     </ViewTransition>

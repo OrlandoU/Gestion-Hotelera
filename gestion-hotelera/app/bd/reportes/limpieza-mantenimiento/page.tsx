@@ -17,6 +17,7 @@ export default function Page() {
   const [ordenar, setOrdenar] = useState<"reciente" | "espacio" | "responsable">("reciente");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Fallback seguro de arreglo
   const actividadesData = useMemo(() => actividadesApi || [], [actividadesApi]);
@@ -121,6 +122,44 @@ export default function Page() {
     toast.success("Exportación completada exitosamente!")
   };
 
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      if (fechaFiltro) {
+        params.set("fecha", fechaFiltro);
+      }
+      if (filtroTipo !== "Todos") {
+        params.set("tipo", filtroTipo);
+      }
+      if (busqueda.trim()) {
+        params.set("busqueda", busqueda.trim());
+      }
+      params.set("ordenar", ordenar);
+
+      const response = await fetch(`/api/actividades-mantenimiento-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `actividades-mantenimiento-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
@@ -179,6 +218,15 @@ export default function Page() {
             >
               <span className="material-symbols-outlined text-[18px]">file_upload</span>
               Exportar
+            </button>
+            <button
+              onClick={handleGeneratePdf}
+              disabled={actividadesFiltradas.length === 0 || isGeneratingPdf}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              title="Generar PDF con los filtros actuales"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
+              {isGeneratingPdf ? "Generando..." : "PDF"}
             </button>
           </div>
         )}
@@ -336,7 +384,7 @@ export default function Page() {
                     const estiloTipo = getEstiloTipo(actividad.tipo || "");
                     return (
                       <tr key={`${actividad.mantenimiento_id}-${index}`} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
-                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${estiloTipo.border}`}>
+                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000]`}>
                           {actividad.numero_espacio}
                         </td>
                         <td className="px-6 py-4 text-[13px] text-slate-500 font-mono">
@@ -352,14 +400,14 @@ export default function Page() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`text-[14px] font-bold px-3 py-1 rounded-full ${estiloTipo.bg} inline-flex items-center gap-1`}>
+                          <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${estiloTipo.bg} inline-flex items-center gap-1`}>
                             {actividad.tipo}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-[13px] text-slate-700 max-w-xs truncate" title={actividad.descripcion}>
+                        <td className="px-6 py-4 text-[12px] text-slate-700 max-w-xs truncate" title={actividad.descripcion}>
                           {actividad.descripcion}
                         </td>
-                        <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
+                        <td className="px-6 py-4 text-[12px] font-medium text-slate-600">
                           {formatFecha(actividad.fecha_inicio)}
                         </td>
                       </tr>
@@ -381,7 +429,7 @@ export default function Page() {
       </section>
 
       {/* Footer del Reporte */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+      {/* <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
             <span className="material-symbols-outlined text-[16px]">info</span>
@@ -396,7 +444,7 @@ export default function Page() {
             Actualizar
           </button>
         </div>
-      </section>
+      </section> */}
       <Toaster richColors expand />
 
     </ViewTransition>

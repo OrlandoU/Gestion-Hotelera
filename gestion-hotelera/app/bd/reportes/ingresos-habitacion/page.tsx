@@ -39,6 +39,7 @@ export default function Page() {
   const { data: ingresosApi, loading, error, refetch } = useIngresosTipoHabitacion(periodoFiltro);
 
   const handlePeriodoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value)
     setPeriodoFiltro(e.target.value);
     refetch(e.target.value + "-01"); // Agregar día para formar una fecha completa
   }
