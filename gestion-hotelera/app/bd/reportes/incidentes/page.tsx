@@ -80,7 +80,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
-          name="Reporte de Excepciones"
+          name="Reporte de Incidentes Anuales"
           subtitle="Registro de incidentes y eventos fuera de lo común"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -179,8 +179,8 @@ export default function Page() {
                 className={`text-left bg-white border ${estilo.ring} rounded-xl p-6 shadow-level-1 hover:-translate-y-1 hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col gap-3`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <span className={`inline-flex items-center gap-1.5 text-[12px] font-bold px-3 py-1 rounded-full ${estilo.bg}`}>
-                    <span className="material-symbols-outlined text-[16px]">{estilo.icon}</span>
+                  <span className={`inline-flex items-center gap-1.5 text-[12px] font-bold px-4 py-1 rounded-full ${estilo.bg}`}>
+                    <span className="material-symbols-outlined text-[8px]">{estilo.icon}</span>
                     {incidente.tipo}
                   </span>
                   <span className="text-[11px] font-medium text-slate-400 text-nowrap">#{incidente.incidente_id}</span>

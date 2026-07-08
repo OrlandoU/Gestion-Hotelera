@@ -84,7 +84,7 @@ export default function DashboardLayout({
         </div>
 
         {/* ENLACES DE NAVEGACIÓN */}
-        <nav className="flex-1 flex flex-col gap-1 text-[#515f74]">
+        <nav className="flex-1 flex flex-col gap-1 text-[#515f74] overflow-x-auto">
           {navLinks.map((link) => (
             <div key={link.href}>
               {link.isDropdown ? (
@@ -145,7 +145,7 @@ export default function DashboardLayout({
         </nav>
 
         {/* AJUSTES Y LOGOUT */}
-        <div className="mt-auto border-t border-slate-300 card-shadow pt-6 flex flex-col gap-1">
+        <div className="mt-auto border-t border-slate-300 card-shadow pt-2 flex flex-col gap-1">
           <a 
             className={`flex items-center p-4 text-[#515f74] hover:bg-[#eceef0] transition-all rounded-xl text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${
               isCollapsed ? "justify-center px-0 rounded-lg" : "gap-4"
