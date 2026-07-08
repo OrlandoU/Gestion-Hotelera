@@ -219,7 +219,9 @@ function ClientesFrecuentesPdfContent() {
                         </table>
                     </div>
                 )}
-                {/* Resumen KPI */}
+             
+            </section>
+               {/* Resumen KPI */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ breakInside: 'avoid' }}>
                 <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
                     <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Resultados</p>
@@ -238,7 +240,6 @@ function ClientesFrecuentesPdfContent() {
                     <h4 className="text-[22px] font-bold text-[#000000]">{promedioVisitas}</h4>
                     <p className="text-[12px] text-[#515f74] mt-2">Por cliente</p>
                 </div>
-            </section>
             </section>
         </ViewTransition>
     );

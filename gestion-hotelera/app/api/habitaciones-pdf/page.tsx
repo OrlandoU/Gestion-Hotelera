@@ -192,26 +192,7 @@ function EstadoHabitacionesPdfContent() {
                 </div>
             </div>
 
-            {/* Resumen KPI */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ breakInside: 'avoid' }}>
-                <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
-                    <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Resultados</p>
-                    <h4 className="text-[22px] font-bold text-[#000000]">{habitacionesFiltradas.length}</h4>
-                    <p className="text-[12px] text-[#515f74] mt-2">Habitaciones mostradas</p>
-                </div>
-
-                <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
-                    <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingreso Filtrado</p>
-                    <h4 className="text-[22px] font-bold text-[#000000]">{(ingresoFiltrado / 1000).toFixed(1)}k Lps</h4>
-                    <p className="text-[12px] text-[#515f74] mt-2">Total potencial</p>
-                </div>
-
-                <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
-                    <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Precio Promedio</p>
-                    <h4 className="text-[22px] font-bold text-[#000000]">{precioPromedio} Lps</h4>
-                    <p className="text-[12px] text-[#515f74] mt-2">Del filtrado</p>
-                </div>
-            </section>
+            
 
             {/* Tabla de habitaciones */}
             <section className="bg-[#ffffff] border border-slate-300 rounded-xl overflow-hidden">
@@ -278,6 +259,26 @@ function EstadoHabitacionesPdfContent() {
                         </table>
                     </div>
                 )}
+            </section>
+            {/* Resumen KPI */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ breakInside: 'avoid' }}>
+                <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
+                    <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Resultados</p>
+                    <h4 className="text-[22px] font-bold text-[#000000]">{habitacionesFiltradas.length}</h4>
+                    <p className="text-[12px] text-[#515f74] mt-2">Habitaciones mostradas</p>
+                </div>
+
+                <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
+                    <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingreso Filtrado</p>
+                    <h4 className="text-[22px] font-bold text-[#000000]">{(ingresoFiltrado / 1000).toFixed(1)}k Lps</h4>
+                    <p className="text-[12px] text-[#515f74] mt-2">Total potencial</p>
+                </div>
+
+                <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
+                    <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Precio Promedio</p>
+                    <h4 className="text-[22px] font-bold text-[#000000]">{precioPromedio} Lps</h4>
+                    <p className="text-[12px] text-[#515f74] mt-2">Del filtrado</p>
+                </div>
             </section>
         </ViewTransition>
     );

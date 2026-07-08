@@ -150,3 +150,17 @@ def read_consumo_amenidades_mensual(
         return consumos
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
+
+@router.get("/incidencias")
+def read_incidentes(
+    year: int = Query(default=None, description="Formato Entero"),
+    db = Depends(get_db)
+):
+    try:
+        cursor = db.cursor(as_dict=True)
+        cursor.execute("EXEC sp_incidentes %s", (year,))
+        incidentes = cursor.fetchall()
+        cursor.close()
+        return incidentes
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")

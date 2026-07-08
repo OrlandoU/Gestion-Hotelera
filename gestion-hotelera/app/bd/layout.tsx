@@ -25,6 +25,7 @@ export default function DashboardLayout({
     { name: "Ocupación Mensual", href: "/bd/reportes/ocupacion-mensual", icon: "bar_chart_4_bars" },
     { name: "Ingresos por Habitación", href: "/bd/reportes/ingresos-habitacion", icon: "bar_chart_4_bars" },
     { name: "Consumo de Amenidades", href: "/bd/reportes/consumo-amenidades", icon: "bar_chart_4_bars" },
+    { name: "Incidentes", href: "bd/reportes/incidentes", icon: "error" }
   ];
 
   const navLinks = [

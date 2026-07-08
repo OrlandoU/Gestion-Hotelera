@@ -99,6 +99,19 @@ export interface ConsumoAmenidades {
   [key: string]: any;
 }
 
+export interface Incidente {
+  incidente_id: number;
+  usuario_id: number;
+  tipo: string;
+  detalles: string;
+  causas: string;
+  recomendaciones: string;
+  fecha: string;
+  nombre: string,
+    telefono: string,
+    rol: string
+}
+
 // ============================================
 // CLIENTE HTTP BASE
 // ============================================
@@ -233,6 +246,13 @@ export async function getConsumoAmenidadesMensual(fecha?: string): Promise<Consu
   );
 }
 
+export async function getIncidentes(year?: number): Promise<Incidente[]>{
+  return fetchAPI<Incidente[]>('/reportes/incidentes', {  
+    params: { year }
+  }
+  )
+
+}
 // ============================================
 // CUSTOM HOOKS
 // ============================================
@@ -473,6 +493,30 @@ export function useConsumoAmenidadesMensual(fecha?:string) {
     setState({ data: null, loading: true, error: null });
     try {
       const data = await getConsumoAmenidadesMensual(nuevaFecha || fecha);
+      setState({ data, loading: false, error: null });
+    } catch (error) {
+      setState({ data: null, loading: false, error: error as Error });
+    }
+  }, [fecha]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { ...state, refetch };
+}
+
+export function useIncidentes(fecha?: number) {
+  const [state, setState] = useState<UseReporteState<ReservacionDiaria[]>>({
+    data: null,
+    loading: true,
+    error: null,
+  });
+
+  const refetch = useCallback(async (anio?: number) => {
+    setState({ data: null, loading: true, error: null });
+    try {
+      const data = await getIncidentes(anio || fecha);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error as Error });
