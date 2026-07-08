@@ -66,6 +66,7 @@ export async function GET(request: NextRequest) {
         const pdfBuffer = await page.pdf({
             format: 'A4',
             printBackground: true,
+            landscape: true,
             margin: { top: '12mm', right: '12mm', bottom: '18mm', left: '12mm' },
             displayHeaderFooter: true,
             headerTemplate: `<div></div>`,

@@ -59,16 +59,21 @@ export async function GET(request: NextRequest) {
             timeout: 15000 // 15 seconds max to prevent infinite hangs
         });
 
+        const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+        const logoBase64 = fs.readFileSync(logoPath).toString('base64');
+        const logoDataUri = `data:image/png;base64,${logoBase64}`;
+
         const pdfBuffer = await page.pdf({
             format: 'A4',
-            printBackground: true,
             landscape: true,
+            printBackground: true,
             margin: { top: '12mm', right: '12mm', bottom: '18mm', left: '12mm' },
             displayHeaderFooter: true,
             headerTemplate: `<div></div>`,
             footerTemplate: `
                 <div style="width: 100%; padding: 0 12mm; display: flex; align-items: center; justify-content: space-between; font-family: Arial, sans-serif; font-size: 9px; color: #515f74;">
                     <div style="display: flex; align-items: center; gap: 6px;">
+                        <img src="${logoDataUri}" style="height: 14px; width: auto; object-fit: contain;" />
                         <span>Hotel San Pedro</span>
                     </div>
                     <div>

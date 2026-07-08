@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
+import path from 'path';
+import fs from 'fs'
 
 // Optional: Increase timeout if your page takes a moment to render
 export const maxDuration = 60; // Configures Netlify/Vercel timeout limits (if supported by your tier)
@@ -67,24 +69,29 @@ export async function GET(request: NextRequest) {
         // Pequeño margen adicional para asegurar el pintado final del layout
         await new Promise((resolve) => setTimeout(resolve, 300));
 
-        const pdfBuffer = await page.pdf({
-            format: 'A4',
-            printBackground: true,
-            landscape: true,
-            margin: { top: '12mm', right: '12mm', bottom: '12mm', left: '12mm' },
-            displayHeaderFooter: true,
-            headerTemplate: `<div></div>`,
-            footerTemplate: `
-                <div style="width: 100%; padding: 0 12mm; display: flex; align-items: center; justify-content: space-between; font-family: Arial, sans-serif; font-size: 9px; color: #515f74;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span>Hotel San Pedro</span>
-                    </div>
-                    <div>
-                        Página <span class="pageNumber"></span> de <span class="totalPages"></span>
-                    </div>
-                </div>
-            `,
-        });
+        const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+                const logoBase64 = fs.readFileSync(logoPath).toString('base64');
+                const logoDataUri = `data:image/png;base64,${logoBase64}`;
+        
+                const pdfBuffer = await page.pdf({
+                    format: 'A4',
+                    landscape: true,
+                    printBackground: true,
+                    margin: { top: '12mm', right: '12mm', bottom: '18mm', left: '12mm' },
+                    displayHeaderFooter: true,
+                    headerTemplate: `<div></div>`,
+                    footerTemplate: `
+                        <div style="width: 100%; padding: 0 12mm; display: flex; align-items: center; justify-content: space-between; font-family: Arial, sans-serif; font-size: 9px; color: #515f74;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <img src="${logoDataUri}" style="height: 14px; width: auto; object-fit: contain;" />
+                                <span>Hotel San Pedro</span>
+                            </div>
+                            <div>
+                                Página <span class="pageNumber"></span> de <span class="totalPages"></span>
+                            </div>
+                        </div>
+                    `,
+                });
 
         await browser.close();
 
