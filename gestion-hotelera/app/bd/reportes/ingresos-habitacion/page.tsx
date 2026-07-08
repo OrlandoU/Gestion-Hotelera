@@ -60,9 +60,9 @@ export default function Page() {
   // Paleta de azules distintivos de la aplicación para el gráfico y la tabla
 const esquemaColores: Record<string, { hex: string; bg: string; text: string; border: string }> = {
     "Básica": { hex: "#C084FC", bg: "bg-purple-100", text: "text-purple-800", border: "border-l-4 border-purple-400" },
-    "Estandar": { hex: "#0EA5E9", bg: "bg-sky-100", text: "text-sky-800", border: "border-l-4 border-sky-500" },
+    "Estándar": { hex: "#0EA5E9", bg: "bg-sky-100", text: "text-sky-800", border: "border-l-4 border-sky-500" },
     "Doble-Básica": { hex: "#2563EB", bg: "bg-blue-100", text: "text-blue-800", border: "border-l-4 border-blue-600" },
-    "Doble-Estandar": { hex: "#4338CA", bg: "bg-indigo-100", text: "text-indigo-800", border: "border-l-4 border-indigo-700" },
+    "Doble-Estándar": { hex: "#4338CA", bg: "bg-indigo-100", text: "text-indigo-800", border: "border-l-4 border-indigo-700" },
   };
 
   const colorFallback = { hex: "#2563eb", bg: "bg-blue-50", text: "text-blue-700", border: "border-l-4 border-blue-500" };
