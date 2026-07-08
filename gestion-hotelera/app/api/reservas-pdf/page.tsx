@@ -149,7 +149,7 @@ function ReservasPdfContent() {
         return (
             <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
                 <PageHeader
-                    name="Reservaciones Creadas"
+                    name="Reporte diario de reservaciones creadas"
                     subtitle="Listado de reservaciones registradas en la fecha seleccionada"
                 />
                 <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -188,7 +188,7 @@ function ReservasPdfContent() {
 
                     <div className="text-right">
                         <h2 className="text-[16px] leading-5 font-['Hanken_Grotesk'] font-bold text-[#000000]">
-                            Reporte Diario de Reservaciones Creadas
+                            Reporte diario de reservaciones creadas
                         </h2>
                         <p className="text-[11px] leading-4 font-medium text-[#515f74] mt-0.5">
                             Listado de reservaciones registradas en la fecha seleccionada

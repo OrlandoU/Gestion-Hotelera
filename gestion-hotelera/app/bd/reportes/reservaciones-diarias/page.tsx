@@ -193,7 +193,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
-          name="Reservaciones Creadas"
+          name="Reporte diario de reservaciones creadas"
           subtitle="Listado de reservaciones registradas en la fecha seleccionada"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -220,7 +220,7 @@ export default function Page() {
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader
-            name="Reporte Diario de Reservaciones Creadas"
+            name="Reporte diario de reservaciones creadas"
             subtitle="Listado de reservaciones registradas en la fecha seleccionada"
           />
         </div>

@@ -103,7 +103,7 @@ function ActividadesMantenimientoPdfContent() {
         return (
             <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
                 <PageHeader
-                    name="Actividades de Mantenimiento"
+                    name="Reporte de actividades de mantenimiento/limpieza diarias"
                     subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
                 />
                 <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -142,7 +142,7 @@ function ActividadesMantenimientoPdfContent() {
 
                     <div className="text-right">
                         <h2 className="text-[16px] leading-5 font-['Hanken_Grotesk'] font-bold text-[#000000]">
-                            Reporte de Actividades Mantenimiento/Limpieza
+                            Reporte de actividades de mantenimiento/limpieza diarias
                         </h2>
                         <p className="text-[11px] leading-4 font-medium text-[#515f74] mt-0.5">
                             Auditoría interna de saneamiento, uso de insumos y gestión de espacios

@@ -80,7 +80,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
-          name="Reporte de Incidentes Anuales"
+          name="Reporte de incidentes anuales"
           subtitle="Registro de incidentes y eventos fuera de lo común"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -106,7 +106,7 @@ export default function Page() {
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader
-            name="Reporte de Incidentes Anuales"
+            name="Reporte de incidentes anuales"
             subtitle="Registro de incidentes y eventos fuera de lo común"
           />
         </div>

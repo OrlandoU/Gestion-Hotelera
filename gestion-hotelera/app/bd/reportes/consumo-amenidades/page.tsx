@@ -115,7 +115,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
-          name="Resumen de Consumo Mensual de Insumos y Amenidades"
+          name="Resumen de consumo mensual de insumos y amenidades"
           subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -142,7 +142,7 @@ export default function Page() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <PageHeader
-            name="Resumen de Consumo Mensual de Insumos y Amenidades"
+            name="Resumen de consumo mensual de insumos y amenidades"
             subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
           />
         </div>

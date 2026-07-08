@@ -91,7 +91,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
-          name="Ingresos Mensuales por Tipo de Habitación"
+          name="Ingresos mensuales por tipo de habitación"
           subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -115,7 +115,7 @@ export default function Page() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <PageHeader
-            name="Ingresos Mensuales por Tipo de Habitación "
+            name="Ingresos mensuales por tipo de habitación"
             subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
           />
         </div>

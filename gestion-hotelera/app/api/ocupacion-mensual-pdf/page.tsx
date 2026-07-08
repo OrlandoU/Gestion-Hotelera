@@ -96,7 +96,7 @@ function OcupacionMensualContent() {
         return (
             <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
                 <PageHeader
-                    name="Estadistica de Ocupación Mensual"
+                    name="Estadística de ocupación mensual"
                     subtitle="Análisis sintetizado de ocupación por mes"
                 />
                 <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -135,7 +135,7 @@ function OcupacionMensualContent() {
 
                     <div className="text-right">
                         <h2 className="text-[16px] leading-5 font-['Hanken_Grotesk'] font-bold text-[#000000]">
-                            Estadística de Ocupación Mensual
+                            Estadística de ocupación mensual
                         </h2>
                         <p className="text-[11px] leading-4 font-medium text-[#515f74] mt-0.5">
                             Análisis sintetizado de ocupación por mes

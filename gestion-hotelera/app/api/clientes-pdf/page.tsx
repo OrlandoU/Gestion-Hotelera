@@ -78,7 +78,7 @@ function ClientesFrecuentesPdfContent() {
         return (
             <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
                 <PageHeader
-                    name="Clientes Frecuentes"
+                    name="Listado de clientes frecuentes"
                     subtitle="Análisis de huéspedes recurrentes y patrones de visita"
                 />
                 <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -117,7 +117,7 @@ function ClientesFrecuentesPdfContent() {
 
                     <div className="text-right">
                         <h2 className="text-[16px] leading-5 font-['Hanken_Grotesk'] font-bold text-[#000000]">
-                            Listado de Clientes Frecuentes
+                            Listado de clientes frecuentes
                         </h2>
                         <p className="text-[11px] leading-4 font-medium text-[#515f74] mt-0.5">
                             Análisis de huéspedes recurrentes y patrones de visita

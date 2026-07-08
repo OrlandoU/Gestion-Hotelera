@@ -142,7 +142,7 @@ export default function Page() {
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader
-            name="Listado de Clientes Frecuentes"
+            name="Listado de clientes frecuentes"
             subtitle="Análisis de huéspedes recurrentes y patrones de visita"
           />
         </div>

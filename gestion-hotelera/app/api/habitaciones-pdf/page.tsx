@@ -118,7 +118,7 @@ function EstadoHabitacionesPdfContent() {
         return (
             <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
                 <PageHeader
-                    name="Lista Detallada del Estado de las Habitaciones"
+                    name="Listado del estado de las habitaciones"
                     subtitle="Visualización y gestión del inventario de espacios disponibles"
                 />
                 <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -157,7 +157,7 @@ function EstadoHabitacionesPdfContent() {
 
                     <div className="text-right">
                         <h2 className="text-[16px] leading-5 font-['Hanken_Grotesk'] font-bold text-[#000000]">
-                            Estado de las Habitaciones
+                            Listado del estado de las habitaciones
                         </h2>
                         <p className="text-[11px] leading-4 font-medium text-[#515f74] mt-0.5">
                             Visualización del inventario de espacios disponibles
