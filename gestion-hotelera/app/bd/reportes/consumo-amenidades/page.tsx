@@ -20,6 +20,35 @@ export default function Page() {
   // Fallback seguro de arreglo
   const consumoData = useMemo(() => consumoApi || [], [consumoApi]);
 
+  // Calcula el rango semanal (7 días) que termina en la fecha dada
+  const calcularRangoSemana = (fechaStr: string) => {
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    const fin = new Date(year, month - 1, day);
+    const inicio = new Date(fin);
+    inicio.setDate(fin.getDate() - 6);
+    return { inicio, fin };
+  };
+
+  const NOMBRES_MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+  const formatearFechaCorta = (fecha: Date) => {
+    return `${String(fecha.getDate()).padStart(2, '0')} ${NOMBRES_MESES_CORTOS[fecha.getMonth()]}`;
+  };
+
+  const formatearFechaDDMMYYYY = (fecha: Date) => {
+    return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+  };
+
+  // Devuelve el rango "dd/mm/yyyy - dd/mm/yyyy" (formato "largo", para la tabla)
+  // o "dd Mon - dd Mon" (formato "corto", para el gráfico/tooltip)
+  const formatearRangoSemana = (fechaStr: string, formato: 'corto' | 'largo' = 'largo') => {
+    const { inicio, fin } = calcularRangoSemana(fechaStr);
+    if (formato === 'corto') {
+      return `${formatearFechaCorta(inicio)} - ${formatearFechaCorta(fin)}`;
+    }
+    return `${formatearFechaDDMMYYYY(inicio)} - ${formatearFechaDDMMYYYY(fin)}`;
+  };
+
   const formatearMes = (value: string) => {
     if (!value) return "Mes seleccionado";
     const [year, month] = value.split("-");
@@ -51,14 +80,15 @@ export default function Page() {
 
     consumoData.forEach(item => {
       if (!agrupadoPorFecha[item.fecha]) {
-        // Formatear la fecha visualmente corta 
-        const [, mes, dia] = item.fecha.split('-');
-        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-        const etiquetaFecha = `${dia} ${meses[parseInt(mes) - 1]}`;
+        // Etiqueta corta en el eje X (fecha final de la semana) y rango completo para el tooltip
+        const { fin } = calcularRangoSemana(item.fecha);
+        const etiquetaFecha = formatearFechaCorta(fin);
+        const rangoCompleto = formatearRangoSemana(item.fecha, 'corto');
 
         agrupadoPorFecha[item.fecha] = {
           fechaOriginal: item.fecha,
-          name: etiquetaFecha
+          name: etiquetaFecha,
+          rangoCompleto: rangoCompleto
         };
       }
       // Asignar la cantidad gastada al producto correspondiente en esa fecha
@@ -241,6 +271,10 @@ export default function Page() {
                   <Tooltip
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px' }}
                     labelStyle={{ fontWeight: 'bold', color: '#000' }}
+                    labelFormatter={(label, payload) => {
+                      const rango = payload && payload[0] ? (payload[0].payload as { rangoCompleto?: string }).rangoCompleto : null;
+                      return rango || label;
+                    }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ paddingTop: '15px' }} layout="vertical" width="100%" />
                   {productosUnicos.map((producto) => (
@@ -333,8 +367,8 @@ export default function Page() {
                 <tr className="border-b border-slate-300 bg-[#f7f9fb]">
                   <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">ID Log</th>
                   <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Amenidad / Insumo</th>
-                  <th className="px-6 py-3 text-right text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad Extraída</th>
-                  <th className="px-6 py-3 text-right text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha de Log</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad Extraída</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Rango</th>
                 </tr>
               </thead>
               <tbody>
@@ -349,11 +383,11 @@ export default function Page() {
                         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorLinea }} />
                         {item.nombre}
                       </td>
-                      <td className="px-6 py-4 text-right text-[14px] font-mono font-bold text-slate-900">
+                      <td className="px-6 py-4 text-[14px] font-mono font-bold text-slate-900">
                         {item.cantidad_gastada} uds
                       </td>
-                      <td className="px-6 py-4 text-right text-[13px] font-medium text-slate-600">
-                        {item.fecha.split('-').reverse().join('/')}
+                      <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
+                        {formatearRangoSemana(item.fecha)}
                       </td>
                     </tr>
                   );
