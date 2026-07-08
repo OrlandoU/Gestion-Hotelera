@@ -151,7 +151,7 @@ def read_consumo_amenidades_mensual(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
-@router.get("/incidencias")
+@router.get("/incidentes")
 def read_incidentes(
     year: int = Query(default=None, description="Formato Entero"),
     db = Depends(get_db)
