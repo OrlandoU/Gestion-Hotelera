@@ -133,7 +133,7 @@ function ClientesFrecuentesPdfContent() {
                             <p className="text-[13px] font-semibold text-[#000000] mt-0.5">{busqueda || "Sin filtro"}</p>
                         </div>
                         <div className="text-center sm:text-left">
-                            <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Frecuencia mínima</p>
+                            <p className="text-[10px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de visitas minimas</p>
                             <p className="text-[13px] font-semibold text-[#000000] mt-0.5">
                                 {filtroFrecuenciaMin > 0 ? `${filtroFrecuenciaMin}+ visitas` : "Todos"}
                             </p>
