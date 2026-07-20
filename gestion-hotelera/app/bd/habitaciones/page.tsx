@@ -89,6 +89,7 @@ export default function Page() {
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
               {habitaciones.map((room) => {
+                console.log(room)
                 return (
                   <tr key={room.espacio_id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-semibold text-slate-900">{room.numero_espacio}</td>
@@ -96,7 +97,7 @@ export default function Page() {
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold ${getStatusBadge(room.estado_habitacion!)}`}>
                         <span className="w-2 h-2 rounded-full bg-current"></span>
-                        {room.estado_habitacion === "Available" ? "Disponible" : room.estado_habitacion === "Occupied" ? "Ocupada" : room.estado_habitacion === "Dirty" ? "Sucio" : room.estado_habitacion === "Maintenance" ? "Mantenimiento" : room.status}
+                        {room.estado_habitacion}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-slate-700">

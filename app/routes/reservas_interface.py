@@ -5,11 +5,11 @@ from typing import Optional
 class ReservaSchema(BaseModel):
     reserva_id: Optional[int] = None
     huesped_id: Optional[int] = None
-    nombre_huesped: Optional[str] = None
-    apellido_huesped: Optional[str] = None
-    telefono_huesped: Optional[str] = None
-    email_huesped: Optional[str] = None
-    huesped_dni: Optional[str] = None
+    nombres: Optional[str] = None
+    apellidos: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+    dni: Optional[str] = None
     espacio_id: Optional[int] = None
     numero_reserva: Optional[str] = None
     numero_espacio: Optional[str] = None

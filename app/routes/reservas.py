@@ -1,133 +1,77 @@
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from app.database import get_db
-import pymssql
-from .reservas_interface import ReservaSchema
+from app.repositories.reserva import ReservaRepository
+from app.routes.reservas_interface import ReservaSchema
+
+# Inyector de dependencia para el repositorio
+def get_reserva_repo(db = Depends(get_db)):
+    return ReservaRepository(db)
+
 
 router = APIRouter(
     prefix="/reservas",
     tags=["reservas"]
 )
 
-@router.get("")
-def read_reservas():
-    return {"Hello": "World"}
+# ==========================================
+# RUTAS DE RESERVAS
+# ==========================================
 
-@router.get("/obtener-reserva")
-def obtener_reserva(
-    reserva_id: int = Query(..., description="ID de la reserva"),
-    db = Depends(get_db)
+### 1. OBTENER TODAS LAS RESERVAS (O FILTRADAS POR FECHA)
+@router.get("", status_code=status.HTTP_200_OK)
+async def listar_reservas(
+    fecha_entrada: date = Query(None, description="Filtrar reservas por fecha de entrada"),
+    repo: ReservaRepository = Depends(get_reserva_repo)
 ):
-    cursor = None
-    try:
-        cursor = db.cursor(as_dict=True)
-        cursor.execute("EXEC sp_obtener_reserva %s", (reserva_id))
-        reserva = cursor.fetchone()
-        return reserva
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
-    finally:
-        if cursor:
-            cursor.close()
-
-# PAGO
-@router.post("/registrar-pago")
-def registrar_pago(    
-    reserva_id: int = Query(..., description="ID de la reserreserva va"),
-    metodo: str = Query(..., description="Método de pago"),
-    monto: int = Query(..., description="Monto a pagar"),
-    db = Depends(get_db)
-):
-    cursor = None
-    try:
-        cursor = db.cursor(as_dict=True)
-        cursor.execute("EXEC sp_registrar_pago %s, %s, %s", (reserva_id, metodo, monto))
-        db.commit()
-        return {"message": "Pago registrado exitosamente"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
-    finally:
-        if cursor:
-            cursor.close()
+    return repo.listar(fecha_entrada=fecha_entrada)
 
 
-@router.get("/listar-reservaciones")
-def listar_reservaciones(
-    fecha_entrada: date = Query(..., description="Fecha de entrada"),
-    db = Depends(get_db)
-):
-    cursor = None
-    try:
-        cursor = db.cursor(as_dict=True)
-        # Usamos %s para pymssql
-        cursor.execute("EXEC sp_listar_reservaciones %s", (fecha_entrada,))
-        reservaciones = cursor.fetchall()
-        
-        return reservaciones
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
-    finally:
-        if cursor:
-            cursor.close()
-
-
-@router.get("/mostrar-habitaciones-disponibles")
-def mostrar_habitaciones_disponibles(
+### 2. DISPONIBILIDAD DE HABITACIONES (Sub-ruta de búsqueda)
+@router.get("/habitaciones-disponibles", status_code=status.HTTP_200_OK)
+async def mostrar_habitaciones_disponibles(
     fecha_entrada: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
     fecha_salida: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
-    db = Depends(get_db)
+    repo: ReservaRepository = Depends(get_reserva_repo)
 ):
-    cursor = None
-    try:
-        cursor = db.cursor(as_dict=True)
-        cursor.execute(
-            "EXEC sp_mostrar_habitaciones_disponibles %s, %s", 
-            (fecha_entrada, fecha_salida)
+    # Nota: FastAPI ya valida el formato 'date' automáticamente. 
+    # Si viene incorrecto, lanza un 422 automáticamente sin tocar el repo.
+    return repo.verificar_disponibilidad(fecha_entrada, fecha_salida)
+
+
+### 3. DETALLE DE UNA RESERVA ESPECÍFICA
+@router.get("/{reserva_id}", status_code=status.HTTP_200_OK)
+async def obtener_reserva(
+    reserva_id: int = Path(..., description="ID de la reserva a consultar"),
+    repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    reserva = repo.obtener_por_id(reserva_id)
+    if not reserva:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Reserva no encontrada"
         )
-        
-        habitaciones_disponibles = cursor.fetchall()
-        return habitaciones_disponibles
-
-    except ValueError as val_err:
-        # Captura si el string enviado desde el frontend no tenía un formato ISO válido
-        print("ERROR DE PARSEO DE FECHA:", str(val_err))
-        raise HTTPException(status_code=400, detail=f"Formato de fecha inválido. Use YYYY-MM-DDTHH:MM:SS")
-    except Exception as e:
-        print("ERROR CRÍTICO EN PYMSSQL / SQL SERVER:", str(e))
-        raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
-    finally:
-        if cursor:
-            cursor.close()
+    return reserva
 
 
-@router.post("/crear-reserva")
-def crear_reserva(
+### 4. CREAR UNA RESERVA
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def crear_reserva(
     reserva: ReservaSchema,
-    db = Depends(get_db)
+    repo: ReservaRepository = Depends(get_reserva_repo)
 ):
-    cursor = None
-    try:
-        # Aunque es un POST, usamos as_dict=True para mantener consistencia con tus otros métodos
-        cursor = db.cursor(as_dict=True)
-        
-        # Ejecutamos el SP enviando los 4 parámetros ordenados con %s
-        cursor.execute(
-            "EXEC sp_crear_reserva %s, %s, %s, %s, %s, %s, %s, %s",
-            (reserva.nombre_huesped, reserva.apellido_huesped, reserva.telefono_huesped, reserva.email_huesped, reserva.huesped_dni, reserva.espacio_id, reserva.fecha_entrada, reserva.fecha_salida)
-        )
-        
-        # REGLA DE ORO PARA INSERCIONES: Confirmar los cambios en la conexión de pymssql
-        db.commit()
-        
-        return {"message": "Reserva creada exitosamente"}
-    except Exception as e:
-        # Si falla la inserción, deshacemos cualquier cambio pendiente
-        db.rollback()
-        import traceback
-        print("ERROR DETALLADO EN CONSOLA BLACKEND:")
-        traceback.print_exc() # Esto imprimirá el error real en la terminal negra de Python 
+    print(reserva)
+    repo.crear(reserva)
+    return {"message": "Reserva creada exitosamente"}
 
-        raise HTTPException(status_code=500, detail=f"Error al crear reserva: {repr(e)}")
-    finally:
-        if cursor:
-            cursor.close()
+
+### 5. REGISTRAR EL PAGO DE UNA RESERVA (Sub-recurso dependiente)
+@router.post("/{reserva_id}/pagos", status_code=status.HTTP_201_CREATED)
+async def registrar_pago(    
+    reserva_id: int = Path(..., description="ID de la reserva a la que se le aplica el pago"),
+    metodo: str = Query(..., description="Método de pago"),
+    monto: int = Query(..., description="Monto a pagar"),
+    repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    repo.registrar_pago(reserva_id, metodo, monto)
+    return {"message": "Pago registrado exitosamente"}
