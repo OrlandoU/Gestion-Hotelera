@@ -1,17 +1,23 @@
 'use client';
 import PageHeader from "@/components/pageheader";
+import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { useClientesFrecuentes } from "@/functions/reportes-api";
+import { exportToExcel } from "@/functions/excel-utils";
+import { Toaster, toast } from "sonner";
 
 export default function Page() {
   const { data: clientesApi, loading, error, refetch } = useClientesFrecuentes();
   const [busqueda, setBusqueda] = useState("");
   const [ordenar, setOrdenar] = useState<"nombre" | "frecuencia" | "id">("frecuencia");
   const [filtroFrecuenciaMin, setFiltroFrecuenciaMin] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Usar datos de API si existen, sino array vacío
-  const clientesData = clientesApi || [];
+  const clientesData = useMemo(() => clientesApi || [], [clientesApi]);
 
   // Cálculos y filtrados
   const clientesFiltrados = useMemo(() => {
@@ -20,7 +26,7 @@ export default function Page() {
     // Filtrar por búsqueda (nombre, apellido, teléfono)
     if (busqueda) {
       const busquedaLower = busqueda.toLowerCase();
-      resultado = resultado.filter(c => 
+      resultado = resultado.filter(c =>
         c.nombres?.toLowerCase().includes(busquedaLower) ||
         c.apellidos?.toLowerCase().includes(busquedaLower) ||
         c.telefono?.includes(busqueda)
@@ -45,22 +51,10 @@ export default function Page() {
     return resultado;
   }, [clientesData, busqueda, ordenar, filtroFrecuenciaMin]);
 
-  // Estadísticas
-  const stats = useMemo(() => {
-    const totalClientes = clientesData.length;
-    const visitasTotales = clientesData.reduce((sum, c) => sum + (c.frecuencia || 0), 0);
-    const frecuenciaPromedio = totalClientes > 0 ? (visitasTotales / totalClientes).toFixed(1) : 0;
-    const clientesMasFrequentes = [...clientesData].sort((a, b) => (b.frecuencia || 0) - (a.frecuencia || 0)).slice(0, 5);
-    
-    // Distribución por rango de frecuencia
-    const distribucion = {
-      "5 visitas": clientesData.filter(c =>  (c.frecuencia || 0) <= 5).length,
-      "6 visitas": clientesData.filter(c =>  (c.frecuencia || 0) === 6).length,
-      "7+ visitas": clientesData.filter(c => (c.frecuencia || 0) >= 7).length,
-    };
-
-    return { totalClientes, visitasTotales, frecuenciaPromedio, clientesMasFrequentes, distribucion };
-  }, [clientesData]);
+  const clientesMostrados = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return clientesFiltrados.slice(start, start + pageSize);
+  }, [clientesFiltrados, page, pageSize]);
 
   const getNivelFrecuencia = (frecuencia: number) => {
     if (frecuencia >= 7) return { label: "VIP", color: "bg-purple-100 text-purple-800", icon: "star" };
@@ -68,12 +62,61 @@ export default function Page() {
     return { label: "Regular", color: "bg-slate-100 text-slate-800", icon: "person" };
   };
 
+  const handleExportClientes = () => {
+    const rows = clientesFiltrados.map((cliente) => ({
+      ID: cliente.huesped_id,
+      "Nombre completo": `${cliente.nombres || ""} ${cliente.apellidos || ""}`.trim(),
+      "Teléfono": cliente.telefono || "",
+      "Cantidad de visitas": cliente.frecuencia || 0,
+      "Cantidad de noches": cliente.total_noches || 0,
+      Nivel: getNivelFrecuencia(cliente.frecuencia || 0).label,
+    }));
+
+    exportToExcel(rows, `clientes-frecuentes-${new Date().toISOString().split("T")[0]}.xlsx`, "ClientesFrecuentes");
+    toast.success("Exportación completada exitosamente!");
+  };
+
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      if (busqueda.trim()) {
+        params.set("busqueda", busqueda.trim());
+      }
+      params.set("ordenar", ordenar);
+      if (filtroFrecuenciaMin > 0) {
+        params.set("frecuenciaMin", String(filtroFrecuenciaMin));
+      }
+
+      const response = await fetch(`/api/clientes-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `clientes-frecuentes-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   // Renderizar error
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Clientes Frecuentes" 
+        <PageHeader
+          name="Clientes Frecuentes"
           subtitle="Análisis de huéspedes recurrentes y patrones de visita"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -81,7 +124,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error cargando datos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button 
+            <button
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -98,8 +141,8 @@ export default function Page() {
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader 
-            name="Listado de Clientes Frecuentes" 
+          <PageHeader
+            name="Listado de clientes frecuentes"
             subtitle="Análisis de huéspedes recurrentes y patrones de visita"
           />
         </div>
@@ -110,18 +153,38 @@ export default function Page() {
           </div>
         )}
         {!loading && (
-          <button 
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
-            title="Actualizar datos de la API"
-          >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Actualizar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={refetch}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
+              title="Actualizar datos de la API"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Actualizar
+            </button>
+            <button
+              onClick={handleExportClientes}
+              disabled={clientesFiltrados.length === 0}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Exportar los datos filtrados a Excel"
+            >
+              <span className="material-symbols-outlined text-[18px]">file_upload</span>
+              Exportar
+            </button>
+            <button
+              onClick={handleGeneratePdf}
+              disabled={clientesFiltrados.length === 0 || isGeneratingPdf}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              title="Generar PDF con los filtros actuales"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
+              {isGeneratingPdf ? "Generando..." : "PDF"}
+            </button>
+          </div>
         )}
       </div>
 
-      {/* Métricas KPI */}
+      {/* Métricas KPI
       <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
@@ -170,13 +233,13 @@ export default function Page() {
             {loading ? <span className="animate-pulse">--</span> : stats.distribucion["7+ visitas"]}
           </h2>
         </div>
-      </section>
+      </section> */}
 
-      
+
 
       {/* Filtros y búsqueda */}
       <section className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
-        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Filtros</h3>
+        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Buscar por nombre, apellido o teléfono</label>
@@ -185,17 +248,17 @@ export default function Page() {
               placeholder="ej: Carlos Mejía o 9988-1122"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             />
           </div>
-          
+
           <div>
-            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Frecuencia mínima</label>
+            <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Cantidad de visitas</label>
             <select
               value={filtroFrecuenciaMin}
               onChange={(e) => setFiltroFrecuenciaMin(Number(e.target.value))}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
               <option value={0}>Todos</option>
@@ -210,10 +273,10 @@ export default function Page() {
             <select
               value={ordenar}
               onChange={(e) => setOrdenar(e.target.value as "nombre" | "frecuencia" | "id")}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
-              <option value="frecuencia">Frecuencia (Mayor a menor)</option>
+              <option value="frecuencia">Cantidad de Visitas</option>
               <option value="nombre">Nombre (A-Z)</option>
               <option value="id">ID Cliente</option>
             </select>
@@ -228,7 +291,7 @@ export default function Page() {
             Listado de Clientes
           </h3>
           <span className="text-[14px] font-semibold text-[#515f74]">
-            {clientesFiltrados.length} de {stats.totalClientes}
+            {clientesFiltrados.length} Registros encontrados
           </span>
         </div>
 
@@ -243,55 +306,62 @@ export default function Page() {
             <p className="text-[16px] font-medium text-[#515f74]">No se encontraron clientes</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nombre Completo</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Teléfono</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Visitas</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Noches</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nivel</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clientesFiltrados.map((cliente) => {
-                  const nivel = getNivelFrecuencia(cliente.frecuencia || 0);
-                  return (
-                    <tr key={cliente.huesped_id} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">#{cliente.huesped_id}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-[14px] font-semibold text-[#000000]">{cliente.nombres}</span>
-                          <span className="text-[12px] text-[#515f74]">{cliente.apellidos}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">{cliente.telefono}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px] text-[#008cc7]">event_repeat</span>
-                          <span className="text-[14px] font-bold text-[#000000]">{cliente.frecuencia}x</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px] text-[#008cc7]">bed</span>
-                          <span className="text-[14px] font-bold text-[#000000]">{cliente.total_noches || 0}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${nivel.color} inline-flex items-center gap-1`}>
-                          {/* <span className="material-symbols-outlined text-[14px]">{nivel.icon}</span> */}
-                          {nivel.label}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-300 bg-[#f7f9fb]">
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">ID</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nombre Completo</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Teléfono</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Visitas</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad de Noches</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Nivel</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientesMostrados.map((cliente) => {
+                    const nivel = getNivelFrecuencia(cliente.frecuencia || 0);
+                    return (
+                      <tr key={cliente.huesped_id} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
+                        <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">#{cliente.huesped_id}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="text-[14px] font-semibold text-[#000000]">{cliente.nombres}</span>
+                            <span className="text-[12px] text-[#515f74]">{cliente.apellidos}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">{cliente.telefono}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[14px] font-bold text-[#000000]">{cliente.frecuencia}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[14px] font-bold text-[#000000]">{cliente.total_noches || 0}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${nivel.color} inline-flex items-center gap-1`}>
+                            {nivel.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              page={page}
+              setPage={setPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalItems={clientesFiltrados.length}
+              label="clientes"
+            />
+          </>
         )}
       </section>
 
@@ -324,9 +394,9 @@ export default function Page() {
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Frecuencia Promedio</p>
+              <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Cantidad de Visitas Promedio</p>
               <h4 className="text-[24px] font-bold text-[#000000]">
-                {clientesFiltrados.length > 0 
+                {clientesFiltrados.length > 0
                   ? (clientesFiltrados.reduce((sum, c) => sum + (c.frecuencia || 0), 0) / clientesFiltrados.length).toFixed(1)
                   : 0}
               </h4>
@@ -337,7 +407,7 @@ export default function Page() {
         </div>
       </section>
       {/* Top clientes y distribución */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Top 5 Clientes Más Frecuentes</h3>
           <div className="space-y-3">
@@ -429,17 +499,17 @@ export default function Page() {
             )}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Estado de la API */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+      {/* <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
             <span className="material-symbols-outlined text-[16px]">info</span>
             <span>Datos obtenidos desde API en tiempo real</span>
             {loading && <span className="animate-pulse">• Actualizando...</span>}
           </div>
-          <button 
+          <button
             onClick={refetch}
             className="text-[#008cc7] hover:text-[#006fa0] font-semibold hover:underline text-[12px] flex items-center gap-1"
           >
@@ -447,7 +517,8 @@ export default function Page() {
             Actualizar
           </button>
         </div>
-      </section>
+      </section> */}
+      <Toaster richColors expand />
     </ViewTransition>
   );
 }

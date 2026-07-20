@@ -3,29 +3,69 @@
 import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
-import { useIngresosTipoHabitacion } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
+import { useIngresosTipoHabitacion } from "@/functions/reportes-api"; 
 import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+
+type TooltipPayload = {
+  payload?: Array<{
+    payload?: {
+      tipo_habitacion?: string;
+      ingresos_totales?: number;
+      porcentaje?: number;
+    };
+  }>;
+};
+
+const CustomTooltip = ({ active, payload }: TooltipPayload & { active?: boolean }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0]?.payload;
+    if (!data) return null;
+    return (
+      <div className="bg-white border border-slate-300 p-3 rounded-lg shadow-level-2 text-xs font-['Hanken_Grotesk']">
+        <p className="font-bold text-black mb-1">{data.tipo_habitacion}</p>
+        <p className="text-slate-600">Ingresos: <span className="font-bold text-[#008cc7]">${(data.ingresos_totales || 0).toLocaleString()}</span></p>
+        <p className="text-slate-600">Participación: <span className="font-semibold text-slate-900">{data.porcentaje}%</span></p>
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function Page() {
   // Inicializamos el periodo en el mes actual (Junio 2026)
-  const [periodoFiltro, setPeriodoFiltro] = useState<string>("2026-06");
+  const [periodoFiltro, setPeriodoFiltro] = useState<string>("2026-07-01");
 
   // Pasamos el periodo dinámicamente al hook de la API
   const { data: ingresosApi, loading, error, refetch } = useIngresosTipoHabitacion(periodoFiltro);
+
+  const handlePeriodoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value)
+    setPeriodoFiltro(e.target.value);
+    refetch(e.target.value + "-01"); // Agregar día para formar una fecha completa
+  }
+
   const [ordenar, setOrdenar] = useState<"ingresos" | "reservas" | "noches">("ingresos");
 
   // Fallback de arreglo seguro
-  const ingresosData = ingresosApi || [];
+  const ingresosData = useMemo(() => ingresosApi || [], [ingresosApi]);
 
-  // Mapeo de paleta cromática profesional para los tipos de habitación
-  const esquemaColores: Record<string, { hex: string; bg: string; text: string; border: string }> = {
-    "Básica": { hex: "#008cc7", bg: "bg-blue-100", text: "text-blue-800", border: "border-l-4 border-blue-500" },
-    "Estandar": { hex: "#10b981", bg: "bg-emerald-100", text: "text-emerald-800", border: "border-l-4 border-emerald-500" },
-    "Doble-Básica": { hex: "#f59e0b", bg: "bg-amber-100", text: "text-amber-800", border: "border-l-4 border-amber-500" },
-    "Doble-Estandar": { hex: "#ec4899", bg: "bg-pink-100", text: "text-pink-800", border: "border-l-4 border-pink-500" },
+  const formatearMes = (value: string) => {
+    if (!value) return "Mes seleccionado";
+    const [year, month] = value.split("-");
+    const fecha = new Date(Number(year), Number(month) - 1, 1);
+    const nombreMes = fecha.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+    return nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
   };
 
-  const colorFallback = { hex: "#64748b", bg: "bg-slate-100", text: "text-slate-800", border: "border-l-4 border-slate-400" };
+  // Paleta de azules distintivos de la aplicación para el gráfico y la tabla
+const esquemaColores: Record<string, { hex: string; bg: string; text: string; border: string }> = {
+    "Básica": { hex: "#C084FC", bg: "bg-purple-100", text: "text-purple-800", border: "border-l-4 border-purple-400" },
+    "Estándar": { hex: "#0EA5E9", bg: "bg-sky-100", text: "text-sky-800", border: "border-l-4 border-sky-500" },
+    "Doble-Básica": { hex: "#2563EB", bg: "bg-blue-100", text: "text-blue-800", border: "border-l-4 border-blue-600" },
+    "Doble-Estándar": { hex: "#4338CA", bg: "bg-indigo-100", text: "text-indigo-800", border: "border-l-4 border-indigo-700" },
+  };
+
+  const colorFallback = { hex: "#2563eb", bg: "bg-blue-50", text: "text-blue-700", border: "border-l-4 border-blue-500" };
 
   // Totales generales acumulados del periodo seleccionado
   const globales = useMemo(() => {
@@ -37,7 +77,7 @@ export default function Page() {
 
   // Datos ordenados dinámicamente para la visualización de la tabla
   const ingresosOrdenados = useMemo(() => {
-    let resultado = [...ingresosData];
+    const resultado = [...ingresosData];
     resultado.sort((a, b) => {
       if (ordenar === "ingresos") return (b.ingresos_totales || 0) - (a.ingresos_totales || 0);
       if (ordenar === "reservas") return (b.total_reservas || 0) - (a.total_reservas || 0);
@@ -47,26 +87,11 @@ export default function Page() {
     return resultado;
   }, [ingresosData, ordenar]);
 
-  // Formateador personalizado para el Tooltip interactivo de Recharts
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white border border-slate-300 p-3 rounded-lg shadow-level-2 text-xs font-['Hanken_Grotesk']">
-          <p className="font-bold text-black mb-1">{data.tipo_habitacion}</p>
-          <p className="text-slate-600">Ingresos: <span className="font-bold text-[#008cc7]">${data.ingresos_totales.toLocaleString()}</span></p>
-          <p className="text-slate-600">Participación: <span className="font-semibold text-slate-900">{data.porcentaje}%</span></p>
-        </div>
-      );
-    }
-    return null;
-  };
-
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Ingresos Mensuales por Tipo de Habitación" 
+        <PageHeader
+          name="Ingresos mensuales por tipo de habitación"
           subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -74,7 +99,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error al procesar la distribución de ingresos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button onClick={refetch} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2">
+            <button onClick={() => refetch(periodoFiltro + "-01")} className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2">
               <span className="material-symbols-outlined">refresh</span>
               Sincronizar Datos
             </button>
@@ -87,36 +112,51 @@ export default function Page() {
   return (
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
       {/* Encabezado Principal y Controles de Periodo */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <PageHeader 
-            name="Ingresos Mensuales por Tipo de Habitación " 
+          <PageHeader
+            name="Ingresos mensuales por tipo de habitación"
             subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
           />
         </div>
-        
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          <div className="flex flex-col">
-            <label className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider mb-1">Periodo Mensual</label>
-            <input 
-              type="month" 
-              value={periodoFiltro}
-              onChange={(e) => setPeriodoFiltro(e.target.value)}
-              className="px-3 py-1.5 border border-slate-300 rounded-lg text-[14px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
-              disabled={loading}
-            />
-          </div>
-          {loading ? (
-            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200 mt-5">
-              <span className="material-symbols-outlined animate-spin text-blue-600 text-[18px]">refresh</span>
-            </div>
-          ) : (
-            <button onClick={refetch} className="mt-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700" title="Recargar periodo">
-              <span className="material-symbols-outlined text-[20px] block">refresh</span>
-            </button>
-          )}
-        </div>
       </div>
+
+      <section className="rounded-2xl border border-slate-200 bg-linear-to-r bg-white p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#008cc7] text-white">
+              <span className="material-symbols-outlined text-[22px]">calendar_month</span>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#515f74]">Periodo mensual</p>
+              <h3 className="text-[18px] font-semibold text-[#0f172a]">{formatearMes(periodoFiltro)}</h3>
+              <p className="text-sm text-slate-500">Selecciona el periodo para actualizar la distribución de ingresos.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label className="flex flex-col rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#515f74]">Mes</span>
+              <input
+                type="month"
+                value={periodoFiltro}
+                onChange={handlePeriodoChange}
+                className="mt-1 bg-transparent text-sm font-semibold text-[#191c1e] focus:outline-none"
+                disabled={loading}
+              />
+            </label>
+
+            <button
+              onClick={() => refetch(periodoFiltro + "-01")}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[#008cc7] hover:text-[#008cc7] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              {loading ? "Actualizando" : "Actualizar"}
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Bloque Global de KPIs */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -146,7 +186,7 @@ export default function Page() {
 
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300 shadow-level-1">
           <div className="flex justify-between items-start flex-col-reverse">
-            <span className="text-[14px] font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Noches Pernoctadas</span>
+            <span className="text-[14px] font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Noches en Estancia</span>
             <div className="p-2 bg-[#e0e3e5] rounded-lg mb-4">
               <span className="material-symbols-outlined text-[20px] text-[#565e74]">bedtime</span>
             </div>
@@ -163,7 +203,7 @@ export default function Page() {
         {/* Componente: Gráfico de Torta con Recharts */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 lg:col-span-5 flex flex-col justify-between shadow-level-1">
           <div>
-            <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-1">Participación Comercial</h3>
+            <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-1">Desglose de Ingresos</h3>
             <p className="text-[13px] text-[#515f74] mb-6">Porcentaje de ingresos según categoría de hospedaje</p>
           </div>
 
@@ -198,10 +238,10 @@ export default function Page() {
                         return <Cell key={`cell-${index}`} fill={color.hex} />;
                       })}
                     </Pie>
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip />} wrapperClassName="z-10"/>
                   </PieChart>
                 </ResponsiveContainer>
-                
+
                 <div className="absolute flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Mix</span>
                   <span className="text-[16px] font-bold text-black">{ingresosData.length} Tipos</span>
@@ -234,7 +274,7 @@ export default function Page() {
               <div>
                 <select
                   value={ordenar}
-                  onChange={(e) => setOrdenar(e.target.value as any)}
+                  onChange={(e) => setOrdenar(e.target.value as "ingresos" | "reservas" | "noches")}
                   className="px-3 py-1.5 border border-slate-300 rounded-lg text-[13px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
                   disabled={loading}
                 >
@@ -272,7 +312,7 @@ export default function Page() {
                       return (
                         <tr key={item.tipo_habitacion} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
                           <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${color.border}`}>
-                            {item.tipo_habitacion}
+                            {item.tipo_habitacion == "Estandar" ? "Estándar" : item.tipo_habitacion == "Doble-Estandar" ? "Doble Estándar" : item.tipo_habitacion}
                           </td>
                           <td className="px-6 py-4 text-right text-[14px] font-medium text-[#515f74]">
                             {item.total_reservas}

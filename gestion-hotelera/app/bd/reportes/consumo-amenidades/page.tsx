@@ -4,53 +4,104 @@ import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { useConsumoAmenidadesMensual } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
-import { 
-  LineChart, Line, BarChart, Bar, XAxis, YAxis, 
-  CartesianGrid, Tooltip, Legend, ResponsiveContainer 
+import {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 
 export default function Page() {
   // Inicializamos en abril de 2026 de acuerdo al set de datos de muestra
-  const [mesFiltro, setMesFiltro] = useState<string>("2026-04-25");
-  
+  const [mesFiltro, setMesFiltro] = useState<string>("2026-07-06");
+  const [paginaActual, setPaginaActual] = useState(1);
+  const elementosPorPagina = 8;
+
   const { data: consumoApi, loading, error, refetch } = useConsumoAmenidadesMensual();
 
   // Fallback seguro de arreglo
-  const consumoData = consumoApi || [];
+  const consumoData = useMemo(() => consumoApi || [], [consumoApi]);
+
+  // Calcula el rango semanal (7 días) que termina en la fecha dada
+  const calcularRangoSemana = (fechaStr: string) => {
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    const fin = new Date(year, month - 1, day);
+    const inicio = new Date(fin);
+    inicio.setDate(fin.getDate() - 6);
+    return { inicio, fin };
+  };
+
+  const NOMBRES_MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+  const formatearFechaCorta = (fecha: Date) => {
+    return `${String(fecha.getDate()).padStart(2, '0')} ${NOMBRES_MESES_CORTOS[fecha.getMonth()]}`;
+  };
+
+  const formatearFechaDDMMYYYY = (fecha: Date) => {
+    return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+  };
+
+  // Devuelve el rango "dd/mm/yyyy - dd/mm/yyyy" (formato "largo", para la tabla)
+  // o "dd Mon - dd Mon" (formato "corto", para el gráfico/tooltip)
+  const formatearRangoSemana = (fechaStr: string, formato: 'corto' | 'largo' = 'largo') => {
+    const { inicio, fin } = calcularRangoSemana(fechaStr);
+    if (formato === 'corto') {
+      return `${formatearFechaCorta(inicio)} - ${formatearFechaCorta(fin)}`;
+    }
+    return `${formatearFechaDDMMYYYY(inicio)} - ${formatearFechaDDMMYYYY(fin)}`;
+  };
+
+  const formatearMes = (value: string) => {
+    if (!value) return "Mes seleccionado";
+    const [year, month] = value.split("-");
+    const fecha = new Date(Number(year), Number(month) - 1, 1);
+    const nombreMes = fecha.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+    return nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+  };
+
+  const handleMesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMesFiltro(e.target.value);
+    setPaginaActual(1);
+    refetch(e.target.value + "-01"); // Agregar día para formar una fecha completa
+  }
 
   // Paleta de colores consistente para identificar de manera fija cada amenidad/producto
-  const coloresProductos: Record<string, string> = {
-    "Jabón de Tocador Hotelero Barra 20g": "#008cc7",
-    "shampoo Hotelero Sachet 30ml": "#10b981",
-    "Cloro en Gel Maxiclean": "#f59e0b",
-    "Desinfectante de Lavanda Fabuloso": "#ec4899"
-  };
+  const coloresProductos: Record<string, string> = useMemo(() => {
+    return {
+      "Jabón de Tocador Hotelero Barra 20g": "#00a8f0",
+      "Shampoo Hotelero Sachet 30ml": "#0086c0",
+      "Cloro en Gel Maxiclean": "#006894",
+      "Desinfectante de Lavanda Fabuloso": "#004d6e"
+    };
+  }, []);
   const colorFallback = "#64748b";
 
   // 1. Transformación para el Gráfico de Líneas: Agrupación por Fecha
   const dataGraficoLineas = useMemo(() => {
-    const agrupadoPorFecha: Record<string, any> = {};
+    const agrupadoPorFecha: Record<string, Record<string, string | number>> = {};
 
     consumoData.forEach(item => {
       if (!agrupadoPorFecha[item.fecha]) {
-        // Formatear la fecha visualmente corta (Ej: "06 Abr")
-        const [, mes, dia] = item.fecha.split('-');
-        const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-        const etiquetaFecha = `${dia} ${meses[parseInt(mes) - 1]}`;
+        // Etiqueta corta en el eje X (fecha final de la semana) y rango completo para el tooltip
+        const { fin } = calcularRangoSemana(item.fecha);
+        const etiquetaFecha = formatearFechaCorta(fin);
+        const rangoCompleto = formatearRangoSemana(item.fecha, 'corto');
 
-        agrupadoPorFecha[item.fecha] = { 
+        agrupadoPorFecha[item.fecha] = {
           fechaOriginal: item.fecha,
-          name: etiquetaFecha 
+          name: etiquetaFecha,
+          rangoCompleto: rangoCompleto
         };
       }
       // Asignar la cantidad gastada al producto correspondiente en esa fecha
       agrupadoPorFecha[item.fecha][item.nombre] = item.cantidad_gastada;
+      console.log(agrupadoPorFecha)
     });
 
     // Ordenar cronológicamente por la fecha original
-    return Object.values(agrupadoPorFecha).sort((a, b) => 
-      a.fechaOriginal.localeCompare(b.fechaOriginal)
-    );
+    return Object.values(agrupadoPorFecha).sort((a, b) => {
+      const fechaA = String(a.fechaOriginal);
+      const fechaB = String(b.fechaOriginal);
+      return fechaA.localeCompare(fechaB);
+    });
   }, [consumoData]);
 
   // 2. Transformación para el Gráfico de Barras Horizontales: Consumo Total por Producto (Sin Fechas)
@@ -69,7 +120,7 @@ export default function Page() {
         fill: coloresProductos[nombre] || colorFallback
       }))
       .sort((a, b) => b.total - a.total);
-  }, [consumoData]);
+  }, [consumoData, coloresProductos]);
 
   // Listado de nombres únicos de productos activos en el mes para renderizar las líneas del gráfico
   const productosUnicos = useMemo(() => {
@@ -83,11 +134,18 @@ export default function Page() {
     return { totalUnidades, variedadProductos };
   }, [consumoData, productosUnicos]);
 
+  const totalPaginas = Math.max(1, Math.ceil(consumoData.length / elementosPorPagina));
+  const paginaValida = Math.min(paginaActual, totalPaginas);
+  const datosPaginados = useMemo(() => {
+    const inicio = (paginaValida - 1) * elementosPorPagina;
+    return consumoData.slice(inicio, inicio + elementosPorPagina);
+  }, [consumoData, paginaValida]);
+
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Resumen de Consumo Mensual de Insumos y Amenidades" 
+        <PageHeader
+          name="Resumen de consumo mensual de insumos y amenidades"
           subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -95,8 +153,8 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error al cargar el histórico de consumos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button 
-              onClick={refetch}
+            <button
+              onClick={() => refetch(mesFiltro + "-01")}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
               <span className="material-symbols-outlined">refresh</span>
@@ -111,34 +169,51 @@ export default function Page() {
   return (
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
       {/* Encabezado Principal y Selector de Mes */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <PageHeader 
-            name="Resumen de Consumo Mensual de Insumos y Amenidades" 
+          <PageHeader
+            name="Resumen de consumo mensual de insumos y amenidades"
             subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
           />
         </div>
-        
-        <div className="flex items-center gap-3 self-end sm:self-auto">
-          <div className="flex flex-col">
-            <label className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider mb-1">Periodo Analítico</label>
-            <input 
-              type="month" 
-              value={mesFiltro}
-              onChange={(e) => setMesFiltro(e.target.value)}
-              className="px-3 py-1.5 border border-slate-300 rounded-lg text-[14px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
-              disabled={loading}
-            />
-          </div>
-          <button 
-            onClick={refetch}
-            className="mt-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
-            title="Recargar datos"
-          >
-            <span className="material-symbols-outlined text-[20px] block">refresh</span>
-          </button>
-        </div>
       </div>
+
+      <section className="rounded-2xl border border-slate-200 bg-white  p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#008cc7] text-white">
+              <span className="material-symbols-outlined text-[22px]">calendar_month</span>
+            </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#515f74]">Periodo</p>
+              <h3 className="text-[18px] font-semibold text-[#0f172a]">{formatearMes(mesFiltro)}</h3>
+              <p className="text-sm text-slate-500">Selecciona un periodo para actualizar el consumo mensual.</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <label className="flex flex-col rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm">
+              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#515f74]">Mes</span>
+              <input
+                type="month"
+                value={mesFiltro}
+                onChange={handleMesChange}
+                className="mt-1 bg-transparent text-sm font-semibold text-[#191c1e] focus:outline-none"
+                disabled={loading}
+              />
+            </label>
+
+            <button
+              onClick={() => refetch(mesFiltro + "-01")}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[#008cc7] hover:text-[#008cc7] disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              {loading ? "Actualizando" : "Actualizar"}
+            </button>
+          </div>
+        </div>
+      </section>
 
       {/* Tarjetas de KPIs Globales */}
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -169,7 +244,7 @@ export default function Page() {
 
       {/* Sección de Gráficos Analíticos */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        
+
         {/* 1. Gráfico de Líneas con Fechas */}
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 lg:col-span-7 flex flex-col justify-between shadow-level-1">
           <div>
@@ -193,17 +268,21 @@ export default function Page() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                   <XAxis dataKey="name" stroke="#64748b" />
                   <YAxis stroke="#64748b" />
-                  <Tooltip 
+                  <Tooltip
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px' }}
                     labelStyle={{ fontWeight: 'bold', color: '#000' }}
+                    labelFormatter={(label, payload) => {
+                      const rango = payload && payload[0] ? (payload[0].payload as { rangoCompleto?: string }).rangoCompleto : null;
+                      return rango || label;
+                    }}
                   />
-                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '15px' }} layout="vertical" width="100%"/>
+                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '15px' }} layout="vertical" width="100%" />
                   {productosUnicos.map((producto) => (
-                    <Line 
-                      key={producto} 
-                      type="monotone" 
-                      dataKey={producto} 
-                      stroke={coloresProductos[producto] || colorFallback} 
+                    <Line
+                      key={producto}
+                      type="monotone"
+                      dataKey={producto}
+                      stroke={coloresProductos[producto] || colorFallback}
                       strokeWidth={2.5}
                       activeDot={{ r: 6 }}
                     />
@@ -233,29 +312,29 @@ export default function Page() {
           ) : (
             <div className="w-full h-64 text-xs">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart 
-                  data={dataGraficoBarras} 
-                  layout="vertical" 
+                <BarChart
+                  data={dataGraficoBarras}
+                  layout="vertical"
                   margin={{ top: 0, right: 10, left: 20, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
                   {/* Ocultamos el eje Y de texto largo si interfiere, o lo formateamos recortado */}
-                  <YAxis 
-                    dataKey="nombre" 
-                    type="category" 
+                  <YAxis
+                    dataKey="nombre"
+                    type="category"
                     stroke="#64748b"
                     width={80}
                     tickFormatter={(value) => value.length > 12 ? `${value.substring(0, 10)}...` : value}
                   />
                   <XAxis type="number" stroke="#64748b" />
-                  <Tooltip 
+                  <Tooltip
                     cursor={{ fill: '#f1f5f9' }}
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px' }}
                   />
-                  <Bar 
-                    dataKey="total" 
+                  <Bar
+                    dataKey="total"
                     name="Cantidad Gastada"
-                    radius={[0, 4, 4, 0]} 
+                    radius={[0, 4, 4, 0]}
                     barSize={16}
                   />
                 </BarChart>
@@ -268,7 +347,7 @@ export default function Page() {
       {/* Tabla Desglose Detallada */}
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl overflow-hidden shadow-level-1">
         <div className="px-6 py-4 border-b border-slate-300 bg-[#f7f9fb]">
-          <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000]">Desglose de Auditoría Física</h3>
+          <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000]">Desglose de Consumo de Amenidades</h3>
         </div>
 
         {loading ? (
@@ -288,12 +367,12 @@ export default function Page() {
                 <tr className="border-b border-slate-300 bg-[#f7f9fb]">
                   <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">ID Log</th>
                   <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Amenidad / Insumo</th>
-                  <th className="px-6 py-3 text-right text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad Extraída</th>
-                  <th className="px-6 py-3 text-right text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha de Log</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad Extraída</th>
+                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Rango</th>
                 </tr>
               </thead>
               <tbody>
-                {consumoData.map((item, index) => {
+                {datosPaginados.map((item, index) => {
                   const colorLinea = coloresProductos[item.nombre] || colorFallback;
                   return (
                     <tr key={`${item.producto_gastado_id}-${index}`} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
@@ -304,17 +383,44 @@ export default function Page() {
                         <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorLinea }} />
                         {item.nombre}
                       </td>
-                      <td className="px-6 py-4 text-right text-[14px] font-mono font-bold text-slate-900">
+                      <td className="px-6 py-4 text-[14px] font-mono font-bold text-slate-900">
                         {item.cantidad_gastada} uds
                       </td>
-                      <td className="px-6 py-4 text-right text-[13px] font-medium text-slate-600">
-                        {item.fecha.split('-').reverse().join('/')}
+                      <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
+                        {formatearRangoSemana(item.fecha)}
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {!loading && consumoData.length > 0 && (
+          <div className="flex flex-col gap-3 border-t border-slate-300 bg-slate-50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-slate-500">
+              Mostrando {((paginaValida - 1) * elementosPorPagina) + 1} - {Math.min(paginaValida * elementosPorPagina, consumoData.length)} de {consumoData.length} registros
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
+                disabled={paginaValida === 1}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#008cc7] hover:text-[#008cc7] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <span className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm">
+                Página {paginaValida} de {totalPaginas}
+              </span>
+              <button
+                onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
+                disabled={paginaValida === totalPaginas}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#008cc7] hover:text-[#008cc7] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Siguiente
+              </button>
+            </div>
           </div>
         )}
       </section>

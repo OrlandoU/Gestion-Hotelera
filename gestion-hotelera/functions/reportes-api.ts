@@ -100,6 +100,19 @@ export interface ConsumoAmenidades {
   [key: string]: any;
 }
 
+export interface Incidente {
+  incidente_id: number;
+  usuario_id: number;
+  tipo: string;
+  detalles: string;
+  causas: string;
+  recomendaciones: string;
+  fecha: string;
+  nombre: string,
+    telefono: string,
+    rol: string
+}
+
 // ============================================
 // CLIENTE HTTP BASE
 // ============================================
@@ -208,15 +221,19 @@ export async function getConsumoStockSemanal(): Promise<ConsumoStock[]> {
 /**
  * Obtiene estadísticas de ocupación mensual
  */
-export async function getOcupacionMensual(): Promise<OcupacionMensual[]> {
-  return fetchAPI<OcupacionMensual[]>('/reportes/estadistica-ocupacion-mensual?fecha=2026-06-27');
+export async function getOcupacionMensual(fecha?: string): Promise<OcupacionMensual[]> {
+  return fetchAPI<OcupacionMensual[]>('/reportes/estadistica-ocupacion-mensual', {
+    params: { fecha },
+  });
 }
 
 /**
  * Obtiene ingresos por tipo de habitación
  */
-export async function getIngresosTipoHabitacion(): Promise<IngresoTipoHabitacion[]> {
-  return fetchAPI<IngresoTipoHabitacion[]>('/reportes/ingresos-tipo-habitacion');
+export async function getIngresosTipoHabitacion(fecha?: string): Promise<IngresoTipoHabitacion[]> {
+  return fetchAPI<IngresoTipoHabitacion[]>('/reportes/ingresos-tipo-habitacion', {
+    params: { fecha },
+  });
 }
 
 /**
@@ -231,6 +248,13 @@ export async function getConsumoAmenidadesMensual(fecha?: string): Promise<Consu
   );
 }
 
+export async function getIncidentes(year?: number): Promise<Incidente[]>{
+  return fetchAPI<Incidente[]>('/reportes/incidentes', {  
+    params: { year }
+  }
+  )
+
+}
 // ============================================
 // CUSTOM HOOKS
 // ============================================
@@ -406,17 +430,17 @@ export function useConsumoStockSemanal() {
 /**
  * Hook para obtener ocupación mensual
  */
-export function useOcupacionMensual() {
+export function useOcupacionMensual(fecha?: string) {
   const [state, setState] = useState<UseReporteState<OcupacionMensual[]>>({
     data: null,
     loading: true,
     error: null,
   });
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async (fechaNueva?: string) => {
     setState({ data: null, loading: true, error: null });
     try {
-      const data = await getOcupacionMensual();
+      const data = fechaNueva ? await getOcupacionMensual(fechaNueva) : await getOcupacionMensual(fecha);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error as Error });
@@ -433,17 +457,17 @@ export function useOcupacionMensual() {
 /**
  * Hook para obtener ingresos por tipo de habitación
  */
-export function useIngresosTipoHabitacion(fecha: string) {
+export function useIngresosTipoHabitacion(fecha?: string) {
   const [state, setState] = useState<UseReporteState<IngresoTipoHabitacion[]>>({
     data: null,
     loading: true,
     error: null,
   });
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async (nuevaFecha?: string) => {
     setState({ data: null, loading: true, error: null });
     try {
-      const data = await getIngresosTipoHabitacion();
+      const data = await getIngresosTipoHabitacion(nuevaFecha || fecha);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error as Error });
@@ -467,10 +491,34 @@ export function useConsumoAmenidadesMensual(fecha?: string) {
     error: null,
   });
 
-  const refetch = useCallback(async () => {
+  const refetch = useCallback(async (nuevaFecha?: string) => {
     setState({ data: null, loading: true, error: null });
     try {
-      const data = await getConsumoAmenidadesMensual(fecha);
+      const data = await getConsumoAmenidadesMensual(nuevaFecha || fecha);
+      setState({ data, loading: false, error: null });
+    } catch (error) {
+      setState({ data: null, loading: false, error: error as Error });
+    }
+  }, [fecha]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  return { ...state, refetch };
+}
+
+export function useIncidentes(fecha?: number) {
+  const [state, setState] = useState<UseReporteState<ReservacionDiaria[]>>({
+    data: null,
+    loading: true,
+    error: null,
+  });
+
+  const refetch = useCallback(async (anio?: number) => {
+    setState({ data: null, loading: true, error: null });
+    try {
+      const data = await getIncidentes(anio || fecha);
       setState({ data, loading: false, error: null });
     } catch (error) {
       setState({ data: null, loading: false, error: error as Error });

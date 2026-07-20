@@ -11,8 +11,6 @@ export default function NewReservation() {
         e.preventDefault();
         if (saving) return;
         setSaving(true);
-        // console.log removed for production
-        // simular guardado
         setTimeout(() => {
             setSaving(false);
             setOpen(false);

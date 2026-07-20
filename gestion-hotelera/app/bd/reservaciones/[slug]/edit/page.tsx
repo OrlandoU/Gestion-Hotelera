@@ -12,6 +12,7 @@ interface Props {
 export default function PagoReservaPage({ params }: Props) {
     const resolvedParams = use(params);
     const idNumero = parseInt(resolvedParams.slug, 10);
+    console.log("ID de reserva recibido:", idNumero); // Debug: Verificar el ID recibido
 
     // Estado para guardar la reserva real de la base de datos
     const [reserva, setReserva] = useState<Reserva | null>(null);
