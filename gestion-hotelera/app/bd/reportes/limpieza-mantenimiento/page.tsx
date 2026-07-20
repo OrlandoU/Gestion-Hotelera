@@ -1,20 +1,26 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
+import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { useActividadesMantenimiento } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
+import { exportToExcel } from "@/functions/excel-utils";
+import { toast, Toaster } from "sonner";
 
 export default function Page() {
   const { data: actividadesApi, loading, error, refetch } = useActividadesMantenimiento();
-  
+
   const [busqueda, setBusqueda] = useState("");
   const [filtroTipo, setFiltroTipo] = useState<string>("Todos");
   const [fechaFiltro, setFechaFiltro] = useState<string>(""); // "" representa "Todas las fechas"
   const [ordenar, setOrdenar] = useState<"reciente" | "espacio" | "responsable">("reciente");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Fallback seguro de arreglo
-  const actividadesData = actividadesApi || [];
+  const actividadesData = useMemo(() => actividadesApi || [], [actividadesApi]);
 
   // KPIs Estratégicos calculados en memoria sobre el total de la data cargada
   const stats = useMemo(() => {
@@ -53,7 +59,7 @@ export default function Page() {
     // 3. Búsqueda por Espacio, Responsable o Descripción
     if (busqueda) {
       const b = busqueda.toLowerCase();
-      resultado = resultado.filter(a => 
+      resultado = resultado.filter(a =>
         a.numero_espacio?.toLowerCase().includes(b) ||
         a.nombre_responsable?.toLowerCase().includes(b) ||
         a.descripcion?.toLowerCase().includes(b)
@@ -77,6 +83,11 @@ export default function Page() {
     return resultado;
   }, [actividadesData, fechaFiltro, filtroTipo, busqueda, ordenar]);
 
+  const actividadesMostradas = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return actividadesFiltradas.slice(start, start + pageSize);
+  }, [actividadesFiltradas, page, pageSize]);
+
   // Estilización semántica para los tags de actividades
   const getEstiloTipo = (tipo: string) => {
     switch (tipo?.toLowerCase()) {
@@ -97,11 +108,63 @@ export default function Page() {
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
+  const handleExportActividades = () => {
+    const rows = actividadesFiltradas.map((actividad) => ({
+      Espacio: actividad.numero_espacio || "",
+      "ID Log": actividad.mantenimiento_id,
+      Responsable: actividad.nombre_responsable || "",
+      "Tipo Actividad": actividad.tipo || "",
+      "Descripción": actividad.descripcion || "",
+      "Fecha de Inicio": formatFecha(actividad.fecha_inicio),
+    }));
+
+    exportToExcel(rows, `limpieza-mantenimiento-${new Date().toISOString().split("T")[0]}.xlsx`, "Actividades");
+    toast.success("Exportación completada exitosamente!")
+  };
+
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      if (fechaFiltro) {
+        params.set("fecha", fechaFiltro);
+      }
+      if (filtroTipo !== "Todos") {
+        params.set("tipo", filtroTipo);
+      }
+      if (busqueda.trim()) {
+        params.set("busqueda", busqueda.trim());
+      }
+      params.set("ordenar", ordenar);
+
+      const response = await fetch(`/api/actividades-mantenimiento-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `actividades-mantenimiento-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Actividades de Mantenimiento" 
+        <PageHeader
+          name="Reporte de actividades de mantenimiento/limpieza diarias"
           subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4 mt-4">
@@ -109,7 +172,7 @@ export default function Page() {
           <div className="flex-1">
             <h3 className="font-bold text-red-800 mb-2">Error al solicitar bitácora de actividades</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
-            <button 
+            <button
               onClick={refetch}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
@@ -127,30 +190,50 @@ export default function Page() {
       {/* Encabezado y Acción Global */}
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader 
-            name="Reporte de Actividades Mantenimiento/Limpieza Diarias" 
+          <PageHeader
+            name="Reporte de actividades de mantenimiento/limpieza diarias"
             subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
           />
         </div>
-        
+
         {loading ? (
           <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-lg border border-blue-200">
             <span className="material-symbols-outlined animate-spin text-blue-600">refresh</span>
             <span className="text-blue-700 text-sm font-medium">Sincronizando logs...</span>
           </div>
         ) : (
-          <button 
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
-          >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Actualizar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={refetch}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Actualizar
+            </button>
+            <button
+              onClick={handleExportActividades}
+              disabled={actividadesFiltradas.length === 0}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Exportar los datos filtrados a Excel"
+            >
+              <span className="material-symbols-outlined text-[18px]">file_upload</span>
+              Exportar
+            </button>
+            <button
+              onClick={handleGeneratePdf}
+              disabled={actividadesFiltradas.length === 0 || isGeneratingPdf}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              title="Generar PDF con los filtros actuales"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
+              {isGeneratingPdf ? "Generando..." : "PDF"}
+            </button>
+          </div>
         )}
       </div>
 
       {/* Bloque Informativo de KPIs Cuantitativos */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 hover:-translate-y-1 transition-transform duration-300 shadow-level-1">
           <div className="flex justify-between items-start flex-col-reverse">
             <span className="text-[14px] font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Órdenes Ejecutadas</span>
@@ -186,20 +269,20 @@ export default function Page() {
             {loading ? <span className="animate-pulse">--</span> : `${stats.staffActivo} Encargados`}
           </h2>
         </div>
-      </section>
+      </section> */}
 
       {/* Módulo de Filtros y Segmentación Extendida */}
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl p-6 shadow-level-1">
-        <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-4">Filtros de Auditoría</h3>
+        <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          
+
           {/* Nuevo Criterio: Filtro Cronológico */}
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="block text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha de Ejecución</label>
               {fechaFiltro && (
-                <button 
-                  onClick={() => setFechaFiltro("")} 
+                <button
+                  onClick={() => setFechaFiltro("")}
                   className="text-[11px] text-[#008cc7] font-semibold hover:underline"
                 >
                   Ver Todas
@@ -210,7 +293,7 @@ export default function Page() {
               type="date"
               value={fechaFiltro}
               onChange={(e) => setFechaFiltro(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -223,7 +306,7 @@ export default function Page() {
               placeholder="Ej: H-211, Luis, jabón..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -234,7 +317,7 @@ export default function Page() {
             <select
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             >
               <option value="Todos">Todos los tipos</option>
@@ -246,11 +329,11 @@ export default function Page() {
 
           {/* Criterio de Ordenamiento */}
           <div>
-            <label className="block text-[11px] font-bold text-[#515f74] mb-2 uppercase tracking-wider">Clasificación de filas</label>
+            <label className="block text-[11px] font-bold text-[#515f74] mb-2 uppercase tracking-wider">Ordenar por</label>
             <select
               value={ordenar}
-              onChange={(e) => setOrdenar(e.target.value as any)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
+              onChange={(e) => setOrdenar(e.target.value as "reciente" | "espacio" | "responsable")}
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7]"
               disabled={loading}
             >
               <option value="reciente">Cronológico (Más reciente)</option>
@@ -268,7 +351,7 @@ export default function Page() {
             Bitácora de Saneamiento y Logística
           </h3>
           <span className="text-[13px] font-semibold text-[#515f74]">
-            {actividadesFiltradas.length} de {stats.totalActividades} registros visibles
+            {actividadesFiltradas.length} Registros encontrados
           </span>
         </div>
 
@@ -283,69 +366,87 @@ export default function Page() {
             <p className="text-[16px] font-medium text-[#515f74]">Ninguna orden coincide con la fecha o parámetros aplicados</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Espacio</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">ID Log</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Responsable</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Tipo Actividad</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Descripción / Detalle de Insumos</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha / Hora de Inicio</th>
-                </tr>
-              </thead>
-              <tbody>
-                {actividadesFiltradas.map((actividad, index) => {
-                  const estiloTipo = getEstiloTipo(actividad.tipo || "");
-                  return (
-                    <tr key={`${actividad.mantenimiento_id}-${index}`} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
-                      <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${estiloTipo.border}`}>
-                        {actividad.numero_espacio}
-                      </td>
-                      <td className="px-6 py-4 text-[13px] text-slate-500 font-mono">
-                        #{actividad.mantenimiento_id}
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-semibold text-slate-900">
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-full bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center justify-center">
-                            {actividad.nombre_responsable?.charAt(0)}
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-300 bg-[#f7f9fb]">
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Espacio</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">ID Log</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Responsable</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Tipo Actividad</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Descripción / Detalle de Insumos</th>
+                    <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Fecha / Hora de Inicio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {actividadesMostradas.map((actividad, index) => {
+                    const estiloTipo = getEstiloTipo(actividad.tipo || "");
+                    return (
+                      <tr key={`${actividad.mantenimiento_id}-${index}`} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
+                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000]`}>
+                          {actividad.numero_espacio}
+                        </td>
+                        <td className="px-6 py-4 text-[13px] text-slate-500 font-mono">
+                          #{actividad.mantenimiento_id}
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-semibold text-slate-900">
+                          <div className="flex items-center gap-2">
+                            <span className="w-6 h-6 rounded-full bg-slate-200 text-[11px] font-bold text-slate-700 flex items-center justify-center">
+                              {actividad.nombre_responsable?.charAt(0)}
+                            </span>
+                            <span>{actividad.nombre_responsable}</span>
+                            <span className="text-[11px] font-medium text-slate-400">(UID: {actividad.usuario_id})</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${estiloTipo.bg} inline-flex items-center gap-1`}>
+                            {actividad.tipo}
                           </span>
-                          <span>{actividad.nombre_responsable}</span>
-                          <span className="text-[11px] font-medium text-slate-400">(UID: {actividad.usuario_id})</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[14px] font-bold px-2.5 py-1.5 rounded-full ${estiloTipo.bg} inline-flex items-center gap-1`}>
-                          <span className="material-symbols-outlined text-[13px]">{estiloTipo.icon}</span>
-                          {actividad.tipo}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-[13px] text-slate-700 max-w-xs truncate" title={actividad.descripcion}>
-                        {actividad.descripcion}
-                      </td>
-                      <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
-                        {formatFecha(actividad.fecha_inicio)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td className="px-6 py-4 text-[12px] text-slate-700 max-w-xs truncate" title={actividad.descripcion}>
+                          {actividad.descripcion}
+                        </td>
+                        <td className="px-6 py-4 text-[12px] font-medium text-slate-600">
+                          {formatFecha(actividad.fecha_inicio)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              page={page}
+              setPage={setPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalItems={actividadesFiltradas.length}
+              label="actividades"
+            />
+          </>
         )}
       </section>
 
       {/* Footer del Reporte */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4 mt-4">
-        <div className="flex items-center justify-between text-[12px] font-medium text-slate-500">
-          <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px]">history_toggle_off</span>
-            <span>Auditoría cronológica. Remueve o selecciona un día específico usando el calendario.</span>
+      {/* <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
+            <span className="material-symbols-outlined text-[16px]">info</span>
+            <span>Datos obtenidos desde API en tiempo real</span>
+            {loading && <span className="animate-pulse">• Actualizando...</span>}
           </div>
-          <span>Reporte Operativo</span>
+          <button
+            onClick={refetch}
+            className="text-[#008cc7] hover:text-[#006fa0] font-semibold hover:underline text-[12px] flex items-center gap-1"
+          >
+            <span className="material-symbols-outlined text-[14px]">refresh</span>
+            Actualizar
+          </button>
         </div>
-      </section>
+      </section> */}
+      <Toaster richColors expand />
+
     </ViewTransition>
   );
 }

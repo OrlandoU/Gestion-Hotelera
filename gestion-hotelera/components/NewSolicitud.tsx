@@ -10,7 +10,6 @@ export default function NewSolicitud() {
         e.preventDefault();
         if (saving) return;
         setSaving(true);
-        // console.log removed for production
         setTimeout(() => {
             setSaving(false);
             setOpen(false);

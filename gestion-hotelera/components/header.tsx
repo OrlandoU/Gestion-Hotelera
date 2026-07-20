@@ -7,7 +7,6 @@ import Link from "next/link";
 
 export default function Header() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // Estado para controlar el menú desplegable de notificaciones
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
     const adminData = {
@@ -16,16 +15,15 @@ export default function Header() {
         hotel: "Hotel San Pedro",
         email: "gerencia@hotelsanpedro.com",
         phone: "+504 9778-4680",
-        department: "Recepcion y Administración",
+        department: "Recepción y Administración",
         since: "2026"
     };
 
-    // Notificación estática solicitada
     const notifications = [
         {
             id: 1,
             title: "¡Celebración de Aniversario! 🎉",
-            description: "Maynor Josue Padilla cumple 3 años en el equipo.",
+            description: "Maynor Josué Padilla cumple 3 años en el equipo.",
             time: "Hace un momento"
         },
         {

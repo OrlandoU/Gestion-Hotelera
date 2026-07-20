@@ -1,8 +1,11 @@
 'use client';
 import PageHeader from "@/components/pageheader";
+import TablePagination from "@/components/TablePagination";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { useEstadoHabitaciones } from "@/functions/reportes-api";
+import { exportToExcel } from "@/functions/excel-utils";
+import { Toaster, toast } from "sonner";
 
 type TipoHabitacion = "Básica" | "Doble-Básica" | "Estandar" | "Doble-Estandar";
 
@@ -11,9 +14,12 @@ export default function Page() {
   const [filtroTipo, setFiltroTipo] = useState<TipoHabitacion | "Todos">("Todos");
   const [busqueda, setBusqueda] = useState("");
   const [ordenar, setOrdenar] = useState<"numero" | "tipo" | "precio">("numero");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // Usar datos de API si existen, sino array vacío
-  const habitacionesData = habitacionesApi || [];
+  const habitacionesData = useMemo(() => habitacionesApi || [], [habitacionesApi]);
 
   // Cálculos y filtrados
   const habitacionesFiltradas = useMemo(() => {
@@ -85,12 +91,67 @@ export default function Page() {
     }
   };
 
+  const handleExportHabitaciones = () => {
+    const rows = habitacionesFiltradas.map((habitacion) => ({
+      Habitacion: habitacion.numero_espacio || "",
+      Tipo: habitacion.tipo || "",
+      Estado: habitacion.estado || "",
+      Capacidad: habitacion.capacidad_huespedes || 0,
+      "Precio/Noche": habitacion.precio_unidad || 0,
+    }));
+
+    exportToExcel(rows, `estado-habitaciones-${new Date().toISOString().split("T")[0]}.xlsx`, "EstadoHabitaciones");
+    toast.success("Exportación completada exitosamente!")
+  };
+
+  const totalPaginas = Math.max(1, Math.ceil(habitacionesFiltradas.length / pageSize));
+  const paginaValida = Math.min(page, totalPaginas);
+  const habitacionesMostradas = useMemo(() => {
+    const start = (paginaValida - 1) * pageSize;
+    return habitacionesFiltradas.slice(start, start + pageSize);
+  }, [habitacionesFiltradas, paginaValida, pageSize]);
+
+  const handleGeneratePdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const params = new URLSearchParams();
+      if (filtroTipo !== "Todos") {
+        params.set("tipo", filtroTipo);
+      }
+      if (busqueda.trim()) {
+        params.set("busqueda", busqueda.trim());
+      }
+      params.set("ordenar", ordenar);
+
+      const response = await fetch(`/api/habitaciones-pdf/generate?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("No se pudo generar el PDF");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `estado-habitaciones-${new Date().toISOString().split("T")[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF generado correctamente");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ocurrió un error al generar el PDF");
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   // Renderizar error
   if (error && !loading) {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-        <PageHeader 
-          name="Lista Detallada del Estado de las Habitaciones" 
+        <PageHeader
+          name="Listado del estado de las habitaciones"
           subtitle="Visualización y gestión del inventario de espacios disponibles"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -115,8 +176,8 @@ export default function Page() {
     <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
       <div className="flex justify-between items-start gap-4">
         <div>
-          <PageHeader 
-            name="Lista del estado de las Habitaciones" 
+          <PageHeader
+            name="Listado del estado de las habitaciones"
             subtitle="Visualización y gestión del inventario de espacios disponibles"
           />
         </div>
@@ -127,19 +188,39 @@ export default function Page() {
           </div>
         )}
         {!loading && (
-          <button
-            onClick={refetch}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
-            title="Actualizar datos de la API"
-          >
-            <span className="material-symbols-outlined text-[18px]">refresh</span>
-            Actualizar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={refetch}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-semibold text-slate-700"
+              title="Actualizar datos de la API"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Actualizar
+            </button>
+            <button
+              onClick={handleExportHabitaciones}
+              disabled={habitacionesFiltradas.length === 0}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg transition-colors font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Exportar los datos filtrados a Excel"
+            >
+              <span className="material-symbols-outlined text-[18px]">file_upload</span>
+              Exportar
+            </button>
+            <button
+              onClick={handleGeneratePdf}
+              disabled={habitacionesFiltradas.length === 0 || isGeneratingPdf}
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#008cc7] text-white hover:bg-[#0073a3] rounded-lg transition-colors font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+              title="Generar PDF con los filtros actuales"
+            >
+              <span className="material-symbols-outlined text-[18px]">print</span>
+              {isGeneratingPdf ? "Generando..." : "PDF"}
+            </button>
+          </div>
         )}
       </div>
 
       {/* Métricas KPI */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1 hover:-translate-y-1 transition-transform duration-300">
           <div className="flex justify-between items-start gap-4 flex-col-reverse">
             <span className="text-[14px] leading-4 font-semibold tracking-wider text-[#515f74] font-['Hanken_Grotesk']">Total Habitaciones</span>
@@ -187,11 +268,11 @@ export default function Page() {
             {loading ? <span className="animate-pulse">--</span> : (stats.totalHabitaciones > 0 ? '100%' : 'N/A')}
           </h2>
         </div>
-      </section>
+      </section> */}
 
       {/* Filtros y búsqueda */}
       <section className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
-        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Filtros</h3>
+        <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-4">Filtros</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-[12px] font-semibold text-[#515f74] mb-2 uppercase tracking-wider">Buscar por número</label>
@@ -200,7 +281,7 @@ export default function Page() {
               placeholder="ej: H-201"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] placeholder-slate-400 focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             />
           </div>
@@ -210,12 +291,12 @@ export default function Page() {
             <select
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value as TipoHabitacion | "Todos")}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
               <option value="Todos">Todos los tipos</option>
               {Object.keys(stats.porTipo).map((tipo) => (
-                <option key={tipo} value={tipo}>{tipo}</option>
+                <option key={tipo} value={tipo}>{tipo == "Estandar" ? "Estándar" : tipo == "Doble-Estandar" ? "Doble Estándar" : tipo}</option>
               ))}
             </select>
           </div>
@@ -225,7 +306,7 @@ export default function Page() {
             <select
               value={ordenar}
               onChange={(e) => setOrdenar(e.target.value as "numero" | "tipo" | "precio")}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
+              className="w-full cursor-pointer px-4 py-2 border border-slate-300 rounded-lg text-[14px] font-medium text-[#191c1e] focus:outline-none focus:border-[#008cc7] focus:ring-1 focus:ring-[#008cc7]"
               disabled={loading}
             >
               <option value="numero">Número de habitación</option>
@@ -243,7 +324,7 @@ export default function Page() {
             Habitaciones {filtroTipo !== "Todos" && `(${filtroTipo})`}
           </h3>
           <span className="text-[14px] font-semibold text-[#515f74]">
-            {habitacionesFiltradas.length} de {stats.totalHabitaciones}
+            {habitacionesFiltradas.length} Registros encontrados
           </span>
         </div>
 
@@ -258,47 +339,56 @@ export default function Page() {
             <p className="text-[16px] font-medium text-[#515f74]">No se encontraron habitaciones</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Habitación</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Tipo</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Estado</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Capacidad</th>
-                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Precio/Noche</th>
-                </tr>
-              </thead>
-              <tbody>
-                {habitacionesFiltradas.map((habitacion) => {
-                  const colorEstado = getColorEstado(habitacion.estado || "");
-                  return (
-                    <tr key={habitacion.numero_espacio} className={`border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors`}>
-                      <td className={`px-6 py-4 text-[14px] font-bold text-[#000000] ${colorEstado.border}`}>{habitacion.numero_espacio}</td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${getColorTipo(habitacion.tipo || "")}`}>
-                          {habitacion.tipo}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className={`material-symbols-outlined text-[18px] ${colorEstado.text}`}>{colorEstado.icon}</span>
-                          <span className={`text-[14px] font-semibold ${colorEstado.text}`}>{habitacion.estado}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
-                        <span className="inline-flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">person</span>
-                          {habitacion.capacidad_huespedes}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">{habitacion.precio_unidad} Lps</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-300 bg-[#f7f9fb]">
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Habitación</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Tipo</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Estado</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Capacidad</th>
+                    <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Precio/Noche</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {habitacionesMostradas.map((habitacion) => {
+                    const colorEstado = getColorEstado(habitacion.estado || "");
+                    return (
+                      <tr key={habitacion.numero_espacio} className={`border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors`}>
+                        <td className={`px-6 py-4 text-[14px] font-bold text-[#000000]`}>{habitacion.numero_espacio}</td>
+                        <td className="px-6 py-4">
+                          <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${getColorTipo(habitacion.tipo || "")}`}>
+                            {habitacion.tipo == "Estandar" ? "Estándar" : habitacion.tipo == "Doble-Estandar" ? "Doble Estándar" : habitacion.tipo || "Sin tipo"}
+                            
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-[14px] font-semibold ${colorEstado.text}`}>{habitacion.estado}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-medium text-[#515f74]">
+                          <span className="inline-flex items-center gap-1">
+                            {habitacion.capacidad_huespedes}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">{habitacion.precio_unidad} Lps</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <TablePagination
+              page={page}
+              setPage={setPage}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              totalItems={habitacionesFiltradas.length}
+              label="habitaciones"
+            />
+          </>
         )}
       </section>
 
@@ -306,7 +396,7 @@ export default function Page() {
 
       {/* Distribución por tipo */}
       {/* grid grid-cols-1 lg:grid-cols-3 */}
-      <section className=" gap-8">
+      {/* <section className=" gap-8">
         <div className="lg:col-span-2 bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Distribución por Tipo</h3>
           <div className="flex flex-col gap-4">
@@ -343,8 +433,8 @@ export default function Page() {
               <p className="text-slate-500 text-center py-8">Sin datos disponibles</p>
             )}
           </div>
-        </div>
-        {/* 
+        </div> */}
+      {/* 
         <div className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl p-6 shadow-level-1">
           <h3 className="font-['Hanken_Grotesk'] text-[20px] leading-7 font-semibold text-[#000000] mb-6">Leyenda de Estados</h3>
           <div className="flex flex-col gap-3">
@@ -361,7 +451,7 @@ export default function Page() {
             ))}
           </div>
         </div> */}
-      </section>
+      {/* </section> */}
 
 
 
@@ -404,7 +494,7 @@ export default function Page() {
       </section>
 
       {/* Estado de la API */}
-      <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
+      {/* <section className="bg-slate-50 border border-slate-300 rounded-xl p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-[12px] font-medium text-slate-600">
             <span className="material-symbols-outlined text-[16px]">info</span>
@@ -419,7 +509,9 @@ export default function Page() {
             Actualizar
           </button>
         </div>
-      </section>
+      </section> */}
+      <Toaster richColors expand />
+
     </ViewTransition>
   );
 }
