@@ -1,34 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from app.database import get_db
+from app.repositories.espacio import EspacioRepository
 
-router = APIRouter(
-    prefix="/espacios",
-    tags=["espacios"]
-)
+def get_espacio_repo(db = Depends(get_db)):
+    return EspacioRepository(db)
 
-@router.get("")
-async def read_espacios():
-    return {"Hello": "World"}
 
-@router.get("/habitaciones-disponibles")
-async def read_habitaciones_disponibles(db = Depends(get_db)):
-    try:
-        cursor = db.cursor(as_dict=True)
-        cursor.execute("SELECT * FROM vw_reporte_habitaciones")
-        habitaciones = cursor.fetchall()
-        cursor.close()
-        return habitaciones
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al obtener habitaciones disponibles: {str(e)}")
+router = APIRouter(prefix="/espacios", tags=["espacios"])
 
-@router.get("/habitaciones")
-async def read_habitaciones(db = Depends(get_db)):
-    try:
-        cursor = db.cursor(as_dict=True)
-        cursor.execute("SELECT * FROM vw_habitaciones")
-        habitaciones = cursor.fetchall()
-        cursor.close()
-        return habitaciones
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al obtener habitaciones: {str(e)}")
+# ==========================================
+# RUTAS DE ESPACIOS
+# ==========================================
+
+@router.get("/habitaciones", status_code=status.HTTP_200_OK)
+async def listar_habitaciones(
+    disponibles_only: bool = Query(False, description="Filtra solo por habitaciones disponibles"),
+    repo: EspacioRepository = Depends(get_espacio_repo)
+):
+    return repo.obtener_habitaciones(disponibles_only=disponibles_only)
+
+
+@router.get("/{espacio_id}", status_code=status.HTTP_200_OK)
+async def obtener_espacio(
+    espacio_id: int = Path(..., description="ID del espacio/habitación a consultar"),
+    repo: EspacioRepository = Depends(get_espacio_repo)
+):
+    espacio = repo.obtener_por_id(espacio_id)
+    if not espacio:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Espacio no encontrado")
+    return espacio
