@@ -11,9 +11,13 @@ import {
 
 export default function Page() {
   // Inicializamos en abril de 2026 de acuerdo al set de datos de muestra
+<<<<<<< HEAD
+  const [mesFiltro, setMesFiltro] = useState<string>("2026-04-25");
+=======
   const [mesFiltro, setMesFiltro] = useState<string>("2026-07-06");
   const [paginaActual, setPaginaActual] = useState(1);
   const elementosPorPagina = 8;
+>>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
 
   const { data: consumoApi, loading, error, refetch } = useConsumoAmenidadesMensual();
 
@@ -87,8 +91,12 @@ export default function Page() {
 
         agrupadoPorFecha[item.fecha] = {
           fechaOriginal: item.fecha,
+<<<<<<< HEAD
+          name: etiquetaFecha
+=======
           name: etiquetaFecha,
           rangoCompleto: rangoCompleto
+>>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
         };
       }
       // Asignar la cantidad gastada al producto correspondiente en esa fecha
@@ -97,11 +105,17 @@ export default function Page() {
     });
 
     // Ordenar cronológicamente por la fecha original
+<<<<<<< HEAD
+    return Object.values(agrupadoPorFecha).sort((a, b) =>
+      a.fechaOriginal.localeCompare(b.fechaOriginal)
+    );
+=======
     return Object.values(agrupadoPorFecha).sort((a, b) => {
       const fechaA = String(a.fechaOriginal);
       const fechaB = String(b.fechaOriginal);
       return fechaA.localeCompare(fechaB);
     });
+>>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
   }, [consumoData]);
 
   // 2. Transformación para el Gráfico de Barras Horizontales: Consumo Total por Producto (Sin Fechas)
@@ -145,7 +159,11 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
+<<<<<<< HEAD
+          name="Resumen de Consumo Mensual de Insumos y Amenidades"
+=======
           name="Resumen de consumo mensual de insumos y amenidades"
+>>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
           subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -154,7 +172,11 @@ export default function Page() {
             <h3 className="font-bold text-red-800 mb-2">Error al cargar el histórico de consumos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
             <button
+<<<<<<< HEAD
+              onClick={refetch}
+=======
               onClick={() => refetch(mesFiltro + "-01")}
+>>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
               <span className="material-symbols-outlined">refresh</span>
@@ -172,10 +194,37 @@ export default function Page() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <PageHeader
+<<<<<<< HEAD
+            name="Resumen de Consumo Mensual de Insumos y Amenidades"
+            subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
+          />
+        </div>
+
+        <div className="flex items-center gap-3 self-end sm:self-auto">
+          <div className="flex flex-col">
+            <label className="text-[11px] font-bold text-[#515f74] uppercase tracking-wider mb-1">Periodo Analítico</label>
+            <input
+              type="month"
+              value={mesFiltro}
+              onChange={(e) => setMesFiltro(e.target.value)}
+              className="px-3 py-1.5 border border-slate-300 rounded-lg text-[14px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
+              disabled={loading}
+            />
+          </div>
+          <button
+            onClick={refetch}
+            className="mt-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
+            title="Recargar datos"
+          >
+            <span className="material-symbols-outlined text-[20px] block">refresh</span>
+          </button>
+        </div>
+=======
             name="Resumen de consumo mensual de insumos y amenidades"
             subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
           />
         </div>
+>>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white  p-5 shadow-sm">
