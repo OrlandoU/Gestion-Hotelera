@@ -102,7 +102,7 @@ export default function Page() {
                     </td>
                     <td className="px-6 py-4 text-slate-700">
                       {room ? (
-                        <span>{room.huesped_actual_nombres} · {room.estado_reserva === "InHouse" ? "En estancia" : room.estado_reserva === "Confirmed" ? "Confirmada" : "Pendiente"}</span>
+                        <span>{room.huesped_actual_nombres} · {room.estado_reserva}</span>
                       ) : (
                         <span className="text-slate-400">Libre</span>
                       )}

@@ -11,5 +11,9 @@ export interface Huesped {
 }
 
 export async function getHuespedes(): Promise<Huesped[]> {
-    return fetchAPI<Huesped[]>('/huespedes/listar');
+    return fetchAPI<Huesped[]>('/huespedes');
+}
+
+export async function getHuesped(id: number): Promise<Huesped[]> {
+    return fetchAPI<Huesped[]>('/huespedes/' + id);
 }

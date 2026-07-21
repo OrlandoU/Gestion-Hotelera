@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from app.database import get_db
 from app.repositories.huesped import HuespedRepository
-from app.models.models import Huesped
+from app.models.huesped import Huesped
 
 # Creamos dependencias rápidas para inicializar los repositorios con la conexión de BD
 def get_huesped_repo(db = Depends(get_db)):

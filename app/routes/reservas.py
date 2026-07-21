@@ -2,7 +2,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from app.database import get_db
 from app.repositories.reserva import ReservaRepository
-from app.routes.reservas_interface import ReservaSchema
+from app.models import ReservaSchema
 
 # Inyector de dependencia para el repositorio
 def get_reserva_repo(db = Depends(get_db)):

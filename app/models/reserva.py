@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
-from datetime import datetime
 from typing import Optional
+
+from pydantic import BaseModel
+
 
 class ReservaSchema(BaseModel):
     reserva_id: Optional[int] = None
@@ -14,12 +15,24 @@ class ReservaSchema(BaseModel):
     numero_reserva: Optional[str] = None
     numero_espacio: Optional[str] = None
     numero_huespedes: Optional[int] = None
-    fecha_entrada: Optional[str] = None  # Pydantic convierte strings ISO a datetime automáticamente
+    fecha_entrada: Optional[str] = None
     fecha_salida: Optional[str] = None
     cantidad_unidades: Optional[int] = None
     reserva_estado: Optional[str] = None
     tarifa: Optional[float] = None
 
     class Config:
-        # Esto permite que el modelo lea datos aunque sean objetos ORM (como SQLAlchemy)
-        from_attributes = True 
+        from_attributes = True
+
+class Reservas(BaseModel):
+    huesped_id: str
+    espacio_id: str
+    tarifa_id: str
+    numero_reserva: str
+    estado: str
+    fecha_entrada: str
+    fecha_salida: str
+    cantidad_unidades: str
+    precio_unidades: str
+    total_pagar: str
+    fecha_creacion: str

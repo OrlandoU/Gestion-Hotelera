@@ -1,6 +1,6 @@
 import json
 from app.repositories.base import BaseRepository
-from app.routes.interfaces import CompraCreateSchema
+from app.models import CompraCreateSchema
 
 class ProductoRepository(BaseRepository):
     def listar(self, proveedor_id: int = None):

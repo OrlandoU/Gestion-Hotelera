@@ -26,7 +26,7 @@ export interface Compra {
 }
 
 export async function getProductos(proveedor_id?: number): Promise<Producto[]> {
-    return fetchAPI<Producto[]>('/productos/listar', { params: { proveedor_id } });
+    return fetchAPI<Producto[]>('/productos', { params: { proveedor_id } });
 }
 
 export interface RespuestaCompra {

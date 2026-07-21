@@ -1,15 +1,14 @@
 from datetime import date
 from app.repositories.base import BaseRepository
-from app.routes.reservas_interface import ReservaSchema
+from app.models import ReservaSchema
 
 class ReservaRepository(BaseRepository):
     def listar(self, fecha_entrada: date = None):
         """
         Lista las reservaciones. Si no se provee fecha, usa la del día actual.
         """
-        fecha_busqueda = fecha_entrada if fecha_entrada else date.today()
         query = "EXEC sp_listar_reservaciones %s"
-        return self._execute_query(query, (fecha_busqueda,))
+        return self._execute_query(query, (fecha_entrada,))
 
     def verificar_disponibilidad(self, fecha_entrada: date, fecha_salida: date):
         """
@@ -17,6 +16,14 @@ class ReservaRepository(BaseRepository):
         """
         query = "EXEC sp_mostrar_habitaciones_disponibles %s, %s"
         return self._execute_query(query, (fecha_entrada, fecha_salida))
+    
+    def verificar_disponibilidad_unica(self, fecha_entrada: date, fecha_salida: date):
+        """
+        Obtiene las habitaciones disponibles entre dos fechas.
+        """
+        query = "EXEC sp_mostrar_habitacion_disponible %s, %s"
+        return self._execute_query(query, (fecha_entrada, fecha_salida))
+    
 
     def obtener_por_id(self, reserva_id: int):
         """

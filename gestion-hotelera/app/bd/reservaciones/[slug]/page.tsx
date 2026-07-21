@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getReserva } from "@/functions/reservas";
 import { ViewTransition } from "react";
 import Link from "next/link";
@@ -29,7 +29,7 @@ type ReservationDetailNormalized = {
 function normalizeReserva(data: any): ReservationDetailNormalized {
     const name = data.guest?.name ?? (([data.nombres, data.apellidos].filter(Boolean).join(" ")) || data.nombre_huesped || "Huésped desconocido");
     const email = data.guest?.email ?? data.email_huesped ?? data.email ?? "";
-    const phone = data.guest?.phone ?? data.telefono_huesped ?? data.phone ?? "";
+    const phone = data.guest?.telefono ?? data.telefono_huesped ?? data.telefono ?? "";
     const bookingId = data.bookingId ?? data.numero_reserva ?? (data.reserva_id ? `RES-${data.reserva_id}` : "—");
     const status = data.status ?? data.reserva_estado ?? data.reservationStatus ?? "Pending";
 
@@ -81,6 +81,8 @@ export default function ReservationPage() {
     const [data, setData] = useState<any | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    console.log(data)
 
     useEffect(() => {
         const fetchReserva = async () => {
@@ -136,7 +138,6 @@ export default function ReservationPage() {
     const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
 
     const roomRate = payment?.breakdown?.roomRate ?? 0;
-    const taxesAndFees = payment?.breakdown?.taxesAndFees ?? 0;
     const extras = payment?.breakdown?.extras ?? 0;
     const totalCargos = payment?.total ?? (roomRate + taxesAndFees + extras);
 
@@ -310,15 +311,11 @@ export default function ReservationPage() {
                         <div className="space-y-2 mb-4 text-sm">
                             <div className="flex justify-between text-slate-600">
                                 <span>Tarifa de habitación ({stay?.nights ?? "0"} noches)</span>
-                                <span className="text-slate-900 font-medium">${roomRate.toFixed(2)}</span>
+                                <span className="text-slate-900 font-medium">${roomRate.toFixed(2) * .85}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
                                 <span>Impuestos y cargos</span>
-                                <span className="text-slate-900 font-medium">${taxesAndFees.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-slate-600">
-                                <span>Extras consumidos</span>
-                                <span className="text-slate-900 font-medium">${extras.toFixed(2)}</span>
+                                <span className="text-slate-900 font-medium">${roomRate.toFixed(2) * .15}</span>
                             </div>
                             <div className="flex justify-between pt-2 border-t border-slate-100 font-semibold text-slate-900">
                                 <span>Total Cargos</span>

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.database import get_db
 from app.repositories.producto import ProductoRepository
-from app.routes.interfaces import CompraCreateSchema
+from app.models import CompraCreateSchema
 
 # Inyector del repositorio de productos
 def get_producto_repo(db = Depends(get_db)):

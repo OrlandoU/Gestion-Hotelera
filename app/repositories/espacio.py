@@ -7,7 +7,7 @@ class EspacioRepository(BaseRepository):
         return self._execute_query("SELECT * FROM vw_habitaciones")
 
     def obtener_por_id(self, espacio_id: int):
-        return self._execute_query("SELECT * FROM vw_habitaciones WHERE id = %s", (espacio_id,), fetch_one=True)
+        return self._execute_query("SELECT * FROM vw_habitaciones WHERE espacio_id = %s", (espacio_id,), fetch_one=True)
 
     def crear(self, payload: dict):
         query = "INSERT INTO espacios (nombre, tipo) VALUES (%s, %s)"

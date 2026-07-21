@@ -19,3 +19,7 @@ export interface Habitacion {
 export const getHabitaciones = async (): Promise<Habitacion[]> => {
     return fetchAPI<Habitacion[]>("/espacios/habitaciones");
 }
+
+export const getHabitacion = async (id: number): Promise<Habitacion[]> => {
+    return fetchAPI<Habitacion[]>("/espacios/" + id);
+}

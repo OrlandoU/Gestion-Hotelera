@@ -1,5 +1,5 @@
 from app.repositories.base import BaseRepository
-from app.models.models import Huesped
+from app.models.huesped import Huesped
 
 class HuespedRepository(BaseRepository):
     def obtener_todos(self):

@@ -136,7 +136,6 @@ export default function ClientesPage() {
                   <th className="text-xs font-bold text-slate-500 py-3 px-6">Nivel</th>
                   <th className="text-xs font-bold text-slate-500 py-3 px-6 text-right">Estancias</th>
                   <th className="text-xs font-bold text-slate-500 py-3 px-6 text-right">Total gastado</th>
-                  <th className="text-xs font-bold text-slate-500 py-3 px-6">Estado</th>
                   <th className="text-xs font-bold text-slate-500 py-3 px-6 text-right">Acción</th>
                 </tr>
               </thead>
@@ -164,12 +163,7 @@ export default function ClientesPage() {
                       </td>
                       <td className="py-3.5 px-6 text-right font-semibold">{client.estancias}</td>
                       <td className="py-3.5 px-6 text-right font-bold text-slate-900">{client.total_gastado!.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}</td>
-                      <td className="py-3.5 px-6">
-                        <span className={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border ${cfg.badge}`}>
-                          <span className={`w-2 h-2 rounded-full ${cfg.dot}`}></span>
-                          {cfg.label}
-                        </span>
-                      </td>
+                      
                       <td className="py-3.5 px-6 text-right">
                         <Link href={`/bd/clientes/${client.huesped_id}`} className="text-sm text-[#008cc7] hover:underline font-semibold">
                           Ver perfil
