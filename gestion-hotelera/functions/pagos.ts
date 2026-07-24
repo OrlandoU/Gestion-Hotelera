@@ -4,8 +4,8 @@ import { fetchAPI } from "./http-base";
 export interface Pago {
     pago_id?: number | null;
     reserva_id?: number | null;
-    metodo_pago?: string | null;
-    fecha?: string | null;
+    metodo?: string | null;
+    fecha_pago?: string | null;
     monto?: number | null;
 }
 
@@ -28,7 +28,7 @@ export async function getPagos(fecha?: string | null, metodo_pago?: string | nul
 }
 
 
-export function usePagos(fecha?: string, metodo_pago?: string | null, reserva_id?: number | null) {
+export function usePagos(fecha?: string | null, metodo_pago?: string | null, reserva_id?: number | null) {
     const [state, setState] = useState<UseReporteState<Pago[]>>({
         data: null,
         loading: true,
