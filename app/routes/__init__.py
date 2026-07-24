@@ -6,3 +6,5 @@ from .espacios import router as espacios_router
 from .mantenimientos import router as mantenimientos_router
 from .proveedor import router as proveedores_router
 from .productos import router as productos_router
+from .usuarios import router as usuarios_router
+from .pagos import router as pagos_router
