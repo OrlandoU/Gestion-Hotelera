@@ -4,7 +4,7 @@ import PageHeader from "@/components/pageheader"
 import NewSolicitud from "@/components/NewSolicitud"
 import { ViewTransition, useState, useEffect, useCallback } from "react"
 import { useMantenimientos, useKPI, Mantenimiento, KPI } from "@/functions/mantenimientos";
-
+import { useTickets, Ticket } from "@/functions/tickets";
 
 export default function MantenimientoPage() {
     // KPI Mantemientos
@@ -17,9 +17,9 @@ export default function MantenimientoPage() {
         usuario_id: null
     });
 
-    const { data: mantenimientos = [] as Mantenimiento[], loading, error } = useMantenimientos(state.fecha_inicio, state.fecha_final, state.tipo, state.usuario_id);
+    const { data: tickets = [] as Ticket[], loading, error } = useTickets();
 
-    console.log(mantenimientos);
+    console.log(tickets);
 
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
@@ -84,30 +84,30 @@ export default function MantenimientoPage() {
                     </div>
 
                     <div className="flex flex-col divide-y divide-slate-100">
-                        {mantenimientos?.map((mantenimiento) => (
-                            <div key={mantenimiento.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors items-center cursor-pointer">
+                        {tickets?.map((ticket) => (
+                            <div key={ticket.numero_ticket} className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors items-center cursor-pointer">
                                 <div className="md:col-span-2 flex flex-col md:flex-row md:items-center gap-1">
-                                    <span className="font-semibold text-slate-900">{mantenimiento.numero_espacio}</span>
+                                    <span className="font-semibold text-slate-900">{ticket.numero_ticket}</span>
                                     {/*<span className="md:hidden text-xs text-slate-500 font-medium">{mantenimiento.descripcion}</span>*/}
                                 </div>
                                 <div className="md:col-span-4 hidden md:block text-slate-600">
-                                    {mantenimiento.descripcion}
+                                    {ticket.descripcion}
                                 </div>
-                                <div key={mantenimiento.id} className="md:col-span-2 flex items-center">
+                                <div key={ticket.numero_ticket} className="md:col-span-2 flex items-center">
                                     <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs  bg-red-50 text-red-700 border border-red-100">
                                         <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></span>
-                                        {mantenimiento.prioridad}
+                                        {ticket.estado}
                                     </span>
                                 </div>
-                                <div key={mantenimiento.id} className="md:col-span-2 hidden md:flex items-center gap-2">
+                                <div key={ticket.numero_ticket} className="md:col-span-2 hidden md:flex items-center gap-2">
                                     <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300 card-shadow ">MJ</div>
-                                    <span className="text-slate-600">{mantenimiento.nombre_responsable}</span>
+                                    <span className="text-slate-600">{ticket.nombre_responsable}</span>
                                 </div>
-                                <div key={mantenimiento.id} className="md:col-span-2 flex justify-between md:justify-end items-center mt-1 md:mt-0">
-                                    <span className="md:hidden text-slate-500">{mantenimiento.nombre_responsable}</span>
+                                <div key={ticket.numero_ticket} className="md:col-span-2 flex justify-between md:justify-end items-center mt-1 md:mt-0">
+                                    <span className="md:hidden text-slate-500">{ticket.nombre_responsable}</span>
                                     <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
                                         <span className="material-symbols-outlined text-[14px]">autorenew</span>
-                                        {mantenimiento.estado}
+                                        {ticket.estado}
                                     </span>
                                 </div>
                             </div>

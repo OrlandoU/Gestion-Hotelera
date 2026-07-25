@@ -312,7 +312,7 @@ export default function Page() {
                                                 </td>
                                                 <td className="px-4 py-3 align-middle">
                                                     <Link href={`/bd/reservaciones/${r.reserva_id}`} className="text-sm text-[#008cc7] hover:underline mr-3">Ver</Link>
-                                                    <Link href={`/bd/reservaciones/${r.reserva_id}/edit`} className="text-sm text-slate-700 hover:underline">Editar</Link>
+                                                    <Link href={`/bd/reservaciones/${r.reserva_id}/edit`} className="text-sm text-slate-700 hover:underline">Pagos</Link>
                                                     <a
                                                         href={handleEnlace(r.telefono_huesped || "", r.huesped_nombre || "", r.total_pagar || 0)}
                                                         target="whatsapp-chat"

@@ -211,11 +211,11 @@ export default function CheckInReservaPage({ params }: Props) {
                         <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
                             <div className="flex justify-between text-slate-600">
                                 <span className="text-slate-400">Entrada (Check-in):</span>
-                                <span className="font-semibold text-slate-800">{reserva.fecha_inicio || "Hoy"}</span>
+                                <span className="font-semibold text-slate-800">{reserva.fecha_entrada || "Hoy"}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
                                 <span className="text-slate-400">Salida (Check-out):</span>
-                                <span className="font-semibold text-slate-800">{reserva.fecha_fin || "N/A"}</span>
+                                <span className="font-semibold text-slate-800">{reserva.fecha_salida || "N/A"}</span>
                             </div>
                         </div>
                     </div>

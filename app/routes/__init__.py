@@ -8,3 +8,4 @@ from .proveedor import router as proveedores_router
 from .productos import router as productos_router
 from .usuarios import router as usuarios_router
 from .pagos import router as pagos_router
+from .tickets import router as tickets_router
