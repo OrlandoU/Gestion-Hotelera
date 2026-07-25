@@ -1,11 +1,22 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 
-export default function Modal({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
+export interface ModalProps {
+    open: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+}
+
+export default function Modal({ open, onClose, title, children }: ModalProps) {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         if (!open) return;
+
+        const originalStyle = window.getComputedStyle(document.body).overflow;
+        document.body.style.overflow = "hidden";
+
         const previousActive = document.activeElement as HTMLElement | null;
 
         function onKey(e: KeyboardEvent) {
@@ -17,6 +28,7 @@ export default function Modal({ open, onClose, title, children }: { open: boolea
                 if (!focusable || focusable.length === 0) return;
                 const first = focusable[0];
                 const last = focusable[focusable.length - 1];
+
                 if (!e.shiftKey && document.activeElement === last) {
                     e.preventDefault();
                     first.focus();
@@ -32,7 +44,7 @@ export default function Modal({ open, onClose, title, children }: { open: boolea
 
         const timer = setTimeout(() => {
             const first = containerRef.current?.querySelector<HTMLElement>(
-                'input, textarea, select, button'
+                "input, select, textarea, button:not([aria-label='Cerrar'])"
             );
             first?.focus();
         }, 50);
@@ -40,6 +52,7 @@ export default function Modal({ open, onClose, title, children }: { open: boolea
         return () => {
             clearTimeout(timer);
             document.removeEventListener("keydown", onKey);
+            document.body.style.overflow = originalStyle;
             previousActive?.focus();
         };
     }, [open, onClose]);
@@ -47,24 +60,34 @@ export default function Modal({ open, onClose, title, children }: { open: boolea
     if (!open) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+            <div
+                className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+                onClick={onClose}
+                aria-hidden="true"
+            />
 
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-title"
                 ref={containerRef}
-                className="relative bg-white rounded-2xl shadow-2xl max-w-xl w-full mx-auto p-6 transform transition-transform duration-200 ease-out scale-100"
+                className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-auto flex flex-col max-h-[90vh] z-10 overflow-hidden border border-slate-100 transition-all transform scale-100"
             >
-                <div className="flex items-center justify-between mb-4">
-                    <h3 id="modal-title" className="text-lg font-semibold text-slate-900">{title}</h3>
-                    <button onClick={onClose} aria-label="Cerrar" className="text-slate-500 hover:text-slate-800 rounded-full p-1 transition-colors cursor-pointer">
-                        <span className="material-symbols-outlined">close</span>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+                    <h3 id="modal-title" className="text-lg font-semibold text-slate-800">
+                        {title}
+                    </h3>
+                    <button
+                        onClick={onClose}
+                        aria-label="Cerrar"
+                        className="text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 rounded-full p-1.5 transition-colors cursor-pointer flex items-center justify-center"
+                    >
+                        <span className="material-symbols-outlined text-xl">close</span>
                     </button>
                 </div>
 
-                <div className="space-y-4 text-sm text-slate-700">{children}</div>
+                <div className="p-6 overflow-y-auto">{children}</div>
             </div>
         </div>
     );

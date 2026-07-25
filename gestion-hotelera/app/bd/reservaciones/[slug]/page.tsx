@@ -1,10 +1,15 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { getReserva, Reserva } from "@/functions/reservas";
+import { useReserva } from "@/functions/reservas";
 import { ViewTransition } from "react";
 import Link from "next/link";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
+
+interface Props {
+    id: string | number;
+}
 
 const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
     Pending: { label: "Pendiente", badge: "bg-amber-100 text-amber-800 border-amber-300", dot: "bg-amber-500" },
@@ -82,40 +87,16 @@ export default function ReservationPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    console.log(data)
+    const { data: rawReserva, loading: loadingReserva, error: errorReserva } = useReserva(Number(id));
 
-    useEffect(() => {
-        const fetchReserva = async () => {
-            if (!id) {
-                setError("ID de reservación inválido.");
-                setLoading(false);
-                return;
-            }
+    const reserva = useMemo(() => {
+        if (rawReserva) {
+            setData(normalizeReserva(rawReserva));
+            setLoading(false);
+        }
+    }, [rawReserva]);
 
-            const numericId = Number(id);
-            if (Number.isNaN(numericId)) {
-                setError("El identificador de reserva debe ser numérico.");
-                setLoading(false);
-                return;
-            }
-
-            try {
-                const reserva = await getReserva(numericId);
-                if (!reserva) {
-                    setError("No se encontró la reservación con ese ID.");
-                } else {
-                    setData(normalizeReserva(reserva));
-                }
-            } catch (fetchError) {
-                console.error("Error cargando la reserva desde la API:", fetchError);
-                setError("Error cargando la reservación desde la API.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchReserva();
-    }, [id]);
+    console.log(data);
 
     if (loading) {
         return (
@@ -125,10 +106,10 @@ export default function ReservationPage() {
         );
     }
 
-    if (error || !data) {
+    if (errorReserva || !rawReserva) {
         return (
             <div className="p-6">
-                <p className="text-red-600 font-medium">{error || "Reservación no encontrada."}</p>
+                <p className="text-red-600 font-medium">{errorReserva?.toString() || "Reservación no encontrada."}</p>
             </div>
         );
     }
@@ -138,6 +119,7 @@ export default function ReservationPage() {
     const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
 
     const roomRate = payment?.breakdown?.roomRate ?? 0;
+    const taxesAndFees = payment?.breakdown?.taxesAndFees ?? 0;
     const extras = payment?.breakdown?.extras ?? 0;
     const totalCargos = payment?.total ?? (roomRate + extras);
 
@@ -285,9 +267,13 @@ export default function ReservationPage() {
                                     <span className="material-symbols-outlined text-[20px]">payments</span> Registrar Pago
                                 </button>
                             ) : (
-                                <button className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm">
-                                    <span className="material-symbols-outlined text-[20px]">login</span> Procesar Check-in
-                                </button>
+                                <Link
+                                    href={`/bd/reservaciones/${id}/view`}
+                                    className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">login</span>
+                                    Procesar Check-in
+                                </Link>
                             )}
                             <button className="w-full min-h-11 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
                                 <span className="material-symbols-outlined text-[20px]">edit</span> Editar reservación

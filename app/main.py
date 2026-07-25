@@ -8,6 +8,9 @@ from app.routes import espacios_router
 from app.routes import proveedores_router
 from app.routes import mantenimientos_router
 from app.routes import productos_router
+from app.routes import usuarios_router
+from app.routes import pagos_router
+from app.routes import tickets_router
 from app.routes.auth import router as auth_router
 from app.database import get_db
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +48,9 @@ app.include_router(espacios_router)
 app.include_router(mantenimientos_router)
 app.include_router(proveedores_router)
 app.include_router(productos_router)
+app.include_router(usuarios_router)
+app.include_router(pagos_router)
+app.include_router(tickets_router)
 
 @app.get("/")
 def read_root():

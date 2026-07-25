@@ -1,8 +1,26 @@
+'use client'
+
 import PageHeader from "@/components/pageheader"
 import NewSolicitud from "@/components/NewSolicitud"
-import { ViewTransition } from "react"
+import { ViewTransition, useState, useEffect, useCallback } from "react"
+import { useMantenimientos, useKPI, Mantenimiento, KPI } from "@/functions/mantenimientos";
+import { useTickets, Ticket } from "@/functions/tickets";
 
 export default function MantenimientoPage() {
+    // KPI Mantemientos
+    const { data: kpiData = [] as KPI, loading: loadingKpi, error: errorKpi } = useKPI();
+
+    const [state, setState] = useState({
+        fecha_inicio: '2026-01-01',
+        fecha_final: '2026-12-31',
+        tipo: null,
+        usuario_id: null
+    });
+
+    const { data: tickets = [] as Ticket[], loading, error } = useTickets();
+
+    console.log(tickets);
+
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <div className="max-w-360 mx-auto w-full flex flex-col gap-6">
@@ -16,7 +34,7 @@ export default function MantenimientoPage() {
                             </div>
                         </div>
                         <div>
-                            <span className="text-2xl font-bold text-slate-950">124</span>
+                            <span className="text-2xl font-bold text-slate-950">{kpiData?.total_tickets || 0}</span>
                             <span className="text-xs text-slate-400 ml-2">Este mes</span>
                         </div>
                     </div>
@@ -29,7 +47,7 @@ export default function MantenimientoPage() {
                             </div>
                         </div>
                         <div>
-                            <span className="text-2xl font-bold text-slate-950">18</span>
+                            <span className="text-2xl font-bold text-slate-950">{kpiData?.total_progreso || 0}</span>
                             <span className="text-xs text-amber-600 font-medium ml-2">Tareas activas</span>
                         </div>
                     </div>
@@ -43,7 +61,7 @@ export default function MantenimientoPage() {
                             </div>
                         </div>
                         <div className="relative z-10">
-                            <span className="text-2xl font-bold text-red-600">3</span>
+                            <span className="text-2xl font-bold text-red-600">{kpiData?.total_urgente || 0}</span>
                             <span className="text-xs text-red-500/80 font-medium ml-2">Requiere atención</span>
                         </div>
                     </div>
@@ -66,86 +84,34 @@ export default function MantenimientoPage() {
                     </div>
 
                     <div className="flex flex-col divide-y divide-slate-100">
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors items-center cursor-pointer">
-                            <div className="md:col-span-2 flex flex-col md:flex-row md:items-center gap-1">
-                                <span className="font-semibold text-slate-900">Suite 402</span>
-                                <span className="md:hidden text-xs text-slate-500 font-medium">Fuga en baño principal</span>
+                        {tickets?.map((ticket) => (
+                            <div key={ticket.numero_ticket} className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors items-center cursor-pointer">
+                                <div className="md:col-span-2 flex flex-col md:flex-row md:items-center gap-1">
+                                    <span className="font-semibold text-slate-900">{ticket.numero_ticket}</span>
+                                    {/*<span className="md:hidden text-xs text-slate-500 font-medium">{mantenimiento.descripcion}</span>*/}
+                                </div>
+                                <div className="md:col-span-4 hidden md:block text-slate-600">
+                                    {ticket.descripcion}
+                                </div>
+                                <div key={ticket.numero_ticket} className="md:col-span-2 flex items-center">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs  bg-red-50 text-red-700 border border-red-100">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></span>
+                                        {ticket.estado}
+                                    </span>
+                                </div>
+                                <div key={ticket.numero_ticket} className="md:col-span-2 hidden md:flex items-center gap-2">
+                                    <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300 card-shadow ">MJ</div>
+                                    <span className="text-slate-600">{ticket.nombre_responsable}</span>
+                                </div>
+                                <div key={ticket.numero_ticket} className="md:col-span-2 flex justify-between md:justify-end items-center mt-1 md:mt-0">
+                                    <span className="md:hidden text-slate-500">{ticket.nombre_responsable}</span>
+                                    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
+                                        <span className="material-symbols-outlined text-[14px]">autorenew</span>
+                                        {ticket.estado}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="md:col-span-4 hidden md:block text-slate-600">
-                                Fuga en baño principal - El agua se está extendiendo hacia la alfombra del pasillo.
-                            </div>
-                            <div className="md:col-span-2 flex items-center">
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs  bg-red-50 text-red-700 border border-red-100">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-1.5"></span>
-                                    Urgente
-                                </span>
-                            </div>
-                            <div className="md:col-span-2 hidden md:flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300 card-shadow ">MJ</div>
-                                <span className="text-slate-600">Mike J.</span>
-                            </div>
-                            <div className="md:col-span-2 flex justify-between md:justify-end items-center mt-1 md:mt-0">
-                                <span className="md:hidden text-slate-500">Mike J.</span>
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-md border border-amber-100">
-                                    <span className="material-symbols-outlined text-[14px]">autorenew</span>
-                                    En proceso
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors items-center cursor-pointer">
-                            <div className="md:col-span-2 flex flex-col md:flex-row md:items-center gap-1">
-                                <span className="font-semibold text-slate-900">Lobby</span>
-                                <span className="md:hidden text-xs text-slate-500 font-medium">Ruido en HVAC</span>
-                            </div>
-                            <div className="md:col-span-4 hidden md:block text-slate-600">
-                                La unidad HVAC hace un ruido fuerte cerca de la recepción.
-                            </div>
-                            <div className="md:col-span-2 flex items-center">
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs  bg-orange-50 text-orange-700 border border-orange-100">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5"></span>
-                                    Alta
-                                </span>
-                            </div>
-                            <div className="md:col-span-2 hidden md:flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 border border-slate-300 card-shadow ">SD</div>
-                                <span className="text-slate-600">Sarah D.</span>
-                            </div>
-                            <div className="md:col-span-2 flex justify-between md:justify-end items-center mt-1 md:mt-0">
-                                <span className="md:hidden text-slate-500">Sarah D.</span>
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-sky-600 bg-sky-50 px-2 py-1 rounded-md border border-sky-100">
-                                    <span className="material-symbols-outlined text-[14px]">schedule</span>
-                                    Pendiente
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors items-center cursor-pointer bg-slate-50/30">
-                            <div className="md:col-span-2 flex flex-col md:flex-row md:items-center gap-1">
-                                <span className="font-semibold text-slate-500">Room 215</span>
-                                <span className="md:hidden text-xs text-slate-400 font-medium">Control remoto de TV roto</span>
-                            </div>
-                            <div className="md:col-span-4 hidden md:block text-slate-400">
-                                Control remoto de TV sin el botón de bajar volumen.
-                            </div>
-                            <div className="md:col-span-2 flex items-center">
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs  bg-slate-100 text-slate-600 border border-slate-300 card-shadow /60">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
-                                    Media
-                                </span>
-                            </div>
-                            <div className="md:col-span-2 hidden md:flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400 border border-slate-300 card-shadow /60">Un</div>
-                                <span className="text-slate-400 italic">Sin asignar</span>
-                            </div>
-                            <div className="md:col-span-2 flex justify-between md:justify-end items-center mt-1 md:mt-0">
-                                <span className="md:hidden text-slate-400 italic">Sin asignar</span>
-                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
-                                    <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                                    Resuelto
-                                </span>
-                            </div>
-                        </div>
+                        ))}
                     </div>
 
                     <div className="p-4 flex justify-center bg-slate-50 border-t border-slate-300 card-shadow ">
@@ -155,6 +121,6 @@ export default function MantenimientoPage() {
                     </div>
                 </div>
             </div>
-        </ ViewTransition>
+        </ ViewTransition >
     );
 }
