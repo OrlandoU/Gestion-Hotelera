@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Path, status
 from app.database import get_db
 from app.repositories.reserva import ReservaRepository
 from app.models import ReservaSchema
+from app.utils.security import get_current_user
 
 # Inyector de dependencia para el repositorio
 def get_reserva_repo(db = Depends(get_db)):
@@ -11,7 +12,8 @@ def get_reserva_repo(db = Depends(get_db)):
 
 router = APIRouter(
     prefix="/reservas",
-    tags=["reservas"]
+    tags=["reservas"],
+    dependencies=[Depends(get_current_user)],
 )
 
 # ==========================================
@@ -38,6 +40,17 @@ async def mostrar_habitaciones_disponibles(
     # Si viene incorrecto, lanza un 422 automáticamente sin tocar el repo.
     return repo.verificar_disponibilidad(fecha_entrada, fecha_salida)
 
+### 2. DISPONIBILIDAD DE HABITACIONES (Sub-ruta de búsqueda)
+@router.get("/habitacion-disponible", status_code=status.HTTP_200_OK)
+async def mostrar_habitaciones_disponibles(
+    fecha_entrada: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
+    fecha_salida: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
+    tipo: str = Query(description="Ingresa el tipo de habitacion"),
+    repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    # Nota: FastAPI ya valida el formato 'date' automáticamente. 
+    # Si viene incorrecto, lanza un 422 automáticamente sin tocar el repo.
+    return repo.verificar_disponibilidad_unica(fecha_entrada, fecha_salida, tipo)
 
 ### 3. DETALLE DE UNA RESERVA ESPECÍFICA
 @router.get("/{reserva_id}", status_code=status.HTTP_200_OK)

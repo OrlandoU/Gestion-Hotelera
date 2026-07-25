@@ -179,7 +179,10 @@ export default function HomePage() {
             <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#about">Historia</a>
             <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#mission">Filosofía</a>
             <a className="hover:text-blue-200 transition-colors duration-300 relative group py-2" href="#contact">Contacto</a>
-            <button onClick={() => { setIsActive(true); refetch(); }} className="bg-white text-[#0f172a] px-8 py-4 ml-8 hover:bg-[#0f172a] hover:text-white border border-white transition-all duration-300 rounded-xl shadow-md">
+            <a href="/auth" className="bg-white text-[#0f172a] px-6 py-4 rounded-xl border border-white transition-all duration-300 hover:bg-[#0f172a] hover:text-white text-xs sm:text-sm font-semibold">
+              Ingresar
+            </a>
+            <button onClick={() => { setIsActive(true); refetch(); }} className="bg-white text-[#0f172a] px-8 py-4 ml-2 hover:bg-[#0f172a] hover:text-white border border-white transition-all duration-300 rounded-xl shadow-md">
               Reservar
             </button>
           </nav>

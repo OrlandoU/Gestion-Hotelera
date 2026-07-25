@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getReserva } from "@/functions/reservas";
+import { getReserva, Reserva } from "@/functions/reservas";
 import { ViewTransition } from "react";
 import Link from "next/link";
 
@@ -26,7 +26,7 @@ type ReservationDetailNormalized = {
     activity?: Array<{ time?: string; text?: string }>;
 };
 
-function normalizeReserva(data: any): ReservationDetailNormalized {
+function normalizeReserva(data: Reserva): ReservationDetailNormalized {
     const name = data.guest?.name ?? (([data.nombres, data.apellidos].filter(Boolean).join(" ")) || data.nombre_huesped || "Huésped desconocido");
     const email = data.guest?.email ?? data.email_huesped ?? data.email ?? "";
     const phone = data.guest?.telefono ?? data.telefono_huesped ?? data.telefono ?? "";
@@ -78,7 +78,7 @@ export default function ReservationPage() {
     const rawId = params?.slug as string | string[] | undefined;
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
 
-    const [data, setData] = useState<any | null>(null);
+    const [data, setData] = useState<Reserva | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -139,7 +139,7 @@ export default function ReservationPage() {
 
     const roomRate = payment?.breakdown?.roomRate ?? 0;
     const extras = payment?.breakdown?.extras ?? 0;
-    const totalCargos = payment?.total ?? (roomRate + taxesAndFees + extras);
+    const totalCargos = payment?.total ?? (roomRate + extras);
 
     const amountPaid = payment?.amountPaid ?? (status !== "Pending" ? totalCargos : 0);
     const saldoPendiente = totalCargos - amountPaid;

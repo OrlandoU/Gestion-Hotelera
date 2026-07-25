@@ -3,10 +3,10 @@ const API_BASE_URL = "http://localhost:8000";
 
 
 export interface FetchOptions extends RequestInit {
-    params?: Record<string, any>;
+    params?: Record<string, string | number | boolean | null | undefined>;
 }
 
-export async function fetchAPI<T = any>(
+export async function fetchAPI<T = unknown>(
     endpoint: string,
     options: FetchOptions = {}
 ): Promise<T> {
@@ -23,11 +23,13 @@ export async function fetchAPI<T = any>(
     }
 
     try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("hotel_token") : null;
         const response = await fetch(url.toString(), {
             ...fetchOptions,
             headers: {
                 'Content-Type': 'application/json',
                 ...fetchOptions.headers,
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
         });
 

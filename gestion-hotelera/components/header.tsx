@@ -4,20 +4,18 @@ import { useState } from "react";
 import Image from "next/image";
 import adminPhoto from "@/public/admin.jpg";
 import Link from "next/link";
+import { getCurrentUser, LoggedUser } from "@/functions/auth";
 
 export default function Header() {
+    const [user] = useState<LoggedUser | null>(() => getCurrentUser());
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-    const adminData = {
-        name: "Admin Jefe",
-        role: "Administrador General",
-        hotel: "Hotel San Pedro",
-        email: "gerencia@hotelsanpedro.com",
-        phone: "+504 9778-4680",
-        department: "Recepción y Administración",
-        since: "2026"
-    };
+    const profileName = user?.nombre || "Usuario";
+    const profileEmail = user?.email || "sin-email@hotel.com";
+    const profileRole = user ? "Usuario autenticado" : "Invitado";
+    const profileDepartment = "Recepción y Administración";
+    const profileSince = "2026";
 
     const notifications = [
         {
@@ -89,10 +87,10 @@ export default function Header() {
                         onClick={() => setIsModalOpen(true)}
                         className="flex items-center gap-4 cursor-pointer hover:bg-[#f2f4f6] p-1 px-2 rounded-xl transition-colors text-left focus:outline-none focus:ring-2 focus:ring-slate-300"
                     >
-                        <Image height={34} width={34} alt="Administrator Profile" className="rounded-full object-cover aspect-square" src={adminPhoto} />
+                        <Image height={34} width={34} alt="Perfil de usuario" className="rounded-full object-cover aspect-square" src={adminPhoto} />
                         <div className="hidden lg:block">
-                            <p className="text-[14px] font-semibold font-['Hanken_Grotesk'] tracking-wider text-[#000000] leading-none">{adminData.name}</p>
-                            <p className="text-[12px] leading-3.5 font-medium font-['Hanken_Grotesk'] text-[#515f74] mt-0.5">{adminData.hotel}</p>
+                            <p className="text-[14px] font-semibold font-['Hanken_Grotesk'] tracking-wider text-[#000000] leading-none">{profileName}</p>
+                            <p className="text-[12px] leading-3.5 font-medium font-['Hanken_Grotesk'] text-[#515f74] mt-0.5">{profileRole}</p>
                         </div>
                     </button>
                 </div>
@@ -128,31 +126,31 @@ export default function Header() {
 
                             <div>
                                 <span className="text-[11px] font-bold uppercase tracking-widest text-[#008cc7] bg-blue-50 px-2 py-0.5 rounded">
-                                    {adminData.department}
+                                    {profileDepartment}
                                 </span>
                                 <h2 className="text-2xl font-bold text-slate-900 font-['Hanken_Grotesk'] mt-2 mb-1">
-                                    {adminData.name}
+                                    {profileName}
                                 </h2>
                                 <p className="text-sm font-medium text-slate-500 font-['Hanken_Grotesk'] mb-6">
-                                    {adminData.role}
+                                    {profileRole}
                                 </p>
 
                                 <div className="space-y-3 border-t border-slate-100 pt-4 text-[13px] font-['Hanken_Grotesk']">
                                     <div className="flex items-center gap-3 text-slate-600">
                                         <span className="material-symbols-outlined text-slate-400 text-[18px]">apartment</span>
-                                        <span>{adminData.hotel}</span>
+                                        <span>Hotel San Pedro</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-slate-600">
                                         <span className="material-symbols-outlined text-slate-400 text-[18px]">mail</span>
-                                        <a href={`mailto:${adminData.email}`} className="hover:underline text-slate-800 font-medium">{adminData.email}</a>
+                                        <a href={`mailto:${profileEmail}`} className="hover:underline text-slate-800 font-medium">{profileEmail}</a>
                                     </div>
                                     <div className="flex items-center gap-3 text-slate-600">
                                         <span className="material-symbols-outlined text-slate-400 text-[18px]">call</span>
-                                        <span>{adminData.phone}</span>
+                                        <span>+504 9778-4680</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-slate-600">
                                         <span className="material-symbols-outlined text-slate-400 text-[18px]">history</span>
-                                        <span className="text-xs text-slate-500">Miembro desde: {adminData.since}</span>
+                                        <span className="text-xs text-slate-500">Miembro desde: {profileSince}</span>
                                     </div>
                                 </div>
                             </div>

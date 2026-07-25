@@ -5,3 +5,5 @@ fastapi[standard]
 pyodbc
 mssql_python
 pymssql
+python-jose[cryptography]
+passlib[bcrypt]

@@ -16,6 +16,8 @@ class BaseRepository:
             
             if is_write:
                 self.db.commit()
+                if fetch_one:
+                    return cursor.fetchone()
                 return True
                 
             if fetch_one:

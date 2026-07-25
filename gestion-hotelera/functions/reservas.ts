@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // URL base de la API - usa variable de entorno o localhost como fallback
-const API_BASE_URL = "http://127.0.0.1:8000";
+export const API_BASE_URL = "http://127.0.0.1:8000";
 
 // ============================================
 // TIPOS E INTERFACES
@@ -71,11 +71,13 @@ async function fetchAPI<T = any>(
     console.log("URL final generada:", url.toString());
 
     try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("hotel_token") : null;
         const response = await fetch(url.toString(), {
             ...fetchOptions,
             headers: {
                 'Content-Type': 'application/json',
                 ...fetchOptions.headers,
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
         });
 
@@ -121,10 +123,14 @@ export async function registrarPago(reserva_id: number, metodo: string, monto: n
  * Antes: /reservas/listar-reservaciones
  * Ahora: /reservas (El verbo GET en la raíz del recurso implica listar)
  */
-export async function getReservas(fecha_entrada: Date): Promise<Reserva[]> {
+export async function getReservas(fecha_entrada?: Date | null): Promise<Reserva[]> {
+    const params = fecha_entrada
+        ? { fecha_entrada: fecha_entrada.toISOString().split('T')[0] }
+        : undefined;
+
     return fetchAPI<Reserva[]>('/reservas', {
         method: 'GET',
-        params: { fecha_entrada: fecha_entrada.toISOString().split('T')[0] }
+        params,
     });
 }
 
@@ -165,22 +171,24 @@ export async function crearReserva(datos: Reserva): Promise<{ message: string }>
 // HOOKS PERSONALIZADOS (SIN CAMBIOS EN LÓGICA)
 // ============================================
 
-export function useReservas(fecha_entrada: Date) {
+export function useReservas(fecha_entrada?: Date | null) {
     const [state, setState] = useState<UseReporteState<Reserva[]>>({
         data: null,
         loading: true,
         error: null,
     });
 
-    const refetch = useCallback(async () => {
+    const fechaKey = fecha_entrada ? fecha_entrada.toISOString().split('T')[0] : 'all';
+
+    const refetch = useCallback(async (fecha_entrada_new: Date | null) => {
         setState(prev => ({ ...prev, loading: true, error: null }));
         try {
-            const data = await getReservas(fecha_entrada);
+            const data = await getReservas(fecha_entrada_new || fecha_entrada);
             setState({ data, loading: false, error: null });
         } catch (error) {
             setState({ data: null, loading: false, error: error as Error });
         }
-    }, [fecha_entrada.toISOString().split('T')[0]]);
+    }, [fechaKey, fecha_entrada]);
 
     useEffect(() => {
         refetch();

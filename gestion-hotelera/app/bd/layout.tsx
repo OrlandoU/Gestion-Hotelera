@@ -4,9 +4,10 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import Image from "next/image";
 import logo from "@/public/logo.png";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getAccessToken, logout } from "@/functions/auth";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
 
 export default function DashboardLayout({
   children,
@@ -14,8 +15,19 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [reportesOpen, setReportesOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false); // Estado para controlar el colapso
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    const token = getAccessToken();
+    if (!token) {
+      router.replace("/auth");
+    } else {
+      setAuthChecked(true);
+    }
+  }, [router]);
 
   const reportSublinks = [
     { name: "Clientes Frecuentes", href: "/bd/reportes/clientes-frecuentes", icon: "notes" },
@@ -50,14 +62,21 @@ export default function DashboardLayout({
     }
   };
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f9fb] text-[#191c1e]">
+        <span className="text-sm text-slate-600">Verificando sesión...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#f7f9fb] text-[#191c1e] min-h-screen">
-      
+
       {/* SIDE NAVIGATION BAR */}
-      <aside 
-        className={`fixed left-0 top-0 h-full z-50 bg-[#ffffff] border-r border-slate-300 card-shadow flex flex-col p-3 gap-2 transition-all duration-300 ease-in-out ${
-          isCollapsed ? "w-20" : "w-70"
-        }`}
+      <aside
+        className={`fixed left-0 top-0 h-full z-50 bg-[#ffffff] border-r border-slate-300 card-shadow flex flex-col p-3 gap-2 transition-all duration-300 ease-in-out ${isCollapsed ? "w-20" : "w-70"
+          }`}
       >
         {/* Botón flotante para replegar/desplegar */}
         <button
@@ -91,15 +110,13 @@ export default function DashboardLayout({
                 <div>
                   <button
                     onClick={() => !isCollapsed && setReportesOpen(!reportesOpen)}
-                    className={`${
-                      (reportesOpen || isActive(link.href)) ? 'border-l-4 border-[#008cc7] text-[#008cc7]' : ''
-                    } hover:cursor-pointer w-full flex items-center justify-between p-2 hover:bg-[#eceef0] transition-all ease-linear duration-100 text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${
-                      isCollapsed ? "justify-center border-none px-0" : "gap-4"
-                    }`}
+                    className={`${(reportesOpen || isActive(link.href)) ? 'border-l-4 border-[#008cc7] text-[#008cc7]' : ''
+                      } hover:cursor-pointer w-full flex items-center justify-between p-2 hover:bg-[#eceef0] transition-all ease-linear duration-100 text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${isCollapsed ? "justify-center border-none px-0" : "gap-4"
+                      }`}
                     title={isCollapsed ? link.name : undefined}
                   >
                     <div className="flex items-center gap-4">
-                      <span className="material-symbols-outlined shrink-0">{link.icon}</span> 
+                      <span className="material-symbols-outlined shrink-0">{link.icon}</span>
                       {!isCollapsed && <span className="animate-fadeIn">{link.name}</span>}
                     </div>
                     {!isCollapsed && (
@@ -108,16 +125,15 @@ export default function DashboardLayout({
                       </span>
                     )}
                   </button>
-                  
+
                   {reportesOpen && !isCollapsed && (
                     <div className="flex flex-col gap-1 mt-1 pl-2 border-l-2 border-[#008cc7]/30 ml-1.5 animate-fadeIn">
                       {reportSublinks.map((sublink) => (
                         <Link
                           key={sublink.href}
                           href={sublink.href}
-                          className={`${
-                            (isActive(sublink.href)) ? 'bg-[#008cc7]/10 text-[#008cc7] font-semibold' : ''
-                          } flex items-center gap-3 px-3 py-2 hover:bg-[#eceef0] transition-all ease-linear duration-100 text-[13px] leading-4 font-medium font-['Hanken_Grotesk']`}
+                          className={`${(isActive(sublink.href)) ? 'bg-[#008cc7]/10 text-[#008cc7] font-semibold' : ''
+                            } flex items-center gap-3 px-3 py-2 hover:bg-[#eceef0] transition-all ease-linear duration-100 text-[13px] leading-4 font-medium font-['Hanken_Grotesk']`}
                           transitionTypes={['nav-forward']}
                         >
                           <span className="material-symbols-outlined text-[18px] shrink-0">{sublink.icon}</span>
@@ -129,14 +145,13 @@ export default function DashboardLayout({
                 </div>
               ) : (
                 <Link
-                  className={`${isActive(link.href) ? 'border-l-4 border-[#008cc7] text-[#008cc7]' : ''} flex items-center p-2 hover:bg-[#eceef0] transition-all ease-linear duration-100 text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${
-                    isCollapsed ? "justify-center border-none px-0" : "gap-4"
-                  }`}
+                  className={`${isActive(link.href) ? 'border-l-4 border-[#008cc7] text-[#008cc7]' : ''} flex items-center p-2 hover:bg-[#eceef0] transition-all ease-linear duration-100 text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${isCollapsed ? "justify-center border-none px-0" : "gap-4"
+                    }`}
                   href={link.href}
                   transitionTypes={['nav-forward']}
                   title={isCollapsed ? link.name : undefined}
                 >
-                  <span className="material-symbols-outlined shrink-0">{link.icon}</span> 
+                  <span className="material-symbols-outlined shrink-0">{link.icon}</span>
                   {!isCollapsed && <span className="animate-fadeIn">{link.name}</span>}
                 </Link>
               )}
@@ -146,34 +161,35 @@ export default function DashboardLayout({
 
         {/* AJUSTES Y LOGOUT */}
         <div className="mt-auto border-t border-slate-300 card-shadow pt-2 flex flex-col gap-1">
-          <a 
-            className={`flex items-center p-4 text-[#515f74] hover:bg-[#eceef0] transition-all rounded-xl text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${
-              isCollapsed ? "justify-center px-0 rounded-lg" : "gap-4"
-            }`} 
+          <a
+            className={`flex items-center p-4 text-[#515f74] hover:bg-[#eceef0] transition-all rounded-xl text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${isCollapsed ? "justify-center px-0 rounded-lg" : "gap-4"
+              }`}
             href="#"
             title={isCollapsed ? "Ajustes" : undefined}
           >
-            <span className="material-symbols-outlined shrink-0">settings</span> 
+            <span className="material-symbols-outlined shrink-0">settings</span>
             {!isCollapsed && <span className="animate-fadeIn">Ajustes</span>}
           </a>
-          <Link 
-            href={'/'} 
-            className={`flex items-center p-4 text-[#515f74] hover:bg-[#eceef0] transition-all rounded-xl text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${
-              isCollapsed ? "justify-center px-0 rounded-lg" : "gap-4"
-            }`}
+          <button
+            type="button"
+            onClick={() => {
+              logout();
+              router.push("/auth");
+            }}
+            className={`flex items-center w-full text-left p-4 text-[#515f74] hover:bg-[#eceef0] transition-all rounded-xl text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider ${isCollapsed ? "justify-center px-0 rounded-lg" : "gap-4"
+              }`}
             title={isCollapsed ? "Cerrar sesión" : undefined}
           >
-            <span className="material-symbols-outlined shrink-0">logout</span> 
+            <span className="material-symbols-outlined shrink-0">logout</span>
             {!isCollapsed && <span className="animate-fadeIn">Cerrar sesión</span>}
-          </Link>
+          </button>
         </div>
       </aside>
 
       {/* CONTENIDO PRINCIPAL */}
-      <main 
-        className={`min-h-screen flex flex-col transition-all duration-300 ease-in-out ${
-          isCollapsed ? "ml-20" : "ml-70"
-        }`}
+      <main
+        className={`min-h-screen flex flex-col transition-all duration-300 ease-in-out ${isCollapsed ? "ml-20" : "ml-70"
+          }`}
       >
         <Header />
         <section className="p-10 py-8 flex flex-col gap-8 flex-1">

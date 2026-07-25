@@ -17,12 +17,12 @@ class ReservaRepository(BaseRepository):
         query = "EXEC sp_mostrar_habitaciones_disponibles %s, %s"
         return self._execute_query(query, (fecha_entrada, fecha_salida))
     
-    def verificar_disponibilidad_unica(self, fecha_entrada: date, fecha_salida: date):
+    def verificar_disponibilidad_unica(self, fecha_entrada: date, fecha_salida: date, tipo: str):
         """
         Obtiene las habitaciones disponibles entre dos fechas.
         """
-        query = "EXEC sp_mostrar_habitacion_disponible %s, %s"
-        return self._execute_query(query, (fecha_entrada, fecha_salida))
+        query = "EXEC sp_mostrar_habitacion_disponible %s, %s, %s"
+        return self._execute_query(query, (fecha_entrada, fecha_salida, tipo))
     
 
     def obtener_por_id(self, reserva_id: int):

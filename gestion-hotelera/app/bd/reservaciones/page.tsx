@@ -1,81 +1,89 @@
 "use client";
 
-import React, { useEffect, useRef, useState, ViewTransition, useCallback } from "react";
-import { useReservas } from "@/functions/reservas";
+import React, { useEffect, useMemo, useRef, useState, ViewTransition } from "react";
+import { useReservas, type Reserva } from "@/functions/reservas";
 import PageHeader from "@/components/pageheader";
 import NewReservation from "@/components/NewReservation";
 import Link from "next/link";
-import { RESERVATIONS_LIST } from "@/data/reservations";
 
 const ROOM_COL_PX = 200;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-// Configuración de estados basada EXACTAMENTE en los valores de tu BD (r.reserva_estado)
 const STATUS_CONFIG = {
     Pendiente: {
         label: "Pendiente",
         badgeBg: "bg-amber-100",
         badgeText: "text-amber-800",
         border: "border-amber-300",
-        dotBg: "bg-amber-500"
+        dotBg: "bg-amber-500",
     },
     Reservada: {
         label: "Reservada",
         badgeBg: "bg-blue-100",
         badgeText: "text-blue-800",
         border: "border-blue-300",
-        dotBg: "bg-blue-500"
+        dotBg: "bg-blue-500",
     },
     Hospedado: {
         label: "Hospedado",
         badgeBg: "bg-emerald-100",
         badgeText: "text-emerald-800",
         border: "border-emerald-300",
-        dotBg: "bg-emerald-500"
+        dotBg: "bg-emerald-500",
     },
     Finalizada: {
         label: "Finalizada",
         badgeBg: "bg-slate-100",
         badgeText: "text-slate-800",
         border: "border-slate-300 card-shadow",
-        dotBg: "bg-slate-400"
-    }
+        dotBg: "bg-slate-400",
+    },
+};
+
+type Room = {
+    id: string;
+    name: string;
+    type: string;
+    statusColor: string;
+};
+
+type TimelineReservation = {
+    id: string;
+    roomId: string;
+    roomName: string;
+    numberReservation: string;
+    start: string;
+    end: string;
+    guest: string;
+    status?: string;
+    icon?: string;
 };
 
 const handleEnlace = (telefono: string, nombre_huesped: string, total_pagar: number): string => {
-    const total_depositar = total_pagar * 0.5;
+    const total_depositar = (total_pagar * 0.5).toFixed(2);
     const ahora = new Date();
     const horaActual = ahora.getHours();
-    let saludo = '';
+    let saludo = "";
 
-    if (horaActual >= 0 && horaActual < 12) {
-        saludo = 'buenos días';
-    } else if (horaActual >= 12 && horaActual < 18) {
-        saludo = 'buenas tardes';
-    } else {
-        saludo = 'buenas noches';
-    }
+    if (horaActual < 12) saludo = "buenos días";
+    else if (horaActual < 18) saludo = "buenas tardes";
+    else saludo = "buenas noches";
 
-    const mensaje = `Hola ${nombre_huesped} ${saludo}. Mucho gusto, soy el recepcionista del Hotel San Pedro, se nos ha solicitado una reservación con su número, si usted es la persona recordarle que según los términos y condiciones del hotel, para realizar la reservación usted deberá realizar un depósito del 50% de su saldo total (${total_depositar} Lempiras) para poder confirmar la reservación, de lo contrario no se realizará. 
-    
-    Puede realizar el depósito a las siguientes cuentas:
-    
-    Banco: Banco Atlántida
-    Numero de Cuenta: 123456789
-
-    En caso de no haber solicitado la reservación puede continuar con sus actividades diarias y una disculpa. ${saludo}`;
-
+    const mensaje = `Hola ${nombre_huesped} ${saludo}. Soy el recepcionista de Hotel San Pedro. Para confirmar su reservación, por favor realice un depósito del 50% del saldo total (${total_depositar} Lempiras). Muchas gracias.`;
 
     return `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-}
+};
 
 function getDatesInRange(start: Date, end: Date) {
     const dates: Date[] = [];
-    let cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
-    while (cur <= end) {
-        dates.push(new Date(cur));
-        cur = new Date(cur.getTime() + MS_PER_DAY);
+    const current = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const final = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    while (current <= final) {
+        dates.push(new Date(current));
+        current.setDate(current.getDate() + 1);
     }
+
     return dates;
 }
 
@@ -83,44 +91,206 @@ function diffDays(a: Date, b: Date) {
     return Math.round((a.getTime() - b.getTime()) / MS_PER_DAY);
 }
 
-type Room = { id: string; name: string; type?: string; statusColor?: string };
-type Reservation = { id: string; roomId: string; numberReservation: string; start: string; end: string; guest: string; color?: string; icon?: string, status?: string };
+function parseDateValue(value?: string | null): Date | null {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
 
-// 🔥 Interfaz espejo de lo que retorna tu "EXEC sp_listar_reservaciones" en FastAPI
-interface ApiReservation {
-    reserva_id: number;
-    huesped_nombre: string;
-    numero_reserva: string;
-    total_pagar: number;
-    telefono_huesped?: string;
-    numero_espacio?: string | number;
-    fecha_entrada?: string;
-    fecha_salida?: string;
-    cantidad_unidades?: number;
-    reserva_estado?: string;
+function formatDate(value: Date | string): string {
+    const date = value instanceof Date ? value : new Date(value);
+    return date.toISOString().split("T")[0];
+}
+
+function getGuestName(reserva: Reserva): string {
+    const parts = [reserva.nombres, reserva.apellidos, reserva.nombre_huesped].filter(Boolean) as string[];
+    return parts.join(" ").trim() || "Huésped sin nombre";
+}
+
+function getReservationStatus(reserva: Reserva): string {
+    return reserva.reserva_estado || reserva.estado || "Finalizada";
+}
+
+function getStatusStyles(status?: string) {
+    switch (status) {
+        case "Pendiente":
+            return { bg: "bg-amber-100", border: "border-amber-500", dot: "bg-amber-500" };
+        case "Reservada":
+            return { bg: "bg-blue-100", border: "border-blue-500", dot: "bg-blue-500" };
+        case "Hospedado":
+            return { bg: "bg-emerald-100", border: "border-emerald-500", dot: "bg-emerald-500" };
+        default:
+            return { bg: "bg-slate-100", border: "border-slate-300 card-shadow", dot: "bg-slate-400" };
+    }
+}
+
+function getStartOfWeek(date: Date) {
+    const copy = new Date(date);
+    const day = copy.getDay();
+    const diff = (day + 6) % 7;
+    copy.setDate(copy.getDate() - diff);
+    copy.setHours(0, 0, 0, 0);
+    return copy;
+}
+
+function addDays(date: Date, days: number) {
+    const copy = new Date(date);
+    copy.setDate(copy.getDate() + days);
+    copy.setHours(0, 0, 0, 0);
+    return copy;
+}
+
+function formatRangeLabel(start: Date, end: Date) {
+    const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+    const formatter = (date: Date) => date.toLocaleDateString("es-HN", { month: "short", day: "numeric" });
+
+    if (sameMonth) {
+        return `${start.toLocaleDateString("es-HN", { month: "short" })} ${start.getDate()} - ${end.getDate()}, ${end.getFullYear()}`;
+    }
+
+    return `${formatter(start)} - ${formatter(end)} ${end.getFullYear()}`;
 }
 
 export default function Page() {
-    // Del Cronograma no se toca nada de lógica ni UI interna
-    const startDate = new Date("2026-10-12");
-    const endDate = new Date("2026-10-25");
-    const dates = getDatesInRange(startDate, endDate);
+    const [timelineStartDate, setTimelineStartDate] = useState<Date>(() => getStartOfWeek(new Date()));
+    const [customRange, setCustomRange] = useState<{ start: string; end: string } | null>(null);
+    const [showRangePicker, setShowRangePicker] = useState(false);
+    const [draftRange, setDraftRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
+    const [listFechaStr, setListFechaStr] = useState<string>("");
+    type ListSortKey = "fecha_entrada" | "fecha_salida" | "numero_espacio" | "nombre" | "reserva_estado";
 
-    // Sincronizamos el estado inicial de la fecha con el value del input para evitar desfases
-    const [fechaStr, setFechaStr] = useState(new Date().toISOString().split('T')[0]);
-
-    // Pasamos un objeto Date válido a tu hook usando la fecha del estado
-    const { data, loading, error } = useReservas(new Date(`${fechaStr}T00:00:00`));
-    const reservacionesData = (data || []) as ApiReservation[];
-
-    const rooms: Room[] = [
-        { id: "101", name: "101", type: "King Suite", statusColor: "bg-emerald-500" },
-        { id: "102", name: "102", type: "Queen Suite", statusColor: "bg-red-500" },
-        { id: "103", name: "103", type: "Imperial Suite", statusColor: "bg-yellow-500" },
-    ];
-
-    const reservations: Reservation[] = RESERVATIONS_LIST;
+    const [listSearch, setListSearch] = useState<string>("");
+    const [listStatusFilter, setListStatusFilter] = useState<string>("");
+    const [listSortBy, setListSortBy] = useState<ListSortKey>("fecha_entrada");
+    const [listSortOrder, setListSortOrder] = useState<"asc" | "desc">("asc");
     const [view, setView] = useState<"timeline" | "list">("timeline");
+
+    const listDate = useMemo(
+        () => (listFechaStr ? new Date(`${listFechaStr}T00:00:00`) : undefined),
+        [listFechaStr]
+    );
+
+    const timelineHook = useReservas(undefined);
+    const listHook = useReservas(listDate);
+
+    const timelineData = useMemo(() => (timelineHook.data || []) as Reserva[], [timelineHook.data]);
+    const listData = useMemo(() => (listHook.data || []) as Reserva[], [listHook.data]);
+
+    const hasCustomRange = Boolean(customRange?.start && customRange?.end && parseDateValue(customRange.start) && parseDateValue(customRange.end));
+    const visibleStartDate = hasCustomRange ? parseDateValue(customRange!.start)! : timelineStartDate;
+    const visibleEndDate = hasCustomRange ? parseDateValue(customRange!.end)! : addDays(timelineStartDate, 6);
+
+    const timelineRange = useMemo(
+        () => ({
+            startDate: visibleStartDate,
+            endDate: visibleEndDate,
+            dates: getDatesInRange(visibleStartDate, visibleEndDate),
+        }),
+        [visibleStartDate, visibleEndDate]
+    );
+
+    const { startDate, endDate, dates } = timelineRange;
+
+    const timelineReservations = useMemo<TimelineReservation[]>(() => {
+        return timelineData.map((reserva) => {
+            const roomId = reserva.espacio_id ? String(reserva.espacio_id) : reserva.numero_espacio ? String(reserva.numero_espacio) : "sin-habitacion";
+            const roomName = reserva.numero_espacio ? String(reserva.numero_espacio) : `Espacio ${roomId}`;
+            const status = getReservationStatus(reserva);
+
+            return {
+                id: String(reserva.reserva_id ?? `${roomId}-${reserva.numero_reserva ?? "sin-id"}`),
+                roomId,
+                roomName,
+                numberReservation: reserva.numero_reserva || `RES-${reserva.reserva_id ?? ""}`,
+                start: reserva.fecha_entrada || "",
+                end: reserva.fecha_salida || reserva.fecha_entrada || "",
+                guest: getGuestName(reserva),
+                status,
+                icon: ["Hospedado", "Reservada"].includes(status) ? "person" : undefined,
+            };
+        });
+    }, [timelineData]);
+
+    const rooms = useMemo<Room[]>(() => {
+        const uniqueRooms = new Map<string, Room>();
+        timelineReservations.forEach((reservation) => {
+            if (!uniqueRooms.has(reservation.roomId)) {
+                uniqueRooms.set(reservation.roomId, {
+                    id: reservation.roomId,
+                    name: reservation.roomName,
+                    type: "Reserva",
+                    statusColor: "bg-emerald-500",
+                });
+            }
+        });
+        return Array.from(uniqueRooms.values());
+    }, [timelineReservations]);
+
+    const timelineVisibleReservations = useMemo(() => {
+        return timelineReservations.filter((reservation) => {
+            const start = parseDateValue(reservation.start);
+            const end = parseDateValue(reservation.end);
+            return Boolean(start && end && end >= startDate && start <= endDate);
+        });
+    }, [timelineReservations, startDate, endDate]);
+
+    const filteredListReservations = useMemo(() => {
+        const normalizedSearch = listSearch.trim().toLowerCase();
+
+        const filtered = listData.filter((reserva) => {
+            const start = parseDateValue(reserva.fecha_entrada);
+            const end = parseDateValue(reserva.fecha_salida || reserva.fecha_entrada);
+            const matchesDate = listDate ? Boolean(start && end && listDate >= start && listDate <= end) : true;
+
+            const guestName = getGuestName(reserva).toLowerCase();
+            const reservationNumber = String(reserva.numero_reserva || reserva.reserva_id || "").toLowerCase();
+            const status = (reserva.reserva_estado || reserva.estado || "").toLowerCase();
+            const space = String(reserva.numero_espacio || "").toLowerCase();
+            const matchesSearch = !normalizedSearch || guestName.includes(normalizedSearch) || reservationNumber.includes(normalizedSearch) || space.includes(normalizedSearch);
+            const matchesStatus = !listStatusFilter || status === listStatusFilter.toLowerCase();
+
+            return matchesDate && matchesSearch && matchesStatus;
+        });
+
+        return filtered.slice().sort((a, b) => {
+            const order = listSortOrder === "asc" ? 1 : -1;
+            const valueFor = (reserva: Reserva) => {
+                if (listSortBy === "fecha_entrada") return reserva.fecha_entrada || "";
+                if (listSortBy === "fecha_salida") return reserva.fecha_salida || "";
+                if (listSortBy === "numero_espacio") return reserva.numero_espacio || "";
+                if (listSortBy === "reserva_estado") return reserva.reserva_estado || reserva.estado || "";
+                return getGuestName(reserva).toLowerCase();
+            };
+
+            const left = valueFor(a);
+            const right = valueFor(b);
+            return left.localeCompare(right, "es-HN", { numeric: true }) * order;
+        });
+    }, [listDate, listData, listSearch, listStatusFilter, listSortBy, listSortOrder]);
+
+    const moveTimelineWindow = (days: number) => {
+        if (hasCustomRange) {
+            setCustomRange((prev) => {
+                if (!prev) return prev;
+                const start = parseDateValue(prev.start);
+                const end = parseDateValue(prev.end);
+                if (!start || !end) return prev;
+
+                return {
+                    start: formatDate(addDays(start, days)),
+                    end: formatDate(addDays(end, days)),
+                };
+            });
+            return;
+        }
+
+        setTimelineStartDate((prev) => addDays(prev, days));
+    };
+
+    const timelineLoading = timelineHook.loading;
+    const timelineError = timelineHook.error;
+    const listLoading = listHook.loading;
+    const listError = listHook.error;
 
     const containerRef = useRef<HTMLDivElement | null>(null);
     const [dayWidth, setDayWidth] = useState<number>(100);
@@ -130,28 +300,36 @@ export default function Page() {
             const el = containerRef.current;
             if (!el) return;
             const total = el.clientWidth;
-            const avail = Math.max(0, total - ROOM_COL_PX);
-            const w = avail / Math.max(1, dates.length);
-            setDayWidth(w);
+            const available = Math.max(0, total - ROOM_COL_PX);
+            const width = available / Math.max(dates.length, 1);
+            setDayWidth(width);
         }
 
         updateWidths();
         window.addEventListener("resize", updateWidths);
         return () => window.removeEventListener("resize", updateWidths);
-    }, [dates.length]);
+    }, [dates.length, timelineLoading, view]);
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <ViewTransition enter={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
             <PageHeader
                 name="Reservaciones"
                 subtitle="Gestión de reservas y disponibilidad"
                 buttons={
                     <div className="flex items-center gap-2">
                         <div className="inline-flex rounded-md bg-slate-50 p-1">
-                            <button onClick={() => setView("timeline")} className={`px-3 py-1 text-sm rounded ${view === "timeline" ? "bg-white shadow" : "hover:bg-slate-100"}`}>
+                            <button
+                                type="button"
+                                onClick={() => setView("timeline")}
+                                className={`px-3 py-1 text-sm rounded ${view === "timeline" ? "bg-white shadow" : "hover:bg-slate-100"}`}
+                            >
                                 Cronograma
                             </button>
-                            <button onClick={() => setView("list")} className={`px-3 py-1 text-sm rounded ${view === "list" ? "bg-white shadow" : "hover:bg-slate-100"}`}>
+                            <button
+                                type="button"
+                                onClick={() => setView("list")}
+                                className={`px-3 py-1 text-sm rounded ${view === "list" ? "bg-white shadow" : "hover:bg-slate-100"}`}
+                            >
                                 Lista
                             </button>
                         </div>
@@ -159,117 +337,280 @@ export default function Page() {
                     </div>
                 }
             />
+
             {view === "timeline" ? (
                 <div className="bg-white rounded-xl border border-slate-300 card-shadow shadow-sm overflow-hidden flex flex-col flex-1 min-h-125">
-                    <div className="flex items-center justify-between p-4 border-b border-slate-300 card-shadow bg-white gantt-header">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border-b border-slate-300 bg-white">
                         <div className="flex items-center gap-3">
-                            <button className="p-1 rounded hover:bg-slate-100 transition-colors"><span className="material-symbols-outlined">chevron_left</span></button>
-                            <h3 className="text-sm font-bold text-slate-800">Oct 12 - Oct 25, 2026</h3>
-                            <button className="p-1 rounded hover:bg-slate-100 transition-colors"><span className="material-symbols-outlined">chevron_right</span></button>
+                            <button
+                                type="button"
+                                onClick={() => moveTimelineWindow(-7)}
+                                className="p-1 rounded hover:bg-slate-100 transition-colors"
+                            >
+                                <span className="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setDraftRange({ start: formatDate(visibleStartDate), end: formatDate(visibleEndDate) });
+                                    setShowRangePicker((prev) => !prev);
+                                }}
+                                className="px-3 py-2 rounded border border-slate-200 hover:bg-slate-50 transition-colors text-slate-700 text-sm font-medium"
+                            >
+                                {formatRangeLabel(visibleStartDate, visibleEndDate)}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => moveTimelineWindow(7)}
+                                className="p-1 rounded hover:bg-slate-100 transition-colors"
+                            >
+                                <span className="material-symbols-outlined">chevron_right</span>
+                            </button>
                         </div>
-                        <div className="flex items-center gap-4">
+
+                        <div className="flex items-center gap-4 text-xs text-slate-600">
                             <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                                <span className="text-xs text-slate-600 font-medium">Pendiente</span>
+                                <span>Pendiente</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                <span className="text-xs text-slate-600 font-medium">Confirmada</span>
+                                <span>Confirmada</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                <span className="text-xs text-slate-600 font-medium">En estancia</span>
+                                <span>En estancia</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="w-2 h-2 rounded-full bg-slate-400"></span>
-                                <span className="text-xs text-slate-600 font-medium">Finalizada</span>
+                                <span>Finalizada</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-auto scrollbar-hide relative">
-                        <div className="min-w-250" ref={containerRef}>
-                            <div className="gantt-grid border-b border-slate-300 card-shadow bg-slate-50 sticky top-0 z-10" style={{ display: "flex" }}>
-                                <div className="p-3 text-xs font-semibold text-slate-500 border-r border-slate-300 card-shadow room-col flex items-center bg-white" style={{ width: ROOM_COL_PX }}>Habitación / Estado</div>
-                                {dates.map((d) => {
-                                    const weekday = d.toLocaleString(undefined, { weekday: "short" });
-                                    const daynum = d.getDate();
-                                    const isMid = d.getDay() === 3;
-                                    const weekend = d.getDay() === 0 || d.getDay() === 6;
-                                    return (
-                                        <div key={d.toISOString()} className={`p-2 text-center border-r border-slate-300 card-shadow ${isMid ? "bg-blue-50/50" : weekend ? "bg-slate-100/50" : ""}`} style={{ minWidth: dayWidth }}>
-                                            <div className={`text-xs ${isMid ? "text-blue-600 font-bold" : "text-slate-400"}`}>{weekday}</div>
-                                            <div className={`${isMid ? "text-sm font-bold text-blue-600" : "text-sm font-medium"}`}>{daynum}</div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-
-                            <div className="bg-slate-100 px-4 py-2 text-xs font-semibold sticky left-0 z-20 text-slate-500">Planta 1 - Suites</div>
-
-                            {rooms.map((room) => (
-                                <div key={room.id} className="gantt-grid border-b border-slate-300 card-shadow hover:bg-slate-50/50 transition-colors group relative h-14">
-                                    <div className="p-3 border-r border-slate-300 card-shadow flex items-center justify-between room-col bg-white group-hover:bg-slate-50 transition-colors" style={{ width: ROOM_COL_PX }}>
-                                        <div>
-                                            <div className="text-sm font-semibold text-slate-800">{room.name}</div>
-                                            <div className="text-xs text-slate-400">{room.type}</div>
-                                        </div>
-                                        <span className={`w-2 h-2 rounded-full ${room.statusColor}`}></span>
-                                    </div>
-
-                                    {dates.map((d, idx) => (
-                                        <div key={idx} className="border-r border-slate-100" style={{ width: dayWidth, display: "inline-block", height: "100%" }}></div>
-                                    ))}
-
-                                    {reservations
-                                        .filter((r) => r.roomId === room.id)
-                                        .map((r) => {
-                                            const rStart = new Date(r.start);
-                                            const rEnd = new Date(r.end);
-                                            const offset = Math.max(0, diffDays(rStart, startDate));
-                                            const length = diffDays(rEnd, rStart) + 1;
-                                            const left = ROOM_COL_PX + offset * dayWidth;
-                                            const width = Math.max(dayWidth * length, dayWidth);
-
-                                            const bg =
-                                                r.status === "Pending" ? "bg-amber-100" :
-                                                    r.status === "Confirmed" ? "bg-blue-100" :
-                                                        r.status === "InHouse" ? "bg-emerald-100" : "bg-slate-100";
-
-                                            const border =
-                                                r.status === "Pending" ? "border-amber-500" :
-                                                    r.status === "Confirmed" ? "border-blue-500" :
-                                                        r.status === "InHouse" ? "border-emerald-500" : "border-slate-300 card-shadow";
-
-                                            return (
-                                                <Link href={`/bd/reservaciones/${r.id}`} key={r.id} className={`reservation-bar ${bg} border-l-4 ${border} px-3 py-1 flex items-center justify-between overflow-hidden cursor-pointer`} style={{ position: "absolute", top: 8, bottom: 8, left, width }}>
-                                                    <div className="truncate">
-                                                        <div className="text-xs font-bold text-slate-900 truncate">{r.guest}</div>
-                                                    </div>
-                                                    {r.icon ? <span className="material-symbols-outlined text-[16px] text-slate-700">{r.icon}</span> : null}
-                                                </Link>
-                                            );
-                                        })}
+                    {showRangePicker && (
+                        <div className="p-4 border-b border-slate-200 bg-slate-50">
+                            <div className="flex flex-col lg:flex-row gap-4 items-end">
+                                <label className="flex flex-col text-slate-700 text-xs">
+                                    Desde
+                                    <input
+                                        type="date"
+                                        value={draftRange.start}
+                                        onChange={(e) => setDraftRange((prev) => ({ ...prev, start: e.target.value }))}
+                                        className="mt-2 p-2 border border-slate-300 rounded-md"
+                                    />
+                                </label>
+                                <label className="flex flex-col text-slate-700 text-xs">
+                                    Hasta
+                                    <input
+                                        type="date"
+                                        value={draftRange.end}
+                                        onChange={(e) => setDraftRange((prev) => ({ ...prev, end: e.target.value }))}
+                                        className="mt-2 p-2 border border-slate-300 rounded-md"
+                                    />
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            !draftRange.start ||
+                                            !draftRange.end ||
+                                            !parseDateValue(draftRange.start) ||
+                                            !parseDateValue(draftRange.end) ||
+                                            (parseDateValue(draftRange.start)!.getTime() > parseDateValue(draftRange.end)!.getTime())
+                                        }
+                                        onClick={() => {
+                                            const start = parseDateValue(draftRange.start);
+                                            const end = parseDateValue(draftRange.end);
+                                            if (start && end && start <= end) {
+                                                setCustomRange({ start: draftRange.start, end: draftRange.end });
+                                                setShowRangePicker(false);
+                                            }
+                                        }}
+                                        className="px-4 py-2 rounded-md bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50"
+                                    >Aplicar</button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowRangePicker(false)}
+                                        className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100"
+                                    >Cancelar</button>
+                                    {hasCustomRange && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setCustomRange(null);
+                                                setDraftRange({ start: "", end: "" });
+                                                setShowRangePicker(false);
+                                            }}
+                                            className="px-4 py-2 rounded-md border border-red-300 text-red-700 hover:bg-red-50"
+                                        >Limpiar rango</button>
+                                    )}
                                 </div>
-                            ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
+
+                    {timelineLoading ? (
+                        <div className="p-8 text-center text-sm text-slate-500">Cargando cronograma...</div>
+                    ) : timelineError ? (
+                        <div className="p-8 text-center text-sm text-red-500">Error cargando reservaciones.</div>
+                    ) : (
+                        <div className="flex-1 overflow-auto scrollbar-hide relative">
+                            <div className="min-w-250" ref={containerRef}>
+                                <div className="gantt-grid border-b border-slate-300 card-shadow bg-slate-50 sticky top-0 z-10" style={{ display: "flex" }}>
+                                    <div className="p-3 text-xs font-semibold text-slate-500 border-r border-slate-300 card-shadow room-col flex items-center bg-white" style={{ width: ROOM_COL_PX }}>
+                                        Habitación / Estado
+                                    </div>
+                                    {dates.map((date) => {
+                                        const weekday = date.toLocaleString("es-HN", { weekday: "short" });
+                                        const daynum = date.getDate();
+                                        const isMid = date.getDay() === 3;
+                                        const weekend = date.getDay() === 0 || date.getDay() === 6;
+                                        return (
+                                            <div key={date.toISOString()} className={`p-2 text-center border-r border-slate-300 card-shadow ${isMid ? "bg-blue-50/50" : weekend ? "bg-slate-100/50" : ""}`} style={{ minWidth: dayWidth }}>
+                                                <div className={`text-xs ${isMid ? "text-blue-600 font-bold" : "text-slate-400"}`}>{weekday}</div>
+                                                <div className={`${isMid ? "text-sm font-bold text-blue-600" : "text-sm font-medium"}`}>{daynum}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="bg-slate-100 px-4 py-2 text-xs font-semibold sticky left-0 z-20 text-slate-500">Planta 1 - Suites</div>
+
+                                {rooms.map((room) => (
+                                    <div key={room.id} className="gantt-grid border-b border-slate-300 card-shadow hover:bg-slate-50/50 transition-colors group relative h-14">
+                                        <div className="p-3 border-r border-slate-300 card-shadow flex items-center justify-between room-col bg-white group-hover:bg-slate-50 transition-colors" style={{ width: ROOM_COL_PX }}>
+                                            <div>
+                                                <div className="text-sm font-semibold text-slate-800">{room.name}</div>
+                                                <div className="text-xs text-slate-400">{room.type}</div>
+                                            </div>
+                                            <span className={`w-2 h-2 rounded-full ${room.statusColor}`}></span>
+                                        </div>
+
+                                        {dates.map((_, index) => (
+                                            <div key={index} className="border-r border-slate-100" style={{ width: dayWidth, display: "inline-block", height: "100%" }}></div>
+                                        ))}
+
+                                        {timelineVisibleReservations
+                                            .filter((reservation) => reservation.roomId === room.id)
+                                            .map((reservation) => {
+                                                const start = parseDateValue(reservation.start);
+                                                const end = parseDateValue(reservation.end);
+                                                if (!start || !end) return null;
+
+                                                const clippedStart = start < startDate ? startDate : start;
+                                                const clippedEnd = end > endDate ? endDate : end;
+                                                if (clippedEnd < startDate || clippedStart > endDate) return null;
+
+                                                const offset = Math.max(0, diffDays(clippedStart, startDate));
+                                                const length = Math.max(1, diffDays(clippedEnd, clippedStart) + 1);
+                                                const left = ROOM_COL_PX + offset * dayWidth;
+                                                const width = Math.max(dayWidth * length, dayWidth);
+                                                const statusStyles = getStatusStyles(reservation.status);
+
+                                                return (
+                                                    <Link
+                                                        key={reservation.id}
+                                                        href={`/bd/reservaciones/${reservation.id}`}
+                                                        className={`reservation-bar ${statusStyles.bg} border-l-4 ${statusStyles.border} px-3 py-1 flex items-center justify-between overflow-hidden cursor-pointer`}
+                                                        style={{ position: "absolute", top: 8, bottom: 8, left, width }}
+                                                    >
+                                                        <div className="truncate">
+                                                            <div className="text-xs font-bold text-slate-900 truncate">{reservation.guest}</div>
+                                                            <div className="text-[11px] text-slate-600 truncate">{reservation.numberReservation}</div>
+                                                        </div>
+                                                        {reservation.icon ? (
+                                                            <span className="material-symbols-outlined text-[16px] text-slate-700">{reservation.icon}</span>
+                                                        ) : null}
+                                                    </Link>
+                                                );
+                                            })}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 <div className="bg-white rounded-xl border border-slate-300 card-shadow shadow-sm overflow-hidden flex flex-col flex-1 min-h-50 p-4">
-                    <input
-                        className="bg-transparent py-2 border-none text-black p-0 w-full focus:ring-0 text-md outline-hidden accent-blue-500 mb-4"
-                        type="date"
-                        value={fechaStr}
-                        onChange={(e) => setFechaStr(e.target.value)}
-                    />
+                    <div className="flex flex-col gap-4 mb-4">
+                        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                            <label className="flex flex-col w-full sm:w-auto text-slate-700 text-sm">
+                                Filtrar por fecha
+                                <input
+                                    className="mt-2 p-2 border border-slate-300 rounded-md"
+                                    type="date"
+                                    value={listFechaStr}
+                                    onChange={(e) => setListFechaStr(e.target.value)}
+                                />
+                            </label>
+                            <button
+                                type="button"
+                                onClick={() => setListFechaStr("")}
+                                className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100"
+                            >
+                                Limpiar
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                            <label className="flex flex-col text-slate-700 text-sm">
+                                Buscar
+                                <input
+                                    type="text"
+                                    value={listSearch}
+                                    onChange={(e) => setListSearch(e.target.value)}
+                                    placeholder="Huésped, reserva, habitación"
+                                    className="mt-2 p-2 border border-slate-300 rounded-md"
+                                />
+                            </label>
+                            <label className="flex flex-col text-slate-700 text-sm">
+                                Estado
+                                <select
+                                    value={listStatusFilter}
+                                    onChange={(e) => setListStatusFilter(e.target.value)}
+                                    className="mt-2 p-2 border border-slate-300 rounded-md"
+                                >
+                                    <option value="">Todos</option>
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="reservada">Reservada</option>
+                                    <option value="hospedado">Hospedado</option>
+                                    <option value="finalizada">Finalizada</option>
+                                </select>
+                            </label>
+                            <label className="flex flex-col text-slate-700 text-sm">
+                                Ordenar por
+                                <select
+                                    value={listSortBy}
+                                    onChange={(e) => setListSortBy(e.target.value as ListSortKey)}
+                                    className="mt-2 p-2 border border-slate-300 rounded-md"
+                                >
+                                    <option value="fecha_entrada">Fecha de entrada</option>
+                                    <option value="fecha_salida">Fecha de salida</option>
+                                    <option value="numero_espacio">Habitación</option>
+                                    <option value="nombre">Huésped</option>
+                                    <option value="reserva_estado">Estado</option>
+                                </select>
+                            </label>
+                            <label className="flex flex-col text-slate-700 text-sm">
+                                Orden
+                                <select
+                                    value={listSortOrder}
+                                    onChange={(e) => setListSortOrder(e.target.value as "asc" | "desc")}
+                                    className="mt-2 p-2 border border-slate-300 rounded-md"
+                                >
+                                    <option value="asc">Ascendente</option>
+                                    <option value="desc">Descendente</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
 
-                    {loading ? (
+                    {listLoading ? (
                         <div className="py-8 text-center text-sm text-slate-500 font-medium">Cargando reservaciones desde el servidor...</div>
-                    ) : error ? (
+                    ) : listError ? (
                         <div className="py-8 text-center text-sm text-red-500 font-medium">Error al conectar con la API de reservaciones.</div>
-                    ) : reservacionesData.length === 0 ? (
-                        <div className="py-8 text-center text-sm text-slate-500 font-medium">No se encontraron reservaciones para el día seleccionado.</div>
+                    ) : filteredListReservations.length === 0 ? (
+                        <div className="py-8 text-center text-sm text-slate-500 font-medium">No se encontraron reservaciones para la fecha seleccionada.</div>
                     ) : (
                         <div className="overflow-auto">
                             <table className="min-w-full text-sm">
@@ -285,25 +626,29 @@ export default function Page() {
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white">
-                                    {reservacionesData.map((r) => {
-                                        const currentStatus = STATUS_CONFIG[r.reserva_estado as keyof typeof STATUS_CONFIG] || {
-                                            label: r.reserva_estado || "—",
+                                    {filteredListReservations.map((reserva) => {
+                                        const statusKey = getReservationStatus(reserva);
+                                        const currentStatus = STATUS_CONFIG[statusKey as keyof typeof STATUS_CONFIG] || {
+                                            label: statusKey || "—",
                                             badgeBg: "bg-slate-100",
                                             badgeText: "text-slate-800",
                                             border: "border-slate-300",
-                                            dotBg: "bg-slate-400"
+                                            dotBg: "bg-slate-400",
                                         };
+                                        const start = parseDateValue(reserva.fecha_entrada);
+                                        const end = parseDateValue(reserva.fecha_salida || reserva.fecha_entrada);
+                                        const nights = start && end ? Math.max(1, diffDays(end, start)) : reserva.cantidad_unidades || "—";
 
                                         return (
-                                            <tr key={r.reserva_id} className="hover:bg-slate-50 border-b border-slate-100 last:border-none">
+                                            <tr key={reserva.reserva_id ?? reserva.numero_reserva} className="hover:bg-slate-50 border-b border-slate-100 last:border-none">
                                                 <td className="px-4 py-3 align-middle">
-                                                    <div className="text-sm font-medium text-slate-900">{r.huesped_nombre}</div>
-                                                    <div className="text-xs text-slate-400">Reserva {r.numero_reserva}</div>
+                                                    <div className="text-sm font-medium text-slate-900">{getGuestName(reserva)}</div>
+                                                    <div className="text-xs text-slate-400">Reserva {reserva.numero_reserva || reserva.reserva_id}</div>
                                                 </td>
-                                                <td className="px-4 py-3 align-middle text-slate-700">{r.numero_espacio || "—"}</td>
-                                                <td className="px-4 py-3 align-middle text-slate-600">{r.fecha_entrada || "—"}</td>
-                                                <td className="px-4 py-3 align-middle text-slate-600">{r.fecha_salida || "—"}</td>
-                                                <td className="px-4 py-3 align-middle text-slate-600">{r.cantidad_unidades || "—"}</td>
+                                                <td className="px-4 py-3 align-middle text-slate-700">{reserva.numero_espacio || "—"}</td>
+                                                <td className="px-4 py-3 align-middle text-slate-600">{reserva.fecha_entrada || "—"}</td>
+                                                <td className="px-4 py-3 align-middle text-slate-600">{reserva.fecha_salida || "—"}</td>
+                                                <td className="px-4 py-3 align-middle text-slate-600">{nights}</td>
                                                 <td className="px-4 py-3 align-middle">
                                                     <span className={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border ${currentStatus.badgeBg} ${currentStatus.badgeText} ${currentStatus.border}`}>
                                                         <span className={`w-2 h-2 rounded-full ${currentStatus.dotBg}`}></span>
@@ -311,15 +656,14 @@ export default function Page() {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 py-3 align-middle">
-                                                    <Link href={`/bd/reservaciones/${r.reserva_id}`} className="text-sm text-[#008cc7] hover:underline mr-3">Ver</Link>
-                                                    <Link href={`/bd/reservaciones/${r.reserva_id}/edit`} className="text-sm text-slate-700 hover:underline">Editar</Link>
+                                                    <Link href={`/bd/reservaciones/${reserva.reserva_id}`} className="text-sm text-[#008cc7] hover:underline mr-3">Ver</Link>
+                                                    <Link href={`/bd/reservaciones/${reserva.reserva_id}/edit`} className="text-sm text-slate-700 hover:underline">Editar</Link>
                                                     <a
-                                                        href={handleEnlace(r.telefono_huesped || "", r.huesped_nombre || "", r.total_pagar || 0)}
+                                                        href={handleEnlace(reserva.telefono_huesped || reserva.telefono || "", getGuestName(reserva), reserva.total_pagar || 0)}
                                                         target="whatsapp-chat"
-                                                        className="flex items-center justify-center p-2 text-slate-700 hover:text-green-600 transition-colors"
+                                                        className="inline-flex items-center justify-center p-2 text-slate-700 hover:text-green-600 transition-colors"
                                                         title="Enviar mensaje por WhatsApp"
                                                     >
-                                                        {/* Icono de mensaje SVG */}
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             width="20"

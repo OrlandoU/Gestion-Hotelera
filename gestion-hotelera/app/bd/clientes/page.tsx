@@ -163,7 +163,7 @@ export default function ClientesPage() {
                       </td>
                       <td className="py-3.5 px-6 text-right font-semibold">{client.estancias}</td>
                       <td className="py-3.5 px-6 text-right font-bold text-slate-900">{client.total_gastado!.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}</td>
-                      
+
                       <td className="py-3.5 px-6 text-right">
                         <Link href={`/bd/clientes/${client.huesped_id}`} className="text-sm text-[#008cc7] hover:underline font-semibold">
                           Ver perfil

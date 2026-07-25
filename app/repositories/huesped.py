@@ -9,7 +9,6 @@ class HuespedRepository(BaseRepository):
         return self._execute_query("EXEC sp_obtener_huesped %s", (huesped_id,), fetch_one=True)
 
     def crear(self, payload: Huesped):
-        # TODO: Ajustar los parámetros reales de tu SP
         query = "EXEC sp_crear_huesped %s, %s"
         params = (payload.get('nombre'), payload.get('apellido')) 
         return self._execute_query(query, params, is_write=True)

@@ -1,3 +1,5 @@
+from datetime import date
+from os import getenv
 from fastapi import FastAPI
 from app.routes import reportes_router
 from app.routes import huespedes_router
@@ -6,7 +8,10 @@ from app.routes import espacios_router
 from app.routes import proveedores_router
 from app.routes import mantenimientos_router
 from app.routes import productos_router
+from app.routes.auth import router as auth_router
+from app.database import get_db
 from fastapi.middleware.cors import CORSMiddleware
+from app.middleware.auth import AuthMiddleware
 
 app = FastAPI(title="My Modular API")
 
@@ -28,10 +33,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
+
+app.add_middleware(AuthMiddleware, protected_prefixes=["/reservas"])
+
+
 app.include_router(reservas_router)
 app.include_router(reportes_router)
 app.include_router(huespedes_router)
-app.include_router(reservas_router)
 app.include_router(espacios_router)
 app.include_router(mantenimientos_router)
 app.include_router(proveedores_router)
