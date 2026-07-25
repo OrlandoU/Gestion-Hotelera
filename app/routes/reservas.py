@@ -26,6 +26,16 @@ async def listar_reservas(
 ):
     return repo.listar(fecha_entrada=fecha_entrada)
 
+### 2. DISPONIBILIDAD DE HABITACIONES (Sub-ruta de búsqueda)
+@router.get("/habitacion-disponible", status_code=status.HTTP_200_OK)
+async def mostrar_habitaciones_disponibles(
+    fecha_entrada: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
+    fecha_salida: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
+    tipo: str = Query(..., description="Tipo de habitación"),
+    repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    return repo.verificar_disponibilidad_unica(fecha_entrada, fecha_salida, tipo)
+
 
 ### 2. DISPONIBILIDAD DE HABITACIONES (Sub-ruta de búsqueda)
 @router.get("/habitaciones-disponibles", status_code=status.HTTP_200_OK)

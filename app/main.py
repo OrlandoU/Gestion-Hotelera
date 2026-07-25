@@ -6,6 +6,9 @@ from app.routes import espacios_router
 from app.routes import proveedores_router
 from app.routes import mantenimientos_router
 from app.routes import productos_router
+from app.routes import usuarios_router
+from app.routes import pagos_router
+from app.routes import tickets_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="My Modular API")
@@ -36,6 +39,9 @@ app.include_router(espacios_router)
 app.include_router(mantenimientos_router)
 app.include_router(proveedores_router)
 app.include_router(productos_router)
+app.include_router(usuarios_router)
+app.include_router(pagos_router)
+app.include_router(tickets_router)
 
 @app.get("/")
 def read_root():

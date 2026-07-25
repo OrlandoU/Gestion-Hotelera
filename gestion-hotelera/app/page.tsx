@@ -69,9 +69,9 @@ export default function HomePage() {
     const noches = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24)) || 1;
 
     const precioPorNoche = tarifas[tipoSeleccionado].precio;
-    const subtotal = precioPorNoche * noches;
-    const impuestos = subtotal * 0.15; // 15% ISV de Honduras
-    const total = subtotal + impuestos;
+    const subtotal = precioPorNoche * noches * 0.85;
+    const impuestos = precioPorNoche * noches * 0.15; // 15% ISV de Honduras
+    const total = impuestos + subtotal;
 
     return { noches, precioPorNoche, subtotal, impuestos, total };
   }, [fechaIn, fechaOut, tipoSeleccionado]);
@@ -95,18 +95,14 @@ export default function HomePage() {
 
     // Estructura adaptada incluyendo los nuevos datos capturados
     const nuevaReserva: Reserva & Record<string, any> = {
-      //id_huesped: 2, // ID harcodeado temporalmente según tu requerimiento
+      nombres: nombreHuesped,
+      apellidos: apellidoHuesped,
+      telefono: telefonoHuesped,
+      email: emailHuesped,
+      dni: dniHuesped,
       espacio_id: habitacionFisicaAsignable[0].espacio_id,
       fecha_entrada: fechaIn,
       fecha_salida: fechaOut,
-      nombre_huesped: nombreHuesped,
-      apellido_huesped: apellidoHuesped,
-      email_huesped: emailHuesped,
-      telefono_huesped: telefonoHuesped,
-      huesped_dni: dniHuesped,
-      numero_huespedes: numeroHuespedes,
-      //hora_llegada: horaLlegada,
-      //peticiones_cama: peticionesCama
     };
 
     setCargando(true);
@@ -267,7 +263,7 @@ export default function HomePage() {
                         </div>
                         <div>
                           <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Teléfono *</label>
-                          <input type="tel" required value={telefonoHuesped} onChange={e => setTelefonoHuesped(e.target.value)} placeholder="+504 2550-0000" className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
+                          <input type="tel" required value={telefonoHuesped} onChange={e => setTelefonoHuesped(e.target.value)} placeholder="50425500000" className="w-full border-b border-slate-200 py-2 text-sm focus:border-[#0f172a] focus:outline-none transition-colors bg-transparent text-[#0f172a]" />
                         </div>
                         <div>
                           <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">DNI *</label>

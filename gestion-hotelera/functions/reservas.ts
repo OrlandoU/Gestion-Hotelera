@@ -99,8 +99,32 @@ async function fetchAPI<T = any>(
  * Antes: /reservas/obtener-reserva/?reserva_id=${id}
  * Ahora: /reservas/{reserva_id} (Path Parameter estándar REST)
  */
-export async function getReserva(id: number): Promise<Reserva> {
-    return fetchAPI<Reserva>(`/reservas/${id}`, { method: 'GET' });
+export async function getReserva(reserva_id: number): Promise<Reserva> {
+    return fetchAPI<Reserva>(`/reservas/${reserva_id}`, { method: 'GET' });
+}
+
+export function useReserva(reserva_id: number) {
+    const [data, setData] = useState<Reserva | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<Error | null>(null);
+
+    useEffect(() => {
+        const fetchReserva = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const data = await getReserva(reserva_id);
+                setData(data);
+            } catch (error) {
+                setError(error as Error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchReserva();
+    }, [reserva_id]);
+
+    return { data, loading, error };
 }
 
 /**
