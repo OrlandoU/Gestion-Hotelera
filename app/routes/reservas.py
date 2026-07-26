@@ -20,7 +20,6 @@ router = APIRouter(
 # RUTAS DE RESERVAS
 # ==========================================
 
-### 1. OBTENER TODAS LAS RESERVAS (O FILTRADAS POR FECHA)
 @router.get("", status_code=status.HTTP_200_OK)
 async def listar_reservas(
     fecha_entrada: date = Query(None, description="Filtrar reservas por fecha de entrada"),
@@ -28,7 +27,6 @@ async def listar_reservas(
 ):
     return repo.listar(fecha_entrada=fecha_entrada)
 
-### 2. DISPONIBILIDAD DE HABITACIONES (Sub-ruta de búsqueda)
 @router.get("/habitacion-disponible", status_code=status.HTTP_200_OK)
 async def mostrar_habitaciones_disponibles(
     fecha_entrada: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
@@ -39,7 +37,6 @@ async def mostrar_habitaciones_disponibles(
     return repo.verificar_disponibilidad_unica(fecha_entrada, fecha_salida, tipo)
 
 
-### 2. DISPONIBILIDAD DE HABITACIONES (Sub-ruta de búsqueda)
 @router.get("/habitaciones-disponibles", status_code=status.HTTP_200_OK)
 async def mostrar_habitaciones_disponibles(
     fecha_entrada: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
@@ -50,7 +47,6 @@ async def mostrar_habitaciones_disponibles(
     # Si viene incorrecto, lanza un 422 automáticamente sin tocar el repo.
     return repo.verificar_disponibilidad(fecha_entrada, fecha_salida)
 
-### 2. DISPONIBILIDAD DE HABITACIONES (Sub-ruta de búsqueda)
 @router.get("/habitacion-disponible", status_code=status.HTTP_200_OK)
 async def mostrar_habitaciones_disponibles(
     fecha_entrada: date = Query(default=date.today(), description="Formato YYYY-MM-DD"),
@@ -62,7 +58,6 @@ async def mostrar_habitaciones_disponibles(
     # Si viene incorrecto, lanza un 422 automáticamente sin tocar el repo.
     return repo.verificar_disponibilidad_unica(fecha_entrada, fecha_salida, tipo)
 
-### 3. DETALLE DE UNA RESERVA ESPECÍFICA
 @router.get("/{reserva_id}", status_code=status.HTTP_200_OK)
 async def obtener_reserva(
     reserva_id: int = Path(..., description="ID de la reserva a consultar"),
@@ -77,7 +72,6 @@ async def obtener_reserva(
     return reserva
 
 
-### 4. CREAR UNA RESERVA
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def crear_reserva(
     reserva: ReservaSchema,
@@ -88,7 +82,6 @@ async def crear_reserva(
     return {"message": "Reserva creada exitosamente"}
 
 
-### 5. REGISTRAR EL PAGO DE UNA RESERVA (Sub-recurso dependiente)
 @router.post("/{reserva_id}/pagos", status_code=status.HTTP_201_CREATED)
 async def registrar_pago(    
     reserva_id: int = Path(..., description="ID de la reserva a la que se le aplica el pago"),

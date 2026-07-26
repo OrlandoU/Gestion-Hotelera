@@ -17,3 +17,10 @@ export async function getHuespedes(): Promise<Huesped[]> {
 export async function getHuesped(id: number): Promise<Huesped[]> {
     return fetchAPI<Huesped[]>('/huespedes/' + id);
 }
+
+export async function createHuesped(huesped: Huesped): Promise<Huesped> {
+    return fetchAPI<Huesped>('/huespedes', {
+        method: 'POST',
+        body: JSON.stringify(huesped),
+    });
+}

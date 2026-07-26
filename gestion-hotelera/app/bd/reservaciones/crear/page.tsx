@@ -1,9 +1,92 @@
 "use client";
 
 import { useState, useEffect, ViewTransition } from "react";
+import { useForm, type UseFormRegister } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import PageHeader from "@/components/pageheader";
 import Link from "next/link";
 import { getHabitacionesDisponibles, crearReserva, EspacioHabitacion } from "@/functions/reservas";
+
+const guestSchema = z.object({
+    nombres: z.string().trim().min(2, "Ingresa al menos 2 letras para los nombres."),
+    apellidos: z.string().trim().min(2, "Ingresa al menos 2 letras para los apellidos."),
+    email: z.string().trim().email("Ingresa un correo electrónico válido."),
+    telefono: z.string().trim().refine((value) => value.replace(/\D/g, "").length >= 8, {
+        message: "El teléfono debe tener al menos 8 dígitos.",
+    }),
+    dni: z.string().trim().min(13, "Ingresa un documento válido."),
+});
+
+type GuestFormValues = z.infer<typeof guestSchema>;
+
+type ValidatedInputProps = {
+    label: string;
+    name: keyof GuestFormValues;
+    type?: string;
+    placeholder?: string;
+    icon: string;
+    register: UseFormRegister<GuestFormValues>;
+    error?: string;
+    isDirty?: boolean;
+    isTouched?: boolean;
+    inputClassName?: string;
+    containerClassName?: string;
+    autoComplete?: string;
+};
+
+function ValidatedInput({
+    label,
+    name,
+    type = "text",
+    placeholder,
+    icon,
+    register,
+    error,
+    isDirty,
+    isTouched,
+    inputClassName = "",
+    containerClassName = "",
+    autoComplete,
+}: ValidatedInputProps) {
+    const hasSuccess = Boolean(isTouched && isDirty && !error);
+    const inputBaseClasses = "w-full h-11 bg-slate-50 border rounded-lg px-4 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:outline-none";
+    const stateClasses = error
+        ? "border-red-400 bg-white focus:border-red-500 focus:ring-2 focus:ring-red-400/20"
+        : hasSuccess
+            ? "border-sky-400/80 bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+            : "border-slate-300 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20";
+
+    return (
+        <div className={`flex flex-col gap-2 ${containerClassName}`}>
+            <label className="text-sm font-bold text-slate-700" htmlFor={name}>{label}</label>
+            <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>
+                <input
+                    {...register(name)}
+                    autoComplete={autoComplete}
+                    className={`${inputBaseClasses} ${stateClasses} ${inputClassName} ${icon ? "pl-10" : ""} ${hasSuccess ? "pr-10" : "pr-4"}`}
+                    id={name}
+                    name={name}
+                    placeholder={placeholder}
+                    type={type}
+                    aria-invalid={Boolean(error)}
+                    aria-describedby={error ? `${name}-error` : undefined}
+                />
+                {hasSuccess && (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sky-500 material-symbols-outlined text-[18px] animate-in fade-in">
+                        check
+                    </span>
+                )}
+            </div>
+            {error && (
+                <p id={`${name}-error`} className="text-xs text-red-500 mt-1 animate-in fade-in slide-in-from-top-1">
+                    {error}
+                </p>
+            )}
+        </div>
+    );
+}
 
 export default function CrearReservacion() {
     const [currentStep, setCurrentStep] = useState(1);
@@ -11,13 +94,30 @@ export default function CrearReservacion() {
     const [rooms, setRooms] = useState<EspacioHabitacion[]>([]);
     const [loadingRooms, setLoadingRooms] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [dateErrors, setDateErrors] = useState<{ fecha_entrada?: string; fecha_salida?: string }>({});
+    const [roomError, setRoomError] = useState("");
+
+    const {
+        register,
+        trigger,
+        watch,
+        formState: { errors, touchedFields, dirtyFields },
+    } = useForm<GuestFormValues>({
+        resolver: zodResolver(guestSchema),
+        mode: "onTouched",
+        reValidateMode: "onChange",
+        defaultValues: {
+            nombres: "",
+            apellidos: "",
+            email: "",
+            telefono: "",
+            dni: "",
+        },
+    });
+
+    const guestValues = watch();
 
     const [formData, setFormData] = useState({
-        nombres: "",
-        apellidos: "",
-        email: "",
-        telefono: "",
-        dni: "",
         fecha_entrada: "",
         fecha_salida: "",
         espacio_id: selectedRoom
@@ -41,8 +141,8 @@ export default function CrearReservacion() {
     };
 
     const nights = calculateNights(formData.fecha_entrada, formData.fecha_salida);
-    const selectedRoomData = rooms.find((room: any) => room.numero_espacio === selectedRoom);
-    const totalPrice = selectedRoomData ? (selectedRoomData.precio_unidad ||  0) * nights : 0;
+    const selectedRoomData = rooms.find((room: EspacioHabitacion) => room.numero_espacio === selectedRoom);
+    const totalPrice = selectedRoomData ? (selectedRoomData.precio_unidad || 0) * nights : 0;
 
     // Obtener la fecha de hoy en formato YYYY-MM-DD para restringir inputs
     const today = new Date().toISOString().split('T')[0];
@@ -64,7 +164,7 @@ export default function CrearReservacion() {
     const getInputClasses = (name: string, value: string) => {
         const baseClasses = "w-full h-11 bg-slate-50 border rounded-lg px-4 text-slate-800 placeholder-slate-400 outline-none transition-all";
         if (value && isValidField(name, value)) {
-            return `${baseClasses} border-emerald-400/70 bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20`;
+            return `${baseClasses} border-sky-400/70 bg-white focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20`;
         }
         return `${baseClasses} border-slate-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20`;
     };
@@ -72,6 +172,31 @@ export default function CrearReservacion() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        if (name === "fecha_entrada") {
+            setDateErrors(prev => ({ ...prev, fecha_entrada: "" }));
+        }
+        if (name === "fecha_salida") {
+            setDateErrors(prev => ({ ...prev, fecha_salida: "" }));
+        }
+    };
+
+    const validateDateField = (field: "fecha_entrada" | "fecha_salida") => {
+        const nextDateErrors: { fecha_entrada?: string; fecha_salida?: string } = {}
+
+        if (!formData.fecha_entrada) {
+            nextDateErrors.fecha_entrada = "Selecciona la fecha de entrada.";
+        }
+
+        if (!formData.fecha_salida) {
+            nextDateErrors.fecha_salida = "Selecciona la fecha de salida.";
+        }
+
+        if (formData.fecha_entrada && formData.fecha_entrada && formData.fecha_salida && new Date(formData.fecha_salida) <= new Date(formData.fecha_entrada)) {
+            nextDateErrors.fecha_salida = "La fecha de salida debe ser posterior a la de entrada.";
+        }
+
+        setDateErrors(nextDateErrors);
+        return !nextDateErrors[field];
     };
 
     // Al cambiar las fechas, resetear la habitación si ya se había pasado del paso 1
@@ -79,7 +204,7 @@ export default function CrearReservacion() {
         if (currentStep === 1 && selectedRoom) {
             setSelectedRoom("");
         }
-    }, [formData.fecha_entrada, formData.fecha_salida]);
+    }, [currentStep, formData.fecha_entrada, formData.fecha_salida, selectedRoom]);
 
     useEffect(() => {
         if (currentStep === 2 && formData.fecha_entrada && formData.fecha_salida) {
@@ -100,10 +225,14 @@ export default function CrearReservacion() {
 
     const handleConfirmReservation = async () => {
         if (!selectedRoomData) return;
+        const isGuestValid = await trigger();
+        if (!isGuestValid) return;
+
         setIsSubmitting(true);
         try {
             await crearReserva({
                 ...formData,
+                ...guestValues,
                 espacio_id: selectedRoomData.espacio_id,
                 // Puedes enviar el precio total si tu API lo requiere:
                 // precio_total: totalPrice 
@@ -117,26 +246,29 @@ export default function CrearReservacion() {
         }
     };
 
-    const handleNextStep = () => {
+    const handleNextStep = async () => {
         if (currentStep === 1) {
-            if (!formData.fecha_entrada || !formData.fecha_salida) {
-                alert("Por favor selecciona ambas fechas antes de continuar.");
-                return;
+            const nextDateErrors: { fecha_entrada?: string; fecha_salida?: string } = {};
+            if (!formData.fecha_entrada) {
+                nextDateErrors.fecha_entrada = "Selecciona la fecha de entrada.";
             }
-            if (nights <= 0) {
-                alert("La fecha de salida debe ser posterior a la de entrada.");
+            if (!formData.fecha_salida) {
+                nextDateErrors.fecha_salida = "Selecciona la fecha de salida.";
+            } else if (nights <= 0) {
+                nextDateErrors.fecha_salida = "La fecha de salida debe ser posterior a la de entrada.";
+            }
+            setDateErrors(nextDateErrors);
+            if (Object.keys(nextDateErrors).length > 0) {
                 return;
             }
         }
         if (currentStep === 2 && !selectedRoom) {
-            alert("Por favor selecciona una habitación disponible.");
+            setRoomError("Selecciona una habitación disponible.");
             return;
         }
         if (currentStep === 3) {
-            const requiredFields = ["nombres", "apellidos", "email", "telefono", "dni"];
-            const hasErrors = requiredFields.some(field => !isValidField(field, formData[field as keyof typeof formData]));
-            if (hasErrors) {
-                alert("Por favor rellena correctamente todos los campos obligatorios del huésped.");
+            const isGuestValid = await trigger();
+            if (!isGuestValid) {
                 return;
             }
         }
@@ -180,13 +312,13 @@ export default function CrearReservacion() {
                                     return (
                                         <div key={idx} className="flex flex-col items-center gap-2 bg-white px-2">
                                             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm z-10 transition-all duration-300 ${isCompleted ? 'bg-sky-500 text-white shadow-md' :
-                                                    isCurrent ? 'bg-slate-900 text-white shadow-md ring-4 ring-slate-900/10' :
-                                                        'bg-slate-100 text-slate-400'
+                                                isCurrent ? 'bg-slate-900 text-white shadow-md ring-4 ring-slate-900/10' :
+                                                    'bg-slate-100 text-slate-400'
                                                 }`}>
                                                 {isCompleted ? <span className="material-symbols-outlined text-[20px]">check</span> : stepNumber}
                                             </div>
                                             <span className={`text-xs font-bold uppercase tracking-wider transition-colors ${isCurrent ? 'text-slate-900' :
-                                                    isCompleted ? 'text-sky-600' : 'text-slate-400'
+                                                isCompleted ? 'text-sky-600' : 'text-slate-400'
                                                 }`}>
                                                 {label}
                                             </span>
@@ -214,7 +346,9 @@ export default function CrearReservacion() {
                                             min={today}
                                             value={formData.fecha_entrada}
                                             onChange={handleInputChange}
+                                            onBlur={() => validateDateField("fecha_entrada")}
                                         />
+                                        {dateErrors.fecha_entrada && <p className="text-xs text-red-500">{dateErrors.fecha_entrada}</p>}
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-bold text-slate-700" htmlFor="fecha_salida">Fecha de salida</label>
@@ -226,8 +360,10 @@ export default function CrearReservacion() {
                                             min={formData.fecha_entrada || today}
                                             value={formData.fecha_salida}
                                             onChange={handleInputChange}
+                                            onBlur={() => validateDateField("fecha_salida")}
                                             disabled={!formData.fecha_entrada}
                                         />
+                                        {dateErrors.fecha_salida && <p className="text-xs text-red-500">{dateErrors.fecha_salida}</p>}
                                     </div>
                                 </div>
 
@@ -270,14 +406,17 @@ export default function CrearReservacion() {
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {rooms.map((room: any) => {
+                                        {rooms.map((room: EspacioHabitacion) => {
                                             const isSelected = selectedRoom === room.numero_espacio;
-                                            const totalRoomPrice = room.precio_unidad * nights;
+                                            const totalRoomPrice = (room.precio_unidad ?? 0) * nights;
 
                                             return (
                                                 <div
                                                     key={room.espacio_id}
-                                                    onClick={() => setSelectedRoom(room.numero_espacio)}
+                                                    onClick={() => {
+                                                        setSelectedRoom(room.numero_espacio ?? "");
+                                                        setRoomError("");
+                                                    }}
                                                     className={`relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col gap-2
                                                         ${isSelected
                                                             ? 'border-sky-500 bg-sky-50/50 shadow-md ring-4 ring-sky-500/10'
@@ -301,12 +440,12 @@ export default function CrearReservacion() {
                                                     <div className="mt-4 pt-4 border-t border-slate-200/60 flex items-end justify-between">
                                                         <div>
                                                             <p className="text-xs text-slate-500 font-medium mb-0.5">Precio x noche</p>
-                                                            <p className="text-sm font-bold text-slate-700">${room.precio_unidad}</p>
+                                                            <p className="text-sm font-bold text-slate-700">L. {room.precio_unidad ?? 0}</p>
                                                         </div>
                                                         <div className="text-right">
                                                             <p className="text-xs text-sky-600 font-bold mb-0.5 uppercase tracking-wide">Total ({nights} noches)</p>
                                                             <p className="text-2xl font-black text-slate-900">
-                                                                ${totalRoomPrice}
+                                                                L. {totalRoomPrice}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -315,6 +454,8 @@ export default function CrearReservacion() {
                                         })}
                                     </div>
                                 )}
+
+                                {roomError && <p className="mt-4 text-sm text-red-500">{roomError}</p>}
 
                                 <div className="mt-8 flex justify-between gap-3 pt-6 border-t border-slate-100">
                                     <button onClick={handlePrevStep} className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors flex items-center gap-2">
@@ -336,41 +477,64 @@ export default function CrearReservacion() {
                                 </h3>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-slate-700" htmlFor="nombres">Nombres</label>
-                                        <div className="relative flex items-center">
-                                            <span className="material-symbols-outlined absolute left-3 text-slate-400">badge</span>
-                                            <input className={`${getInputClasses("nombres", formData.nombres)} pl-10`} id="nombres" name="nombres" placeholder="Ej. Orlando" type="text" value={formData.nombres} onChange={handleInputChange} />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-slate-700" htmlFor="apellidos">Apellidos</label>
-                                        <div className="relative flex items-center">
-                                            <span className="material-symbols-outlined absolute left-3 text-slate-400">badge</span>
-                                            <input className={`${getInputClasses("apellidos", formData.apellidos)} pl-10`} id="apellidos" name="apellidos" placeholder="Ej. Mendoza" type="text" value={formData.apellidos} onChange={handleInputChange} />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-slate-700" htmlFor="email">Correo electrónico</label>
-                                        <div className="relative flex items-center">
-                                            <span className="material-symbols-outlined absolute left-3 text-slate-400">mail</span>
-                                            <input className={`${getInputClasses("email", formData.email)} pl-10`} id="email" name="email" placeholder="correo@ejemplo.com" type="email" value={formData.email} onChange={handleInputChange} />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-bold text-slate-700" htmlFor="telefono">Teléfono</label>
-                                        <div className="relative flex items-center">
-                                            <span className="material-symbols-outlined absolute left-3 text-slate-400">call</span>
-                                            <input className={`${getInputClasses("telefono", formData.telefono)} pl-10`} id="telefono" name="telefono" placeholder="+504 9999-9999" type="tel" value={formData.telefono} onChange={handleInputChange} />
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col gap-2 md:col-span-2">
-                                        <label className="text-sm font-bold text-slate-700" htmlFor="dni">Documento de Identidad (DNI)</label>
-                                        <div className="relative flex items-center">
-                                            <span className="material-symbols-outlined absolute left-3 text-slate-400">id_card</span>
-                                            <input className={`${getInputClasses("dni", formData.dni)} pl-10`} id="dni" name="dni" placeholder="Número de identidad" type="text" value={formData.dni} onChange={handleInputChange} />
-                                        </div>
-                                    </div>
+                                    <ValidatedInput
+                                        label="Nombres"
+                                        name="nombres"
+                                        placeholder="Ej. Orlando"
+                                        icon="badge"
+                                        register={register}
+                                        error={errors.nombres?.message}
+                                        isDirty={Boolean(dirtyFields.nombres)}
+                                        isTouched={Boolean(touchedFields.nombres)}
+                                        autoComplete="given-name"
+                                    />
+                                    <ValidatedInput
+                                        label="Apellidos"
+                                        name="apellidos"
+                                        placeholder="Ej. Mendoza"
+                                        icon="badge"
+                                        register={register}
+                                        error={errors.apellidos?.message}
+                                        isDirty={Boolean(dirtyFields.apellidos)}
+                                        isTouched={Boolean(touchedFields.apellidos)}
+                                        autoComplete="family-name"
+                                    />
+                                    <ValidatedInput
+                                        label="Correo electrónico"
+                                        name="email"
+                                        type="email"
+                                        placeholder="correo@ejemplo.com"
+                                        icon="mail"
+                                        register={register}
+                                        error={errors.email?.message}
+                                        isDirty={Boolean(dirtyFields.email)}
+                                        isTouched={Boolean(touchedFields.email)}
+                                        autoComplete="email"
+                                    />
+                                    <ValidatedInput
+                                        label="Teléfono"
+                                        name="telefono"
+                                        type="tel"
+                                        placeholder="99999999"
+                                        icon="call"
+                                        register={register}
+                                        error={errors.telefono?.message}
+                                        isDirty={Boolean(dirtyFields.telefono)}
+                                        isTouched={Boolean(touchedFields.telefono)}
+                                        autoComplete="tel"
+                                    />
+                                    <ValidatedInput
+                                        label="Documento de Identidad (DNI)"
+                                        name="dni"
+                                        placeholder="Número de identidad"
+                                        icon="id_card"
+                                        register={register}
+                                        error={errors.dni?.message}
+                                        isDirty={Boolean(dirtyFields.dni)}
+                                        isTouched={Boolean(touchedFields.dni)}
+                                        autoComplete="off"
+                                        containerClassName="md:col-span-2"
+                                    />
                                 </div>
 
                                 <div className="mt-8 flex justify-between gap-3 pt-6 border-t border-slate-100">
@@ -388,7 +552,7 @@ export default function CrearReservacion() {
                         {currentStep === 4 && (
                             <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
                                 <div className="text-center mb-8">
-                                    <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <div className="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-4">
                                         <span className="material-symbols-outlined text-[32px]">task_alt</span>
                                     </div>
                                     <h3 className="text-2xl font-black text-slate-900">¡Todo listo para confirmar!</h3>
@@ -398,10 +562,10 @@ export default function CrearReservacion() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-2xl border border-slate-200">
                                     <div>
                                         <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Huésped</p>
-                                        <p className="text-lg font-bold text-slate-900">{formData.nombres} {formData.apellidos}</p>
-                                        <p className="text-sm text-slate-600 flex items-center gap-1.5 mt-2"><span className="material-symbols-outlined text-[16px]">id_card</span> {formData.dni}</p>
-                                        <p className="text-sm text-slate-600 flex items-center gap-1.5 mt-1"><span className="material-symbols-outlined text-[16px]">mail</span> {formData.email}</p>
-                                        <p className="text-sm text-slate-600 flex items-center gap-1.5 mt-1"><span className="material-symbols-outlined text-[16px]">call</span> {formData.telefono}</p>
+                                        <p className="text-lg font-bold text-slate-900">{guestValues.nombres} {guestValues.apellidos}</p>
+                                        <p className="text-sm text-slate-600 flex items-center gap-1.5 mt-2"><span className="material-symbols-outlined text-[16px]">id_card</span> {guestValues.dni}</p>
+                                        <p className="text-sm text-slate-600 flex items-center gap-1.5 mt-1"><span className="material-symbols-outlined text-[16px]">mail</span> {guestValues.email}</p>
+                                        <p className="text-sm text-slate-600 flex items-center gap-1.5 mt-1"><span className="material-symbols-outlined text-[16px]">call</span> {guestValues.telefono}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">Estadía</p>
@@ -415,13 +579,13 @@ export default function CrearReservacion() {
                                 </div>
 
                                 <div className="mt-8 flex justify-between gap-3 pt-6 border-t border-slate-100">
-                                    <button disabled={isSubmitting} onClick={handlePrevStep} className="h-11 px-5 rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-colors flex items-center gap-2 disabled:opacity-50">
+                                    <button disabled={isSubmitting} onClick={handlePrevStep} className="inline-flex h-11 items-center justify-center gap-2 rounded-[2.5rem] border border-slate-300 bg-white px-5 text-[14px] font-semibold leading-4 tracking-wider text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60">
                                         <span className="material-symbols-outlined text-[20px]">arrow_back</span> Modificar datos
                                     </button>
                                     <button
                                         onClick={handleConfirmReservation}
                                         disabled={isSubmitting}
-                                        className="h-11 px-8 rounded-xl bg-emerald-500 text-white font-black hover:bg-emerald-600 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2 disabled:opacity-50 disabled:transform-none"
+                                        className="inline-flex h-11 items-center justify-center gap-2 rounded-[2.5rem] bg-slate-950 px-6 text-[14px] font-semibold leading-4 tracking-wider text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                         {isSubmitting ? (
                                             <>Procesando... <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span></>
@@ -469,7 +633,7 @@ export default function CrearReservacion() {
                                                 <p className="font-bold text-slate-900 text-lg">Hab. {selectedRoomData.numero_espacio}</p>
                                                 <p className="text-xs text-slate-500 mt-1">Capacidad: {selectedRoomData.capacidad_huespedes} pax</p>
                                             </div>
-                                            <p className="font-bold text-slate-700">${selectedRoomData.precio_unidad} <span className="text-xs font-normal text-slate-400">/noche</span></p>
+                                            <p className="font-bold text-slate-700">L. {selectedRoomData.precio_unidad} <span className="text-xs font-normal text-slate-400">/noche</span></p>
                                         </div>
                                     ) : (
                                         <p className="text-sm font-medium text-slate-400 italic">No seleccionada aún</p>
@@ -486,23 +650,23 @@ export default function CrearReservacion() {
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-slate-500">Precio por noche</span>
-                                        <span className="font-bold text-slate-900">${selectedRoomData?.precio_unidad || "0.00"}</span>
+                                        <span className="font-bold text-slate-900">L. {selectedRoomData?.precio_unidad || "0.00"}</span>
                                     </div>
 
                                     <div className="pt-4 mt-2 border-t-2 border-slate-900 flex justify-between items-center">
                                         <span className="text-lg font-bold text-slate-900">Total</span>
                                         <span className="text-3xl font-black text-sky-600">
-                                            ${totalPrice.toFixed(2)}
+                                            L. {totalPrice.toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* Huésped rápido */}
-                                {formData.nombres && (
+                                {(guestValues.nombres || guestValues.apellidos) && (
                                     <div className="mt-6 pt-4 border-t border-slate-100">
                                         <p className="text-xs text-slate-400 font-bold uppercase mb-1">A nombre de:</p>
                                         <p className="text-sm font-bold text-slate-900 truncate">
-                                            {formData.nombres} {formData.apellidos}
+                                            {guestValues.nombres} {guestValues.apellidos}
                                         </p>
                                     </div>
                                 )}

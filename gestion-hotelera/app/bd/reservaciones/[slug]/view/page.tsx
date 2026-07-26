@@ -147,7 +147,7 @@ export default function CheckInReservaPage({ params }: Props) {
                         </Link>
                         <Link
                             href="/bd/reservaciones"
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-xs"
+                            className="inline-flex items-center justify-center gap-2 rounded-[2.5rem] border border-slate-300 bg-white px-5 py-3 text-[14px] font-semibold leading-4 tracking-wider text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 active:scale-95"
                         >
                             <span className="material-symbols-outlined text-lg">arrow_back</span>
                             Volver
@@ -443,7 +443,7 @@ export default function CheckInReservaPage({ params }: Props) {
                                     type="button"
                                     disabled={procesando}
                                     onClick={handleProcesarCheckIn}
-                                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm mt-4"
+                                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-[2.5rem] bg-emerald-600 px-5 py-3 text-[14px] font-semibold leading-4 tracking-wider text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-emerald-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {procesando ? (
                                         <>
@@ -475,7 +475,7 @@ export default function CheckInReservaPage({ params }: Props) {
                             <div className="pt-4 flex justify-center gap-3">
                                 <Link
                                     href="/bd/reservaciones"
-                                    className="px-5 py-2.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-xl transition-all shadow-xs"
+                                    className="inline-flex items-center justify-center gap-2 rounded-[2.5rem] bg-slate-950 px-5 py-3 text-[14px] font-semibold leading-4 tracking-wider text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95"
                                 >
                                     Volver al listado
                                 </Link>

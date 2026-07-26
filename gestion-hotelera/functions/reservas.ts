@@ -68,10 +68,9 @@ async function fetchAPI<T = any>(
         });
     }
 
-    console.log("URL final generada:", url.toString());
-
     try {
         const token = typeof window !== "undefined" ? localStorage.getItem("hotel_token") : null;
+        console.log("Token de autenticación:", token); // Depuración: mostrar el token en la consola
         const response = await fetch(url.toString(), {
             ...fetchOptions,
             headers: {

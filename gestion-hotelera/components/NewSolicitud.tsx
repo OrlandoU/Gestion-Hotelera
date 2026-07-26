@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import MantenimientoModal from "@/components/MantenimientoModal" // Ajusta la ruta a tu modal
+import { Mantenimiento } from "@/functions/mantenimientos"
 
 export default function NewSolicitud() {
     const [openModal, setOpenModal] = useState(false);
 
-    const handleSave = (data: any) => {
+    const handleSave = (data: Mantenimiento) => {
         console.log("Nueva solicitud guardada:", data);
         // Aquí puedes refrescar la tabla o hacer revalidate de tus datos
     };
@@ -14,9 +15,10 @@ export default function NewSolicitud() {
     return (
         <>
             {/* Botón en la esquina superior derecha */}
+
             <button
                 onClick={() => setOpenModal(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm rounded-lg shadow-sm transition-colors cursor-pointer"
+                className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg"
             >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 <span>Solicitar mantenimiento</span>

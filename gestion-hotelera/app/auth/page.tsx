@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { login, signup } from "@/functions/auth";
 import { useRouter } from "next/navigation";
+import { ValidatedInput } from "@/components/ui/validated-field";
 
 export default function AuthPage() {
     const router = useRouter();
@@ -20,11 +21,152 @@ export default function AuthPage() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+    const validateForm = () => {
+        const nextErrors: Record<string, string> = {};
+        const normalizedEmail = email.trim();
+        const normalizedPassword = password.trim();
+
+        if (!normalizedEmail) {
+            nextErrors.email = "Ingresa tu correo electrónico.";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            nextErrors.email = "Ingresa un correo válido.";
+        } else if (normalizedEmail.length > 120) {
+            nextErrors.email = "El correo no puede superar 120 caracteres.";
+        }
+
+        if (!normalizedPassword) {
+            nextErrors.password = "Ingresa tu contraseña.";
+        } else if (normalizedPassword.length < 8 || normalizedPassword.length > 64) {
+            nextErrors.password = "La contraseña debe tener entre 8 y 64 caracteres.";
+        } else if (!/^(?=.*[A-Z])(?=.*\d).+/.test(normalizedPassword)) {
+            nextErrors.password = "La contraseña debe incluir al menos una mayúscula y un número.";
+        }
+
+        if (mode === "signup") {
+            if (!primerNombre.trim() || primerNombre.trim().length < 2 || primerNombre.trim().length > 60) {
+                nextErrors.primerNombre = "Ingresa un primer nombre válido de 2 a 60 caracteres.";
+            }
+            if (!segundoNombre.trim() || segundoNombre.trim().length < 2 || segundoNombre.trim().length > 60) {
+                nextErrors.segundoNombre = "Ingresa un segundo nombre válido de 2 a 60 caracteres.";
+            }
+            if (!primerApellido.trim() || primerApellido.trim().length < 2 || primerApellido.trim().length > 60) {
+                nextErrors.primerApellido = "Ingresa un primer apellido válido de 2 a 60 caracteres.";
+            }
+            if (!segundoApellido.trim() || segundoApellido.trim().length < 2 || segundoApellido.trim().length > 60) {
+                nextErrors.segundoApellido = "Ingresa un segundo apellido válido de 2 a 60 caracteres.";
+            }
+            if (!fechaNacimiento) {
+                nextErrors.fechaNacimiento = "Selecciona tu fecha de nacimiento.";
+            } else {
+                const birthDate = new Date(fechaNacimiento);
+                const today = new Date();
+                const age = today.getFullYear() - birthDate.getFullYear();
+                const hasBirthdayPassed = today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
+                if (Number.isNaN(birthDate.getTime()) || age < 18 || (age === 18 && hasBirthdayPassed)) {
+                    nextErrors.fechaNacimiento = "Debes ser mayor de 18 años.";
+                }
+            }
+        }
+
+        setFormErrors(nextErrors);
+        setTouched({
+            primerNombre: true,
+            segundoNombre: true,
+            primerApellido: true,
+            segundoApellido: true,
+            fechaNacimiento: true,
+            email: true,
+            password: true,
+        });
+        return Object.keys(nextErrors).length === 0;
+    };
+
+    const validateField = (field: string) => {
+        const nextErrors: Record<string, string> = { ...formErrors };
+
+        switch (field) {
+            case "primerNombre":
+                if (!primerNombre.trim() || primerNombre.trim().length < 2 || primerNombre.trim().length > 60) {
+                    nextErrors.primerNombre = "Ingresa un primer nombre válido de 2 a 60 caracteres.";
+                } else {
+                    delete nextErrors.primerNombre;
+                }
+                break;
+            case "segundoNombre":
+                if (!segundoNombre.trim() || segundoNombre.trim().length < 2 || segundoNombre.trim().length > 60) {
+                    nextErrors.segundoNombre = "Ingresa un segundo nombre válido de 2 a 60 caracteres.";
+                } else {
+                    delete nextErrors.segundoNombre;
+                }
+                break;
+            case "primerApellido":
+                if (!primerApellido.trim() || primerApellido.trim().length < 2 || primerApellido.trim().length > 60) {
+                    nextErrors.primerApellido = "Ingresa un primer apellido válido de 2 a 60 caracteres.";
+                } else {
+                    delete nextErrors.primerApellido;
+                }
+                break;
+            case "segundoApellido":
+                if (!segundoApellido.trim() || segundoApellido.trim().length < 2 || segundoApellido.trim().length > 60) {
+                    nextErrors.segundoApellido = "Ingresa un segundo apellido válido de 2 a 60 caracteres.";
+                } else {
+                    delete nextErrors.segundoApellido;
+                }
+                break;
+            case "fechaNacimiento":
+                if (!fechaNacimiento) {
+                    nextErrors.fechaNacimiento = "Selecciona tu fecha de nacimiento.";
+                } else {
+                    const birthDate = new Date(fechaNacimiento);
+                    const today = new Date();
+                    const age = today.getFullYear() - birthDate.getFullYear();
+                    const hasBirthdayPassed = today.getMonth() < birthDate.getMonth() || (today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate());
+                    if (Number.isNaN(birthDate.getTime()) || age < 18 || (age === 18 && hasBirthdayPassed)) {
+                        nextErrors.fechaNacimiento = "Debes ser mayor de 18 años.";
+                    } else {
+                        delete nextErrors.fechaNacimiento;
+                    }
+                }
+                break;
+            case "email":
+                if (!email.trim()) {
+                    nextErrors.email = "Ingresa tu correo electrónico.";
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    nextErrors.email = "Ingresa un correo válido.";
+                } else if (email.trim().length > 120) {
+                    nextErrors.email = "El correo no puede superar 120 caracteres.";
+                } else {
+                    delete nextErrors.email;
+                }
+                break;
+            case "password":
+                if (!password.trim()) {
+                    nextErrors.password = "Ingresa tu contraseña.";
+                } else if (password.trim().length < 8 || password.trim().length > 64) {
+                    nextErrors.password = "La contraseña debe tener entre 8 y 64 caracteres.";
+                } else if (!/^(?=.*[A-Z])(?=.*\d).+/.test(password.trim())) {
+                    nextErrors.password = "La contraseña debe incluir al menos una mayúscula y un número.";
+                } else {
+                    delete nextErrors.password;
+                }
+                break;
+        }
+
+        setFormErrors(nextErrors);
+        setTouched((prev) => ({ ...prev, [field]: true }));
+        return !nextErrors[field];
+    };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError("");
         setSuccess("");
+        if (!validateForm()) {
+            return;
+        }
         setLoading(true);
 
         try {
@@ -127,12 +269,24 @@ export default function AuthPage() {
                                         <label className="block text-xs font-medium text-slate-600 mb-1.5 pl-1">
                                             Primer nombre
                                         </label>
-                                        <input
+                                        <ValidatedInput
+                                            id="primerNombre"
                                             type="text"
                                             value={primerNombre}
-                                            onChange={(e) => setPrimerNombre(e.target.value)}
+                                            onBlur={() => {
+                                                setTouched((prev) => ({ ...prev, primerNombre: true }));
+                                                validateField("primerNombre");
+                                            }}
+                                            onFocus={() => setTouched((prev) => ({ ...prev, primerNombre: true }))}
+                                            onChange={(value) => {
+                                                setPrimerNombre(value);
+                                                setFormErrors((prev) => ({ ...prev, primerNombre: "" }));
+                                            }}
+                                            error={formErrors.primerNombre}
+                                            touched={touched.primerNombre || Boolean(formErrors.primerNombre)}
                                             placeholder="Ej. Orlando"
-                                            className="w-full rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all"
+                                            className="rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs"
+                                            containerClassName=""
                                             required
                                         />
                                     </div>
@@ -140,12 +294,24 @@ export default function AuthPage() {
                                         <label className="block text-xs font-medium text-slate-600 mb-1.5 pl-1">
                                             Segundo nombre
                                         </label>
-                                        <input
+                                        <ValidatedInput
+                                            id="segundoNombre"
                                             type="text"
                                             value={segundoNombre}
-                                            onChange={(e) => setSegundoNombre(e.target.value)}
+                                            onBlur={() => {
+                                                setTouched((prev) => ({ ...prev, segundoNombre: true }));
+                                                validateField("segundoNombre");
+                                            }}
+                                            onFocus={() => setTouched((prev) => ({ ...prev, segundoNombre: true }))}
+                                            onChange={(value) => {
+                                                setSegundoNombre(value);
+                                                setFormErrors((prev) => ({ ...prev, segundoNombre: "" }));
+                                            }}
+                                            error={formErrors.segundoNombre}
+                                            touched={touched.segundoNombre || Boolean(formErrors.segundoNombre)}
                                             placeholder="Ej. José"
-                                            className="w-full rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all"
+                                            className="rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs"
+                                            containerClassName=""
                                             required
                                         />
                                     </div>
@@ -157,12 +323,24 @@ export default function AuthPage() {
                                         <label className="block text-xs font-medium text-slate-600 mb-1.5 pl-1">
                                             Primer apellido
                                         </label>
-                                        <input
+                                        <ValidatedInput
+                                            id="primerApellido"
                                             type="text"
                                             value={primerApellido}
-                                            onChange={(e) => setPrimerApellido(e.target.value)}
+                                            onBlur={() => {
+                                                setTouched((prev) => ({ ...prev, primerApellido: true }));
+                                                validateField("primerApellido");
+                                            }}
+                                            onFocus={() => setTouched((prev) => ({ ...prev, primerApellido: true }))}
+                                            onChange={(value) => {
+                                                setPrimerApellido(value);
+                                                setFormErrors((prev) => ({ ...prev, primerApellido: "" }));
+                                            }}
+                                            error={formErrors.primerApellido}
+                                            touched={touched.primerApellido || Boolean(formErrors.primerApellido)}
                                             placeholder="Ej. Umanzor"
-                                            className="w-full rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all"
+                                            className="rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs"
+                                            containerClassName=""
                                             required
                                         />
                                     </div>
@@ -170,12 +348,24 @@ export default function AuthPage() {
                                         <label className="block text-xs font-medium text-slate-600 mb-1.5 pl-1">
                                             Segundo apellido
                                         </label>
-                                        <input
+                                        <ValidatedInput
+                                            id="segundoApellido"
                                             type="text"
                                             value={segundoApellido}
-                                            onChange={(e) => setSegundoApellido(e.target.value)}
+                                            onBlur={() => {
+                                                setTouched((prev) => ({ ...prev, segundoApellido: true }));
+                                                validateField("segundoApellido");
+                                            }}
+                                            onFocus={() => setTouched((prev) => ({ ...prev, segundoApellido: true }))}
+                                            onChange={(value) => {
+                                                setSegundoApellido(value);
+                                                setFormErrors((prev) => ({ ...prev, segundoApellido: "" }));
+                                            }}
+                                            error={formErrors.segundoApellido}
+                                            touched={touched.segundoApellido || Boolean(formErrors.segundoApellido)}
                                             placeholder="Ej. Zelaya"
-                                            className="w-full rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all"
+                                            className="rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs"
+                                            containerClassName=""
                                             required
                                         />
                                     </div>
@@ -186,11 +376,23 @@ export default function AuthPage() {
                                     <label className="block text-xs font-medium text-slate-600 mb-1.5 pl-1">
                                         Fecha de nacimiento
                                     </label>
-                                    <input
+                                    <ValidatedInput
+                                        id="fechaNacimiento"
                                         type="date"
                                         value={fechaNacimiento}
-                                        onChange={(e) => setFechaNacimiento(e.target.value)}
-                                        className="w-full rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all [color-scheme:light]"
+                                        onBlur={() => {
+                                            setTouched((prev) => ({ ...prev, fechaNacimiento: true }));
+                                            validateField("fechaNacimiento");
+                                        }}
+                                        onFocus={() => setTouched((prev) => ({ ...prev, fechaNacimiento: true }))}
+                                        onChange={(value) => {
+                                            setFechaNacimiento(value);
+                                            setFormErrors((prev) => ({ ...prev, fechaNacimiento: "" }));
+                                        }}
+                                        error={formErrors.fechaNacimiento}
+                                        touched={touched.fechaNacimiento || Boolean(formErrors.fechaNacimiento)}
+                                        className="rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] px-4 py-3 text-xs scheme-light"
+                                        containerClassName=""
                                         required
                                     />
                                 </div>
@@ -203,12 +405,24 @@ export default function AuthPage() {
                                 Correo electrónico
                             </label>
                             <div className="relative">
-                                <input
+                                <ValidatedInput
+                                    id="email"
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    onBlur={() => {
+                                        setTouched((prev) => ({ ...prev, email: true }));
+                                        validateField("email");
+                                    }}
+                                    onFocus={() => setTouched((prev) => ({ ...prev, email: true }))}
+                                    onChange={(value) => {
+                                        setEmail(value);
+                                        setFormErrors((prev) => ({ ...prev, email: "" }));
+                                    }}
+                                    error={formErrors.email}
+                                    touched={touched.email || Boolean(formErrors.email)}
                                     placeholder="usuario@hotel.com"
-                                    className="w-full rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] pl-10 pr-4 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all"
+                                    className="rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] pl-10 pr-4 py-3 text-xs"
+                                    containerClassName=""
                                     required
                                 />
                                 <svg
@@ -229,12 +443,24 @@ export default function AuthPage() {
                                 Contraseña
                             </label>
                             <div className="relative">
-                                <input
+                                <ValidatedInput
+                                    id="password"
                                     type={showPassword ? "text" : "password"}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    onBlur={() => {
+                                        setTouched((prev) => ({ ...prev, password: true }));
+                                        validateField("password");
+                                    }}
+                                    onFocus={() => setTouched((prev) => ({ ...prev, password: true }))}
+                                    onChange={(value) => {
+                                        setPassword(value);
+                                        setFormErrors((prev) => ({ ...prev, password: "" }));
+                                    }}
+                                    error={formErrors.password}
+                                    touched={touched.password || Boolean(formErrors.password)}
                                     placeholder="••••••••••••"
-                                    className="w-full rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] pl-10 pr-10 py-3 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/30 transition-all"
+                                    className="rounded-2xl bg-[#eef2f6] shadow-[inset_3px_3px_6px_#d1d9e6,inset_-3px_-3px_6px_#ffffff] pl-10 pr-10 py-3 text-xs"
+                                    containerClassName=""
                                     required
                                 />
                                 <svg

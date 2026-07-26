@@ -89,13 +89,6 @@ export default function ReservationPage() {
 
     const { data: rawReserva, loading: loadingReserva, error: errorReserva } = useReserva(Number(id));
 
-    const reserva = useMemo(() => {
-        if (rawReserva) {
-            setData(normalizeReserva(rawReserva));
-            setLoading(false);
-        }
-    }, [rawReserva]);
-
     console.log(data);
 
     if (loading) {
@@ -119,7 +112,6 @@ export default function ReservationPage() {
     const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
 
     const roomRate = payment?.breakdown?.roomRate ?? 0;
-    const taxesAndFees = payment?.breakdown?.taxesAndFees ?? 0;
     const extras = payment?.breakdown?.extras ?? 0;
     const totalCargos = payment?.total ?? (roomRate + extras);
 
@@ -315,14 +307,14 @@ export default function ReservationPage() {
                                 <span className="flex items-center gap-1">
                                     <span className="material-symbols-outlined text-[16px]">check_circle</span> Total Abonado
                                 </span>
-                                <span>-${amountPaid.toFixed(2)}</span>
+                                <span>-L {amountPaid.toFixed(2)}</span>
                             </div>
 
                             {/* Estado del Balance */}
                             <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200">
                                 <span className="font-bold text-slate-900">Saldo Pendiente</span>
                                 <span className={`text-base font-bold px-2 py-0.5 rounded ${saldoPendiente > 0 ? "text-amber-700 bg-amber-50" : "text-emerald-700 bg-emerald-50"}`}>
-                                    ${saldoPendiente.toFixed(2)}
+                                    L {saldoPendiente.toFixed(2)}
                                 </span>
                             </div>
                         </div>

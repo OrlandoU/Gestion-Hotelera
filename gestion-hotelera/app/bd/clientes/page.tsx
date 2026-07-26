@@ -4,25 +4,48 @@ import { useMemo, useState, useEffect } from "react";
 import { ViewTransition } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/pageheader";
+import Modal from "@/components/Modal";
 import { CLIENTS_LIST } from "@/data/clients";
-import { getHuespedes, Huesped } from "@/functions/huesped"
+import { createHuesped, getHuespedes, Huesped } from "@/functions/huesped"
+import { ValidatedInput } from "@/components/ui/validated-field";
 
-const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
-  Active: { label: "Activo", badge: "bg-blue-100 text-blue-800 border-blue-300", dot: "bg-blue-500" },
-  InHouse: { label: "En estancia", badge: "bg-emerald-100 text-emerald-800 border-emerald-300", dot: "bg-emerald-500" },
-  Inactive: { label: "Inactivo", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" },
-};
 
 export default function ClientesPage() {
   const [huespedes, setHuespedes] = useState<Huesped[]>()
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [formData, setFormData] = useState({
+    nombres: "",
+    apellidos: "",
+    telefono: "",
+    email: "",
+    dni: "",
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null)
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  const fetchHuespedes = async () => {
+    const data = await getHuespedes();
+    setHuespedes(data);
+  };
 
   useEffect(() => {
-    const fetchHuespedes = async () => {
-      const data = await getHuespedes()
-      setHuespedes(data)
-    }
-    fetchHuespedes()
-  }, [])
+    let isActive = true;
+
+    const loadHuespedes = async () => {
+      const data = await getHuespedes();
+      if (isActive) {
+        setHuespedes(data);
+      }
+    };
+
+    void loadHuespedes();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const [query, setQuery] = useState("");
 
@@ -43,19 +66,261 @@ export default function ClientesPage() {
     ? (huespedes?.reduce((sum, c) => sum + c.estancias!, 0) / totalClients).toFixed(1)
     : "0";
 
+  const validateGuestForm = () => {
+    const nextErrors: Record<string, string> = {};
+
+    if (!formData.nombres.trim() || formData.nombres.trim().length < 2 || formData.nombres.trim().length > 60) {
+      nextErrors.nombres = "Ingresa un nombre válido de 2 a 60 caracteres.";
+    }
+    if (!formData.apellidos.trim() || formData.apellidos.trim().length < 2 || formData.apellidos.trim().length > 80) {
+      nextErrors.apellidos = "Ingresa un apellido válido de 2 a 80 caracteres.";
+    }
+    const telefonoDigits = formData.telefono.replace(/\D/g, "");
+    if (!telefonoDigits) {
+      nextErrors.telefono = "Ingresa un teléfono.";
+    } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
+      nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+    }
+    if (!formData.email.trim()) {
+      nextErrors.email = "Ingresa un correo electrónico.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      nextErrors.email = "El correo electrónico no es válido.";
+    } else if (formData.email.trim().length > 120) {
+      nextErrors.email = "El correo electrónico no puede superar 120 caracteres.";
+    }
+    if (!formData.dni.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(formData.dni.trim())) {
+      nextErrors.dni = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
+    }
+
+    setFormErrors(nextErrors);
+    setTouched({ nombres: true, apellidos: true, telefono: true, email: true, dni: true });
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const validateGuestField = (field: string) => {
+    const nextErrors: Record<string, string> = { ...formErrors };
+
+    switch (field) {
+      case "nombres":
+        if (!formData.nombres.trim() || formData.nombres.trim().length < 2 || formData.nombres.trim().length > 60) {
+          nextErrors.nombres = "Ingresa un nombre válido de 2 a 60 caracteres.";
+        } else {
+          delete nextErrors.nombres;
+        }
+        break;
+      case "apellidos":
+        if (!formData.apellidos.trim() || formData.apellidos.trim().length < 2 || formData.apellidos.trim().length > 80) {
+          nextErrors.apellidos = "Ingresa un apellido válido de 2 a 80 caracteres.";
+        } else {
+          delete nextErrors.apellidos;
+        }
+        break;
+      case "telefono":
+        {
+          const telefonoDigits = formData.telefono.replace(/\D/g, "");
+          if (!telefonoDigits) {
+            nextErrors.telefono = "Ingresa un teléfono.";
+          } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
+            nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+          } else {
+            delete nextErrors.telefono;
+          }
+        }
+        break;
+      case "email":
+        if (!formData.email.trim()) {
+          nextErrors.email = "Ingresa un correo electrónico.";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+          nextErrors.email = "El correo electrónico no es válido.";
+        } else if (formData.email.trim().length > 120) {
+          nextErrors.email = "El correo electrónico no puede superar 120 caracteres.";
+        } else {
+          delete nextErrors.email;
+        }
+        break;
+      case "dni":
+        if (!formData.dni.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(formData.dni.trim())) {
+          nextErrors.dni = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
+        } else {
+          delete nextErrors.dni;
+        }
+        break;
+    }
+
+    setFormErrors(nextErrors);
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    return !nextErrors[field];
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateGuestForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      await createHuesped(formData);
+      setSubmitMessage("Huésped creado correctamente.");
+      setFormData({ nombres: "", apellidos: "", telefono: "", email: "", dni: "" });
+      await fetchHuespedes();
+      setIsFormOpen(false);
+    } catch (error) {
+      console.error(error);
+      setSubmitMessage("No se pudo crear el huésped. Intenta de nuevo.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <ViewTransition enter={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
       <PageHeader
         name="Clientes"
         subtitle="Perfiles de huéspedes, historial y preferencias"
         buttons={
-          <button className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
-            <span className="material-symbols-outlined text-[18px]">person_add</span> Nuevo Cliente
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg"
+          >
+            <span className="material-symbols-outlined text-[18px]">add</span> Nuevo Cliente
           </button>
         }
       />
 
       <div className="flex-1 flex flex-col gap-6 max-w-360 mx-auto w-full">
+        <Modal open={isFormOpen} onClose={() => setIsFormOpen(false)} title="Crear huésped">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+              <p className="text-sm font-medium text-slate-700">Completa los datos para registrar un nuevo cliente en el sistema.</p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <ValidatedInput
+                  label="Nombres"
+                  value={formData.nombres}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, nombres: value }));
+                    setFormErrors((prev) => ({ ...prev, nombres: "" }));
+                  }}
+                  onBlur={() => {
+                    setTouched((prev) => ({ ...prev, nombres: true }));
+                    validateGuestField("nombres");
+                  }}
+                  onFocus={() => setTouched((prev) => ({ ...prev, nombres: true }))}
+                  error={formErrors.nombres}
+                  touched={touched.nombres || Boolean(formErrors.nombres)}
+                  placeholder="Ej. Orlando"
+                  required
+                />
+              </div>
+              <div>
+                <ValidatedInput
+                  label="Apellidos"
+                  value={formData.apellidos}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, apellidos: value }));
+                    setFormErrors((prev) => ({ ...prev, apellidos: "" }));
+                  }}
+                  onBlur={() => {
+                    setTouched((prev) => ({ ...prev, apellidos: true }));
+                    validateGuestField("apellidos");
+                  }}
+                  onFocus={() => setTouched((prev) => ({ ...prev, apellidos: true }))}
+                  error={formErrors.apellidos}
+                  touched={touched.apellidos || Boolean(formErrors.apellidos)}
+                  placeholder="Ej. Mendoza"
+                  required
+                />
+              </div>
+              <div>
+                <ValidatedInput
+                  label="Teléfono"
+                  value={formData.telefono}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, telefono: value }));
+                    setFormErrors((prev) => ({ ...prev, telefono: "" }));
+                  }}
+                  onBlur={() => {
+                    setTouched((prev) => ({ ...prev, telefono: true }));
+                    validateGuestField("telefono");
+                  }}
+                  onFocus={() => setTouched((prev) => ({ ...prev, telefono: true }))}
+                  error={formErrors.telefono}
+                  touched={touched.telefono || Boolean(formErrors.telefono)}
+                  placeholder="+504 9999-9999"
+                  required
+                />
+              </div>
+              <div>
+                <ValidatedInput
+                  label="Correo"
+                  type="email"
+                  value={formData.email}
+                  onChange={(value) => {
+                    setFormData((prev) => ({ ...prev, email: value }));
+                    setFormErrors((prev) => ({ ...prev, email: "" }));
+                  }}
+                  onBlur={() => {
+                    setTouched((prev) => ({ ...prev, email: true }));
+                    validateGuestField("email");
+                  }}
+                  onFocus={() => setTouched((prev) => ({ ...prev, email: true }))}
+                  error={formErrors.email}
+                  touched={touched.email || Boolean(formErrors.email)}
+                  placeholder="correo@ejemplo.com"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <ValidatedInput
+                label="DNI"
+                value={formData.dni}
+                onChange={(value) => {
+                  setFormData((prev) => ({ ...prev, dni: value }));
+                  setFormErrors((prev) => ({ ...prev, dni: "" }));
+                }}
+                onBlur={() => {
+                  setTouched((prev) => ({ ...prev, dni: true }));
+                  validateGuestField("dni");
+                }}
+                onFocus={() => setTouched((prev) => ({ ...prev, dni: true }))}
+                error={formErrors.dni}
+                touched={touched.dni || Boolean(formErrors.dni)}
+                placeholder="Número de identidad"
+                required
+              />
+            </div>
+
+            {submitMessage && (
+              <div className={`rounded-lg border px-3 py-2 text-sm ${submitMessage.includes("correctamente") ? "border-sky-200 bg-sky-50 text-sky-700" : "border-red-200 bg-red-50 text-red-700"}`}>
+                {submitMessage}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
+              <button
+                type="button"
+                onClick={() => setIsFormOpen(false)}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSubmitting ? "Guardando..." : "Guardar huésped"}
+              </button>
+            </div>
+          </form>
+        </Modal>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white rounded-xl border border-slate-300 card-shadow p-6 flex flex-col justify-between h-35">
             <div className="flex justify-between items-start">
@@ -141,8 +406,6 @@ export default function ClientesPage() {
               </thead>
               <tbody className="text-slate-800 divide-y divide-slate-100">
                 {huespedes?.map((client) => {
-                  const cfg = STATUS_CONFIG[client.status] || STATUS_CONFIG.Inactive;
-
                   return (
                     <tr key={client.huesped_id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-6">

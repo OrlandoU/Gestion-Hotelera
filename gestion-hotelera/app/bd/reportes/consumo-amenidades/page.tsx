@@ -11,13 +11,9 @@ import {
 
 export default function Page() {
   // Inicializamos en abril de 2026 de acuerdo al set de datos de muestra
-<<<<<<< HEAD
-  const [mesFiltro, setMesFiltro] = useState<string>("2026-04-25");
-=======
   const [mesFiltro, setMesFiltro] = useState<string>("2026-07-06");
   const [paginaActual, setPaginaActual] = useState(1);
   const elementosPorPagina = 8;
->>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
 
   const { data: consumoApi, loading, error, refetch } = useConsumoAmenidadesMensual();
 
@@ -91,12 +87,8 @@ export default function Page() {
 
         agrupadoPorFecha[item.fecha] = {
           fechaOriginal: item.fecha,
-<<<<<<< HEAD
-          name: etiquetaFecha
-=======
           name: etiquetaFecha,
           rangoCompleto: rangoCompleto
->>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
         };
       }
       // Asignar la cantidad gastada al producto correspondiente en esa fecha
@@ -105,17 +97,11 @@ export default function Page() {
     });
 
     // Ordenar cronológicamente por la fecha original
-<<<<<<< HEAD
-    return Object.values(agrupadoPorFecha).sort((a, b) =>
-      a.fechaOriginal.localeCompare(b.fechaOriginal)
-    );
-=======
     return Object.values(agrupadoPorFecha).sort((a, b) => {
       const fechaA = String(a.fechaOriginal);
       const fechaB = String(b.fechaOriginal);
       return fechaA.localeCompare(fechaB);
     });
->>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
   }, [consumoData]);
 
   // 2. Transformación para el Gráfico de Barras Horizontales: Consumo Total por Producto (Sin Fechas)
@@ -159,11 +145,7 @@ export default function Page() {
     return (
       <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
         <PageHeader
-<<<<<<< HEAD
-          name="Resumen de Consumo Mensual de Insumos y Amenidades"
-=======
           name="Resumen de consumo mensual de insumos y amenidades"
->>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
           subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
         />
         <div className="bg-red-50 border border-red-300 rounded-xl p-6 flex items-start gap-4">
@@ -172,11 +154,7 @@ export default function Page() {
             <h3 className="font-bold text-red-800 mb-2">Error al cargar el histórico de consumos</h3>
             <p className="text-red-700 mb-4">{error.message}</p>
             <button
-<<<<<<< HEAD
-              onClick={refetch}
-=======
               onClick={() => refetch(mesFiltro + "-01")}
->>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center gap-2"
             >
               <span className="material-symbols-outlined">refresh</span>
@@ -194,7 +172,6 @@ export default function Page() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <PageHeader
-<<<<<<< HEAD
             name="Resumen de Consumo Mensual de Insumos y Amenidades"
             subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
           />
@@ -219,12 +196,6 @@ export default function Page() {
             <span className="material-symbols-outlined text-[20px] block">refresh</span>
           </button>
         </div>
-=======
-            name="Resumen de consumo mensual de insumos y amenidades"
-            subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
-          />
-        </div>
->>>>>>> 7e61a86e459029c78541047457bf8f5f690f3da7
       </div>
 
       <section className="rounded-2xl border border-slate-200 bg-white  p-5 shadow-sm">

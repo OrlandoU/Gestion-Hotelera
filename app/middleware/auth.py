@@ -21,6 +21,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if not any(path.startswith(prefix) for prefix in self.protected_prefixes):
             return await call_next(request)
 
+        # Allow CORS preflight requests through without auth
+        if request.method and request.method.upper() == "OPTIONS":
+            return await call_next(request)
+
+        # Debug: show method and whether Authorization header is present
+        print(f"Auth middleware: method={request.method}, path={path}, has_authorization={('authorization' in request.headers)}")
+
         authorization = request.headers.get("authorization") or request.headers.get("Authorization")
         if not authorization or not authorization.lower().startswith("bearer "):
             return JSONResponse(
@@ -29,6 +36,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             )
 
         token = authorization.split(" ", 1)[1].strip()
+        print(f"Token recibido en middleware: {token}")
         try:
             payload = decode_access_token(token)
         except ValueError:

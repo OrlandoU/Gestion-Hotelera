@@ -32,5 +32,15 @@ async def obtener_huesped(
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def crear_huesped(payload: Huesped, repo: HuespedRepository = Depends(get_huesped_repo)):
-    repo.crear(payload)
-    return {"message": "Huésped creado exitosamente"}
+    resultado = repo.crear(payload)
+
+    if not resultado:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo crear el huésped."
+        )
+
+    return {
+        "message": "Huésped creado exitosamente",
+        "huesped": payload.model_dump() if hasattr(payload, "model_dump") else payload.dict(),
+    }

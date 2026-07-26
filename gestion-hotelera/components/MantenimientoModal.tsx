@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { getHabitaciones, Habitacion } from "@/functions/espacios";
-import { useUsuarios, Usuario } from "@/functions/usuarios"
+import { useUsuarios } from "@/functions/usuarios"
 import { crearMantenimiento, Mantenimiento } from "@/functions/mantenimientos"
 import Modal from "./Modal"; // Importa la base de arriba
 
@@ -12,15 +12,23 @@ interface FormModalProps {
 }
 
 export default function MantenimientoModal({ open, onClose, onSave }: FormModalProps) {
-    const [habitaciones, SetHabitaciones] = useState<Habitacion[]>([]);
-
-    async function getListaHabitaciones() {
-        const habitaciones = await getHabitaciones();
-        SetHabitaciones(habitaciones);
-    }
+    const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
 
     useEffect(() => {
-        getListaHabitaciones();
+        let isMounted = true;
+
+        const cargarHabitaciones = async () => {
+            const datos = await getHabitaciones();
+            if (isMounted) {
+                setHabitaciones(datos);
+            }
+        };
+
+        void cargarHabitaciones();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const [mantenimiento, setMantenimiento] = useState<Mantenimiento>({
@@ -37,16 +45,11 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
         espacio_id: 34,
     });
 
-    const { data, loading, error } = useUsuarios();
-    const [empleados, setEmpleados] = useState<Usuario[]>([]);
-
-    useEffect(() => {
-        if (data) {
-            setEmpleados(data);
-        }
-    }, [data]);
+    const { data } = useUsuarios();
+    const empleados = data ?? [];
 
     const [esInterno, setEsInterno] = useState<boolean>(true);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Función para alternar entre Interno y Externo
     const handleTipoResponsableChange = (isInternal: boolean) => {
@@ -64,33 +67,128 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
+        const normalizedValue = name === "espacio_id" || name === "responsable_id"
+            ? (value ? Number(value) : null)
+            : value;
+
         setMantenimiento((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: normalizedValue,
         }));
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+    };
+
+    const validateField = (field: string) => {
+        const nextErrors: Record<string, string> = { ...errors };
+
+        switch (field) {
+            case "tipo":
+                if (!mantenimiento.tipo) {
+                    nextErrors.tipo = "Selecciona un tipo de mantenimiento.";
+                } else {
+                    delete nextErrors.tipo;
+                }
+                break;
+            case "prioridad":
+                if (!mantenimiento.prioridad) {
+                    nextErrors.prioridad = "Selecciona una prioridad.";
+                } else {
+                    delete nextErrors.prioridad;
+                }
+                break;
+            case "estado":
+                if (!mantenimiento.estado) {
+                    nextErrors.estado = "Selecciona un estado inicial.";
+                } else {
+                    delete nextErrors.estado;
+                }
+                break;
+            case "espacio_id":
+                if (!mantenimiento.espacio_id) {
+                    nextErrors.espacio_id = "Selecciona un espacio.";
+                } else {
+                    delete nextErrors.espacio_id;
+                }
+                break;
+            case "descripcion":
+                if (!mantenimiento.descripcion || !mantenimiento.descripcion.trim()) {
+                    nextErrors.descripcion = "Describe el trabajo a realizar.";
+                } else {
+                    delete nextErrors.descripcion;
+                }
+                break;
+            case "responsable_id":
+                if (esInterno) {
+                    if (!mantenimiento.responsable_id) {
+                        nextErrors.responsable_id = "Selecciona un empleado responsable.";
+                    } else {
+                        delete nextErrors.responsable_id;
+                    }
+                }
+                break;
+            case "nombre_responsable":
+                if (!esInterno) {
+                    if (!mantenimiento.nombre_responsable?.trim()) {
+                        nextErrors.nombre_responsable = "Ingresa el nombre del responsable externo.";
+                    } else {
+                        delete nextErrors.nombre_responsable;
+                    }
+                }
+                break;
+            case "telefono_responsable":
+                if (!esInterno) {
+                    if (!mantenimiento.telefono_responsable?.trim()) {
+                        nextErrors.telefono_responsable = "Ingresa un teléfono válido.";
+                    } else {
+                        delete nextErrors.telefono_responsable;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+
+        setErrors(nextErrors);
+        return !nextErrors[field];
+    };
+
+    const validateForm = () => {
+        const nextErrors: Record<string, string> = {};
+
+        if (!mantenimiento.tipo) nextErrors.tipo = "Selecciona un tipo de mantenimiento.";
+        if (!mantenimiento.prioridad) nextErrors.prioridad = "Selecciona una prioridad.";
+        if (!mantenimiento.estado) nextErrors.estado = "Selecciona un estado inicial.";
+        if (!mantenimiento.espacio_id) nextErrors.espacio_id = "Selecciona un espacio.";
+        if (!mantenimiento.descripcion || !mantenimiento.descripcion.trim()) nextErrors.descripcion = "Describe el trabajo a realizar.";
+
+        if (esInterno) {
+            if (!mantenimiento.responsable_id) nextErrors.responsable_id = "Selecciona un empleado responsable.";
+        } else {
+            if (!mantenimiento.nombre_responsable?.trim()) nextErrors.nombre_responsable = "Ingresa el nombre del responsable externo.";
+            if (!mantenimiento.telefono_responsable?.trim()) nextErrors.telefono_responsable = "Ingresa un teléfono válido.";
+        }
+
+        setErrors(nextErrors);
+        return Object.keys(nextErrors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validateForm()) return;
 
-        // Limpiamos y transformamos los datos al formato que espera FastAPI
         const datosAEnviar = {
             ...mantenimiento,
-            // Convertir a número si existe, de lo contrario null
-            responsable_id: mantenimiento.responsable_id ? Number(mantenimiento.responsable_id) : null
+            responsable_id: mantenimiento.responsable_id ? Number(mantenimiento.responsable_id) : null,
         };
 
-        console.log("Datos limpios enviados:", datosAEnviar);
-        const data = await crearMantenimiento(datosAEnviar);
-
+        await crearMantenimiento(datosAEnviar);
+        onSave?.(datosAEnviar as Mantenimiento);
         onClose();
     };
 
     return (
         <Modal open={open} onClose={onClose} title="Nuevo Mantenimiento">
             <form onSubmit={handleSubmit} className="space-y-4">
-
-                {/* Selector de Tipo de Responsable */}
                 <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200">
                     <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
                         ¿El responsable es personal interno?
@@ -120,20 +218,18 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-                    {/* CAMPOS CONDICIONALES DE RESPONSABLE */}
                     {esInterno ? (
-                        /* Responsable Interno (SELECT) */
                         <div className="sm:col-span-2">
                             <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                                 Empleado Responsable
                             </label>
                             <select
                                 name="responsable_id"
-                                value={mantenimiento.responsable_id ?? ''}
+                                value={mantenimiento.responsable_id ?? ""}
                                 onChange={handleChange}
+                                onBlur={() => validateField("responsable_id")}
                                 required={esInterno}
-                                className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer text-slate-700"
+                                className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.responsable_id ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                             >
                                 <option value="" disabled>Selecciona un empleado</option>
                                 {empleados?.map((emp) => (
@@ -142,9 +238,9 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                     </option>
                                 ))}
                             </select>
+                            {errors.responsable_id ? <p className="mt-1 text-xs text-red-500">{errors.responsable_id}</p> : null}
                         </div>
                     ) : (
-                        /* Responsable Externo (NOMBRE Y TELÉFONO) */
                         <>
                             <div>
                                 <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
@@ -153,12 +249,14 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                 <input
                                     type="text"
                                     name="nombre_responsable"
-                                    value={mantenimiento.nombre_responsable ?? ''}
+                                    value={mantenimiento.nombre_responsable ?? ""}
                                     onChange={handleChange}
+                                    onBlur={() => validateField("nombre_responsable")}
                                     placeholder="Ej. Juan Pérez"
                                     required={!esInterno}
-                                    className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
+                                    className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${errors.nombre_responsable ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                                 />
+                                {errors.nombre_responsable ? <p className="mt-1 text-xs text-red-500">{errors.nombre_responsable}</p> : null}
                             </div>
 
                             <div>
@@ -168,27 +266,29 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                 <input
                                     type="tel"
                                     name="telefono_responsable"
-                                    value={mantenimiento.telefono_responsable ?? ''}
+                                    value={mantenimiento.telefono_responsable ?? ""}
                                     onChange={handleChange}
+                                    onBlur={() => validateField("telefono_responsable")}
                                     placeholder="Ej. +504 9999-9999"
                                     required={!esInterno}
-                                    className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-slate-400"
+                                    className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${errors.telefono_responsable ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                                 />
+                                {errors.telefono_responsable ? <p className="mt-1 text-xs text-red-500">{errors.telefono_responsable}</p> : null}
                             </div>
                         </>
                     )}
 
-                    {/* Número de Espacio (SELECT) */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                             Número de Espacio
                         </label>
                         <select
-                            name="numero_espacio"
-                            value={mantenimiento.numero_espacio}
+                            name="espacio_id"
+                            value={mantenimiento.espacio_id ?? ""}
                             onChange={handleChange}
+                            onBlur={() => validateField("espacio_id")}
                             required
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer text-slate-700"
+                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.espacio_id ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                         >
                             <option value="" disabled>Selecciona un espacio</option>
                             {habitaciones.map((habitacion) => (
@@ -197,19 +297,20 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                 </option>
                             ))}
                         </select>
+                        {errors.espacio_id ? <p className="mt-1 text-xs text-red-500">{errors.espacio_id}</p> : null}
                     </div>
 
-                    {/* Tipo de Mantenimiento */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                             Tipo
                         </label>
                         <select
                             name="tipo"
-                            value={mantenimiento.tipo}
+                            value={mantenimiento.tipo ?? ""}
                             onChange={handleChange}
+                            onBlur={() => validateField("tipo")}
                             required
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer text-slate-700"
+                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.tipo ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                         >
                             <option value="" disabled>Selecciona tipo</option>
                             <option value="Correctivo">Correctivo</option>
@@ -217,19 +318,20 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                             <option value="Predictivo">Predictivo</option>
                             <option value="Aseo">Aseo</option>
                         </select>
+                        {errors.tipo ? <p className="mt-1 text-xs text-red-500">{errors.tipo}</p> : null}
                     </div>
 
-                    {/* Prioridad */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                             Prioridad
                         </label>
                         <select
                             name="prioridad"
-                            value={mantenimiento.prioridad}
+                            value={mantenimiento.prioridad ?? ""}
                             onChange={handleChange}
+                            onBlur={() => validateField("prioridad")}
                             required
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer text-slate-700"
+                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.prioridad ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                         >
                             <option value="" disabled>Selecciona prioridad</option>
                             <option value="Baja">Baja</option>
@@ -237,9 +339,9 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                             <option value="Alta">Alta</option>
                             <option value="Urgente">Urgente</option>
                         </select>
+                        {errors.prioridad ? <p className="mt-1 text-xs text-red-500">{errors.prioridad}</p> : null}
                     </div>
 
-                    {/* Fecha Inicio */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                             Fecha de Inicio
@@ -247,13 +349,12 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <input
                             type="date"
                             name="fecha_inicio"
-                            value={mantenimiento.fecha_inicio || ""}
+                            value={mantenimiento.fecha_inicio ?? ""}
                             onChange={handleChange}
                             className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-slate-700"
                         />
                     </div>
 
-                    {/* Fecha Final */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                             Fecha Final
@@ -261,23 +362,23 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <input
                             type="date"
                             name="fecha_final"
-                            value={mantenimiento.fecha_final || ""}
+                            value={mantenimiento.fecha_final ?? ""}
                             onChange={handleChange}
                             className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-slate-700"
                         />
                     </div>
 
-                    {/* Estado */}
                     <div>
                         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                             Estado
                         </label>
                         <select
                             name="estado"
-                            value={mantenimiento.estado}
+                            value={mantenimiento.estado ?? ""}
                             onChange={handleChange}
+                            onBlur={() => validateField("estado")}
                             required
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer text-slate-700"
+                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.estado ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                         >
                             <option value="" disabled>Selecciona estado inicial</option>
                             <option value="Pendiente">Pendiente</option>
@@ -285,9 +386,9 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                             <option value="Finalizado">Finalizado</option>
                             <option value="Cancelado">Cancelado</option>
                         </select>
+                        {errors.estado ? <p className="mt-1 text-xs text-red-500">{errors.estado}</p> : null}
                     </div>
 
-                    {/* Descripción */}
                     <div className="sm:col-span-2">
                         <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
                             Descripción
@@ -295,16 +396,16 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <textarea
                             name="descripcion"
                             rows={3}
-                            value={mantenimiento.descripcion}
+                            value={mantenimiento.descripcion ?? ""}
                             onChange={handleChange}
+                            onBlur={() => validateField("descripcion")}
                             placeholder="Escribe los detalles del trabajo o falla a reparar..."
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none placeholder:text-slate-400"
+                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none placeholder:text-slate-400 ${errors.descripcion ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
                         />
+                        {errors.descripcion ? <p className="mt-1 text-xs text-red-500">{errors.descripcion}</p> : null}
                     </div>
-
                 </div>
 
-                {/* Botones de acción */}
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
                     <button
                         type="button"

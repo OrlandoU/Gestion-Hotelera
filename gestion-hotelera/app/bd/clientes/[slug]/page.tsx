@@ -54,7 +54,7 @@ export default function ClientDetailPage() {
           <a href={`mailto:${client.email}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-950 text-white text-sm font-semibold hover:bg-slate-800 transition-colors">
             <span className="material-symbols-outlined text-[18px]">mail</span> Contactar
           </a>
-          <Link href="/bd/clientes" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-50 transition-colors">
+          <Link href="/bd/clientes" className="inline-flex items-center justify-center gap-2 rounded-[2.5rem] border border-slate-300 bg-white px-5 py-3 text-[14px] font-semibold leading-4 tracking-wider text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 active:scale-95">
             <span className="material-symbols-outlined text-[18px]">arrow_back</span> Volver
           </Link>
         </div>

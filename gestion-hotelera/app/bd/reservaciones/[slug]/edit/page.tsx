@@ -146,7 +146,7 @@ export default function PagoReservaPage({ params }: Props) {
     }
 
     return (
-        <div className="flex flex-col gap-6 max-w-7xl mx-auto pb-12">
+        <div className="flex flex-col gap-6 pb-12">
             {/* HEADER DE LA PÁGINA */}
             <PageHeader
                 name="Gestión de Pagos"
@@ -324,10 +324,10 @@ export default function PagoReservaPage({ params }: Props) {
                                             value={metodoPago}
                                             onChange={(e) => setMetodoPago(e.target.value)}
                                         >
-                                            <option value="Efectivo">💵 Efectivo</option>
-                                            <option value="Transferencia">🏦 Transferencia Bancaria</option>
-                                            <option value="Tarjeta">💳 Tarjeta de Crédito / Débito</option>
-                                            <option value="Deposito">📄 Depósito Bancario</option>
+                                            <option value="Efectivo">Efectivo</option>
+                                            <option value="Transferencia">Transferencia Bancaria</option>
+                                            <option value="Tarjeta">Tarjeta de Crédito / Débito</option>
+                                            <option value="Deposito">Depósito Bancario</option>
                                         </select>
                                     </div>
 
@@ -380,7 +380,7 @@ export default function PagoReservaPage({ params }: Props) {
                                     type="button"
                                     disabled={guardando || monto <= 0}
                                     onClick={handleGuardarPago}
-                                    className="w-full bg-slate-900 hover:bg-black text-white font-bold py-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                                    className="flex w-full items-center justify-center gap-2 rounded-[2.5rem] bg-slate-950 px-5 py-3 text-[14px] font-semibold leading-4 tracking-wider text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                                 >
                                     {guardando ? (
                                         <>
