@@ -11,8 +11,29 @@ interface FormModalProps {
     onSave?: (data: Mantenimiento) => void;
 }
 
+const fieldClassName = (hasError: boolean) =>
+    `w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-slate-700 shadow-sm outline-none transition ${hasError
+        ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
+        : "border-slate-200 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+    }`;
+
 export default function MantenimientoModal({ open, onClose, onSave }: FormModalProps) {
     const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
+    const [mantenimiento, setMantenimiento] = useState<Mantenimiento>({
+        usuario_id: 1,
+        responsable_id: null,
+        nombre_responsable: null,
+        telefono_responsable: null,
+        tipo: "",
+        descripcion: "",
+        fecha_inicio: null,
+        fecha_final: null,
+        prioridad: "",
+        estado: "",
+        espacio_id: 34,
+    });
+    const [esInterno, setEsInterno] = useState<boolean>(true);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         let isMounted = true;
@@ -31,32 +52,13 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
         };
     }, []);
 
-    const [mantenimiento, setMantenimiento] = useState<Mantenimiento>({
-        usuario_id: 1,
-        responsable_id: null,
-        nombre_responsable: null,
-        telefono_responsable: null,
-        tipo: "",
-        descripcion: "",
-        fecha_inicio: null,
-        fecha_final: null,
-        prioridad: "",
-        estado: "",
-        espacio_id: 34,
-    });
-
     const { data } = useUsuarios();
     const empleados = data ?? [];
 
-    const [esInterno, setEsInterno] = useState<boolean>(true);
-    const [errors, setErrors] = useState<Record<string, string>>({});
-
-    // Función para alternar entre Interno y Externo
     const handleTipoResponsableChange = (isInternal: boolean) => {
         setEsInterno(isInternal);
         setMantenimiento((prev) => ({
             ...prev,
-            // Limpiamos los campos opuestos
             responsable_id: isInternal ? prev.responsable_id : null,
             nombre_responsable: !isInternal ? prev.nombre_responsable : null,
             telefono_responsable: !isInternal ? prev.telefono_responsable : null,
@@ -179,6 +181,8 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
         const datosAEnviar = {
             ...mantenimiento,
             responsable_id: mantenimiento.responsable_id ? Number(mantenimiento.responsable_id) : null,
+            nombre_responsable: esInterno ? null : mantenimiento.nombre_responsable?.trim() || null,
+            telefono_responsable: esInterno ? null : mantenimiento.telefono_responsable?.trim() || null,
         };
 
         await crearMantenimiento(datosAEnviar);
@@ -188,53 +192,55 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
 
     return (
         <Modal open={open} onClose={onClose} title="Nuevo Mantenimiento">
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-200">
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+            <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <p className="text-sm font-medium text-slate-700">Define el tipo de mantenimiento, el responsable y los datos del espacio.</p>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
                         ¿El responsable es personal interno?
                     </label>
-                    <div className="flex items-center gap-6 text-sm text-slate-700">
-                        <label className="flex items-center gap-2 cursor-pointer font-medium">
+                    <div className="flex flex-col gap-3 text-sm text-slate-700 sm:flex-row sm:items-center sm:gap-6">
+                        <label className="flex cursor-pointer items-center gap-2 font-medium">
                             <input
                                 type="radio"
                                 name="tipo_responsable_toggle"
                                 checked={esInterno}
                                 onChange={() => handleTipoResponsableChange(true)}
-                                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                className="h-4 w-4 text-sky-600"
                             />
                             <span>Sí, empleado interno</span>
                         </label>
-                        <label className="flex items-center gap-2 cursor-pointer font-medium">
+                        <label className="flex cursor-pointer items-center gap-2 font-medium">
                             <input
                                 type="radio"
                                 name="tipo_responsable_toggle"
                                 checked={!esInterno}
                                 onChange={() => handleTipoResponsableChange(false)}
-                                className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                className="h-4 w-4 text-sky-600"
                             />
-                            <span>No, técnico/personal externo</span>
+                            <span>No, técnico o proveedor externo</span>
                         </label>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
                     {esInterno ? (
                         <div className="sm:col-span-2">
-                            <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                                Empleado Responsable
-                            </label>
+                            <label className="mb-2 block text-sm font-semibold text-slate-700">Empleado responsable</label>
                             <select
                                 name="responsable_id"
                                 value={mantenimiento.responsable_id ?? ""}
                                 onChange={handleChange}
                                 onBlur={() => validateField("responsable_id")}
                                 required={esInterno}
-                                className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.responsable_id ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                                className={fieldClassName(Boolean(errors.responsable_id))}
                             >
                                 <option value="" disabled>Selecciona un empleado</option>
                                 {empleados?.map((emp) => (
                                     <option key={emp.usuario_id} value={emp.usuario_id}>
-                                        {emp.primer_nombre + ' ' + emp.primer_apellido}
+                                        {`${emp.primer_nombre} ${emp.primer_apellido}`}
                                     </option>
                                 ))}
                             </select>
@@ -243,9 +249,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                     ) : (
                         <>
                             <div>
-                                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                                    Nombre del Responsable Externo
-                                </label>
+                                <label className="mb-2 block text-sm font-semibold text-slate-700">Nombre del responsable</label>
                                 <input
                                     type="text"
                                     name="nombre_responsable"
@@ -254,15 +258,13 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                     onBlur={() => validateField("nombre_responsable")}
                                     placeholder="Ej. Juan Pérez"
                                     required={!esInterno}
-                                    className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${errors.nombre_responsable ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                                    className={fieldClassName(Boolean(errors.nombre_responsable))}
                                 />
                                 {errors.nombre_responsable ? <p className="mt-1 text-xs text-red-500">{errors.nombre_responsable}</p> : null}
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                                    Teléfono del Responsable
-                                </label>
+                                <label className="mb-2 block text-sm font-semibold text-slate-700">Teléfono</label>
                                 <input
                                     type="tel"
                                     name="telefono_responsable"
@@ -271,7 +273,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                     onBlur={() => validateField("telefono_responsable")}
                                     placeholder="Ej. +504 9999-9999"
                                     required={!esInterno}
-                                    className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all placeholder:text-slate-400 ${errors.telefono_responsable ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                                    className={fieldClassName(Boolean(errors.telefono_responsable))}
                                 />
                                 {errors.telefono_responsable ? <p className="mt-1 text-xs text-red-500">{errors.telefono_responsable}</p> : null}
                             </div>
@@ -279,16 +281,14 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                     )}
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                            Número de Espacio
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Número de espacio</label>
                         <select
                             name="espacio_id"
                             value={mantenimiento.espacio_id ?? ""}
                             onChange={handleChange}
                             onBlur={() => validateField("espacio_id")}
                             required
-                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.espacio_id ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                            className={fieldClassName(Boolean(errors.espacio_id))}
                         >
                             <option value="" disabled>Selecciona un espacio</option>
                             {habitaciones.map((habitacion) => (
@@ -301,16 +301,14 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                            Tipo
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Tipo</label>
                         <select
                             name="tipo"
-                            value={mantenimiento.tipo ?? ""}
+                            value={mantenimiento.tipo}
                             onChange={handleChange}
                             onBlur={() => validateField("tipo")}
                             required
-                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.tipo ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                            className={fieldClassName(Boolean(errors.tipo))}
                         >
                             <option value="" disabled>Selecciona tipo</option>
                             <option value="Correctivo">Correctivo</option>
@@ -322,16 +320,14 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                            Prioridad
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Prioridad</label>
                         <select
                             name="prioridad"
-                            value={mantenimiento.prioridad ?? ""}
+                            value={mantenimiento.prioridad}
                             onChange={handleChange}
                             onBlur={() => validateField("prioridad")}
                             required
-                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.prioridad ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                            className={fieldClassName(Boolean(errors.prioridad))}
                         >
                             <option value="" disabled>Selecciona prioridad</option>
                             <option value="Baja">Baja</option>
@@ -343,42 +339,36 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                            Fecha de Inicio
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Fecha de inicio</label>
                         <input
                             type="date"
                             name="fecha_inicio"
-                            value={mantenimiento.fecha_inicio ?? ""}
+                            value={mantenimiento.fecha_inicio || ""}
                             onChange={handleChange}
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-slate-700"
+                            className={fieldClassName(false)}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                            Fecha Final
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Fecha final</label>
                         <input
                             type="date"
                             name="fecha_final"
-                            value={mantenimiento.fecha_final ?? ""}
+                            value={mantenimiento.fecha_final || ""}
                             onChange={handleChange}
-                            className="w-full px-3.5 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-slate-700"
+                            className={fieldClassName(false)}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                            Estado
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Estado</label>
                         <select
                             name="estado"
-                            value={mantenimiento.estado ?? ""}
+                            value={mantenimiento.estado}
                             onChange={handleChange}
                             onBlur={() => validateField("estado")}
                             required
-                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all cursor-pointer text-slate-700 ${errors.estado ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                            className={fieldClassName(Boolean(errors.estado))}
                         >
                             <option value="" disabled>Selecciona estado inicial</option>
                             <option value="Pendiente">Pendiente</option>
@@ -390,35 +380,33 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                     </div>
 
                     <div className="sm:col-span-2">
-                        <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">
-                            Descripción
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Descripción</label>
                         <textarea
                             name="descripcion"
-                            rows={3}
-                            value={mantenimiento.descripcion ?? ""}
+                            rows={4}
+                            value={mantenimiento.descripcion}
                             onChange={handleChange}
                             onBlur={() => validateField("descripcion")}
-                            placeholder="Escribe los detalles del trabajo o falla a reparar..."
-                            className={`w-full px-3.5 py-2 text-sm bg-white border rounded-lg focus:outline-none focus:ring-2 transition-all resize-none placeholder:text-slate-400 ${errors.descripcion ? "border-red-400 focus:ring-red-500" : "border-slate-200 focus:ring-blue-500 focus:border-transparent"}`}
+                            placeholder="Escribe los detalles del trabajo o la falla a reparar..."
+                            className={fieldClassName(Boolean(errors.descripcion))}
                         />
                         {errors.descripcion ? <p className="mt-1 text-xs text-red-500">{errors.descripcion}</p> : null}
                     </div>
                 </div>
 
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
+                <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                        className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
                     >
                         Cancelar
                     </button>
                     <button
                         type="submit"
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-colors cursor-pointer"
+                        className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
                     >
-                        Guardar Mantenimiento
+                        Guardar mantenimiento
                     </button>
                 </div>
             </form>
