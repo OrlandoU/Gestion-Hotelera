@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { getProveedores, Proveedor } from "@/functions/proveedores";
 import { getProductos, Producto, Compra, registrarCompra, DetalleCompra } from "@/functions/productos";
 import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
@@ -216,7 +217,7 @@ export default function NuevoActivoPage() {
 
             // Opcional: Validación rápida antes de enviar
             if (detallesFormateados.some(d => d.producto_id === 0 || d.cantidad <= 0)) {
-                alert("Por favor, asegúrate de seleccionar un producto y colocar cantidades válidas.");
+                toast.error("Por favor, asegúrate de seleccionar un producto y colocar cantidades válidas.");
                 return;
             }
 
@@ -231,14 +232,14 @@ export default function NuevoActivoPage() {
             // 3. Enviamos a la API
             const respuesta = await registrarCompra(nuevaCompra);
 
-            alert(`¡Compra guardada con éxito! ID: ${respuesta.compra_id}`);
+            toast.success(`¡Compra guardada con éxito! ID: ${respuesta.compra_id}`);
 
             // Opcional: Reiniciar la tabla a su estado inicial tras guardar con éxito
             setEntradas([{ id: crypto.randomUUID(), producto_id: 0, cantidad: 1, costo_unitario: 0 }]);
 
         } catch (error) {
             console.error("Error al guardar la compra:", error);
-            alert("Hubo un error al registrar la compra.");
+            toast.error("Hubo un error al registrar la compra.");
         }
     }
 
@@ -254,7 +255,7 @@ export default function NuevoActivoPage() {
                 }
             />
 
-            <div className="flex-1 flex flex-col lg:flex-row gap-6 max-w-360 mx-auto w-full mt-2">
+            <div className="flex-1 flex flex-col lg:flex-row gap-6 w-full mt-2">
                 {/* Columna Principal: Formulario de la tabla de compras */}
                 <div className="flex-1 flex flex-col gap-4 bg-white rounded-xl border border-slate-300 card-shadow overflow-hidden">
                     <div className="p-6 border-b border-slate-300 card-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -460,7 +461,7 @@ export default function NuevoActivoPage() {
                             <hr className="border-slate-800 my-2" />
                             <div className="flex justify-between items-end">
                                 <span className="text-sm text-slate-400 font-medium">Inversión Total</span>
-                                <span className="text-3xl font-bold text-white tracking-tight">${costoTotalFactura.toFixed(2)}</span>
+                                <span className="text-3xl font-bold text-white tracking-tight">L. {costoTotalFactura.toFixed(2)}</span>
                             </div>
                         </div>
 

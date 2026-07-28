@@ -5,6 +5,7 @@ import img3 from '@/public/img3.jpg';
 import img4 from '@/public/img4.jpg';
 import logo from '@/public/logo.png';
 import Image from "next/image";
+import { toast } from "sonner";
 import { useEffect, useState, useMemo } from "react";
 import { useHabitacionesDisponibles, crearReserva, Reserva } from "@/functions/reservas"
 import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
@@ -234,7 +235,7 @@ export default function HomePage() {
     setCargando(true);
     try {
       const respuesta = await crearReserva(nuevaReserva);
-      alert(respuesta.message || "¡Reserva creada exitosamente!");
+      toast.success(respuesta.message || "¡Reserva creada exitosamente!");
       setIsActive(false);
       // Limpiar formulario
       setNombreHuesped('');
@@ -244,7 +245,7 @@ export default function HomePage() {
       setHoraLlegada('15:00');
       setPeticionesCama('Indiferente');
     } catch {
-      alert("No se pudo procesar la reserva. Inténtalo de nuevo.");
+      toast.error("No se pudo procesar la reserva. Inténtalo de nuevo.");
     } finally {
       setCargando(false);
     }
@@ -480,7 +481,7 @@ export default function HomePage() {
                     <div className="space-y-3 text-xs text-slate-600 px-1">
                       <div className="flex justify-between">
                         <span>{TARIFAS[tipoSeleccionado].nombre}</span>
-                        <span className="font-bold text-[#0f172a]">${calculosReserva.precioPorNoche}.00</span>
+                        <span className="font-bold text-[#0f172a]">L. {calculosReserva.precioPorNoche.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Huéspedes</span>
@@ -492,18 +493,18 @@ export default function HomePage() {
                       </div>
                       <div className="flex justify-between text-slate-400">
                         <span>Subtotal</span>
-                        <span>${calculosReserva.subtotal.toFixed(2)}</span>
+                        <span>L. {calculosReserva.subtotal.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between text-slate-400">
                         <span>Impuestos locales (15%)</span>
-                        <span>${calculosReserva.impuestos.toFixed(2)}</span>
+                        <span>L. {calculosReserva.impuestos.toFixed(2)}</span>
                       </div>
 
                       <hr className="border-dashed border-slate-200 my-4" />
 
                       <div className="flex justify-between text-sm font-bold text-[#0f172a]">
                         <span className="uppercase tracking-wider">Total Final</span>
-                        <span className="text-lg text-emerald-700">${calculosReserva.total.toFixed(2)}</span>
+                        <span className="text-lg text-emerald-700">L. {calculosReserva.total.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>

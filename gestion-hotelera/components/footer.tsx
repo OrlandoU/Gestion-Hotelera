@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Modal from "./Modal";
+import Button from "./ui/button";
 import { ValidatedInput } from "./ui/validated-field";
 
 const initialForm = {
@@ -248,20 +249,17 @@ export default function Footer() {
                     )}
 
                     <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
-                        <button
+                        <Button
                             type="button"
+                            variant="secondary"
                             onClick={() => setIsIncidentOpen(false)}
-                            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
+                            className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600"
                         >
                             Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
+                        </Button>
+                        <Button type="submit" variant="primary" disabled={isSubmitting} className="rounded-xl px-4 py-2 text-sm font-semibold">
                             {isSubmitting ? "Guardando..." : "Guardar incidente"}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </Modal>

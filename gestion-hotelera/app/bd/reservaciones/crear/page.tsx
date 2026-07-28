@@ -4,6 +4,7 @@ import { useState, useEffect, ViewTransition } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 import PageHeader from "@/components/pageheader";
 import Link from "next/link";
 import { getHabitacionesDisponibles, crearReserva, EspacioHabitacion } from "@/functions/reservas";
@@ -131,10 +132,22 @@ export default function CrearReservacion() {
     ];
 
     // Cálculos de fechas y precios
+    const formatDateForInput = (date: Date) => {
+        const year = date.getFullYear();
+        const month = `${date.getMonth() + 1}`.padStart(2, "0");
+        const day = `${date.getDate()}`.padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
+
+    const parseDateInput = (value: string) => {
+        const [year, month, day] = value.split("-").map(Number);
+        return new Date(year, month - 1, day);
+    };
+
     const calculateNights = (start: string, end: string) => {
         if (!start || !end) return 0;
-        const startDate = new Date(start);
-        const endDate = new Date(end);
+        const startDate = parseDateInput(start);
+        const endDate = parseDateInput(end);
         const diffTime = endDate.getTime() - startDate.getTime();
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays > 0 ? diffDays : 0;
@@ -145,7 +158,7 @@ export default function CrearReservacion() {
     const totalPrice = selectedRoomData ? (selectedRoomData.precio_unidad || 0) * nights : 0;
 
     // Obtener la fecha de hoy en formato YYYY-MM-DD para restringir inputs
-    const today = new Date().toISOString().split('T')[0];
+    const today = formatDateForInput(new Date());
 
     const isValidField = (name: string, value: string) => {
         if (!value.trim()) return false;
@@ -191,8 +204,13 @@ export default function CrearReservacion() {
             nextDateErrors.fecha_salida = "Selecciona la fecha de salida.";
         }
 
-        if (formData.fecha_entrada && formData.fecha_entrada && formData.fecha_salida && new Date(formData.fecha_salida) <= new Date(formData.fecha_entrada)) {
-            nextDateErrors.fecha_salida = "La fecha de salida debe ser posterior a la de entrada.";
+        if (formData.fecha_entrada && formData.fecha_salida) {
+            const entrada = parseDateInput(formData.fecha_entrada);
+            const salida = parseDateInput(formData.fecha_salida);
+
+            if (salida <= entrada) {
+                nextDateErrors.fecha_salida = "La fecha de salida debe ser posterior a la de entrada.";
+            }
         }
 
         setDateErrors(nextDateErrors);

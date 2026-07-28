@@ -4,6 +4,7 @@ import { getHabitaciones, Habitacion } from "@/functions/espacios";
 import { useUsuarios } from "@/functions/usuarios"
 import { crearMantenimiento, Mantenimiento } from "@/functions/mantenimientos"
 import Modal from "./Modal"; // Importa la base de arriba
+import Button from "@/components/ui/button";
 
 interface FormModalProps {
     open: boolean;
@@ -395,19 +396,12 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                 </div>
 
                 <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-                    >
+                    <Button type="button" variant="secondary" onClick={onClose}>
                         Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
-                    >
+                    </Button>
+                    <Button type="submit" variant="primary">
                         Guardar mantenimiento
-                    </button>
+                    </Button>
                 </div>
             </form>
         </Modal>

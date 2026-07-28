@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use, useMemo } from "react";
 import PageHeader from "@/components/pageheader";
+import { toast } from "sonner";
 import { getReserva, Reserva, registrarPago } from "@/functions/reservas";
 import { usePagos, Pago } from "@/functions/pagos";
 import Link from "next/link";
@@ -68,12 +69,12 @@ export default function PagoReservaPage({ params }: Props) {
     // Guardar Pago
     const handleGuardarPago = async () => {
         if (!reserva || monto <= 0) {
-            alert("Por favor ingresa un monto válido mayor a L. 0.00");
+            toast.error("Por favor ingresa un monto válido mayor a L. 0.00");
             return;
         }
 
         if (monto > saldoPendiente) {
-            alert(`El monto ingresado (L. ${monto}) supera el saldo pendiente (L. ${saldoPendiente}).`);
+            toast.error(`El monto ingresado (L. ${monto}) supera el saldo pendiente (L. ${saldoPendiente}).`);
             return;
         }
 
@@ -89,10 +90,10 @@ export default function PagoReservaPage({ params }: Props) {
 
             // Refrescar historial
             await pagosRefetch();
-            alert("¡Pago registrado correctamente!");
+            toast.success("¡Pago registrado correctamente!");
         } catch (err) {
             console.error("Error al registrar pago:", err);
-            alert("Ocurrió un error al intentar registrar el pago.");
+            toast.error("Ocurrió un error al intentar registrar el pago.");
         } finally {
             setGuardando(false);
         }

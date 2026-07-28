@@ -289,15 +289,15 @@ export default function ReservationPage() {
                         <div className="space-y-2 mb-4 text-sm">
                             <div className="flex justify-between text-slate-600">
                                 <span>Tarifa de habitación ({stay?.nights ?? "0"} noches)</span>
-                                <span className="text-slate-900 font-medium">${roomRate.toFixed(2) * .85}</span>
+                                <span className="text-slate-900 font-medium">{formatLempiras(roomRate * 0.85)}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
                                 <span>Impuestos y cargos</span>
-                                <span className="text-slate-900 font-medium">${roomRate.toFixed(2) * .15}</span>
+                                <span className="text-slate-900 font-medium">{formatLempiras(roomRate * 0.15)}</span>
                             </div>
                             <div className="flex justify-between pt-2 border-t border-slate-100 font-semibold text-slate-900">
                                 <span>Total Cargos</span>
-                                <span>${totalCargos.toFixed(2)}</span>
+                                <span>{formatLempiras(totalCargos)}</span>
                             </div>
                         </div>
 

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Button from "@/components/ui/button";
 import Modal from "./Modal";
 import Link from "next/link";
 
@@ -109,19 +110,10 @@ export default function NewReservation() {
                     </div>
 
                     <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
-                        <button
-                            type="button"
-                            onClick={() => setOpen(false)}
-                            disabled={saving}
-                            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-                        >
+                        <Button type="button" variant="secondary" onClick={() => setOpen(false)} disabled={saving}>
                             Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:opacity-60"
-                        >
+                        </Button>
+                        <Button type="submit" disabled={saving} variant="primary">
                             {saving ? (
                                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" opacity="0.25"></circle>
@@ -129,7 +121,7 @@ export default function NewReservation() {
                                 </svg>
                             ) : null}
                             Guardar
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </Modal>

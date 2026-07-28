@@ -3,8 +3,9 @@
 import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
-import { useIngresosTipoHabitacion } from "@/functions/reportes-api"; 
+import { useIngresosTipoHabitacion } from "@/functions/reportes-api";
 import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { formatLempiras } from "@/lib/utils";
 
 type TooltipPayload = {
   payload?: Array<{
@@ -23,7 +24,7 @@ const CustomTooltip = ({ active, payload }: TooltipPayload & { active?: boolean 
     return (
       <div className="bg-white border border-slate-300 p-3 rounded-lg shadow-level-2 text-xs font-['Hanken_Grotesk']">
         <p className="font-bold text-black mb-1">{data.tipo_habitacion}</p>
-        <p className="text-slate-600">Ingresos: <span className="font-bold text-[#008cc7]">${(data.ingresos_totales || 0).toLocaleString()}</span></p>
+        <p className="text-slate-600">Ingresos: <span className="font-bold text-[#008cc7]">{formatLempiras(data.ingresos_totales || 0)}</span></p>
         <p className="text-slate-600">Participación: <span className="font-semibold text-slate-900">{data.porcentaje}%</span></p>
       </div>
     );
@@ -58,7 +59,7 @@ export default function Page() {
   };
 
   // Paleta de azules distintivos de la aplicación para el gráfico y la tabla
-const esquemaColores: Record<string, { hex: string; bg: string; text: string; border: string }> = {
+  const esquemaColores: Record<string, { hex: string; bg: string; text: string; border: string }> = {
     "Básica": { hex: "#C084FC", bg: "bg-purple-100", text: "text-purple-800", border: "border-l-4 border-purple-400" },
     "Estándar": { hex: "#0EA5E9", bg: "bg-sky-100", text: "text-sky-800", border: "border-l-4 border-sky-500" },
     "Doble-Básica": { hex: "#2563EB", bg: "bg-blue-100", text: "text-blue-800", border: "border-l-4 border-blue-600" },
@@ -238,7 +239,7 @@ const esquemaColores: Record<string, { hex: string; bg: string; text: string; bo
                         return <Cell key={`cell-${index}`} fill={color.hex} />;
                       })}
                     </Pie>
-                    <Tooltip content={<CustomTooltip />} wrapperClassName="z-10"/>
+                    <Tooltip content={<CustomTooltip />} wrapperClassName="z-10" />
                   </PieChart>
                 </ResponsiveContainer>
 

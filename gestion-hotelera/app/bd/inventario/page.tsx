@@ -8,7 +8,7 @@ export default function InventarioPage() {
             <PageHeader name="Inventario" subtitle="Gestione y supervise los activos del hotel en tiempo real" buttons={<Link href="/bd/inventario/nuevo" className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
                 <span className="material-symbols-outlined text-[18px]">add</span> Nuevo Activo
             </Link>} />
-            <div className="flex-1 flex flex-col gap-6 max-w-360 mx-auto w-full">
+            <div className="flex-1 flex flex-col gap-6 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     <div className="md:col-span-2 bg-white rounded-xl border border-slate-300 card-shadow  p-6 card-shadow flex flex-col gap-4">
                         <div className="flex justify-between items-start">

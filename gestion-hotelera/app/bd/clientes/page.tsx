@@ -5,9 +5,9 @@ import { ViewTransition } from "react";
 import Link from "next/link";
 import PageHeader from "@/components/pageheader";
 import Modal from "@/components/Modal";
-import { CLIENTS_LIST } from "@/data/clients";
 import { createHuesped, getHuespedes, Huesped } from "@/functions/huesped"
 import { ValidatedInput } from "@/components/ui/validated-field";
+import Button from "@/components/ui/button";
 
 
 export default function ClientesPage() {
@@ -49,21 +49,41 @@ export default function ClientesPage() {
 
   const [query, setQuery] = useState("");
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return CLIENTS_LIST;
-    return CLIENTS_LIST.filter((client) =>
-      client.name.toLowerCase().includes(q) ||
-      client.email.toLowerCase().includes(q) ||
-      client.loyaltyTier.toLowerCase().includes(q)
-    );
-  }, [query]);
+  const getFullName = (client: Huesped) => {
+    return client.nombre?.trim() || `${client.nombres ?? ""} ${client.apellidos ?? ""}`.trim();
+  };
 
-  const totalClients = huespedes?.length;
-  const inHouseCount = huespedes?.filter((c) => c.status === "InHouse").length;
-  const totalSpent = huespedes?.reduce((sum, c) => sum + c.total_gastado!, 0);
+  const getLoyaltyTier = (client: Huesped) => {
+    const amount = Number(client.total_gastado ?? 0);
+    if (amount > 10000) return "Platinum";
+    if (amount > 5000) return "Gold";
+    if (amount > 1000) return "Silver";
+    return "Bronze";
+  };
+
+  const filtered = useMemo(() => {
+    if (!huespedes?.length) return huespedes || [];
+    const q = query.trim().toLowerCase();
+    if (!q) return huespedes;
+
+    return huespedes.filter((client) => {
+      const fullName = getFullName(client).toLowerCase();
+      const email = client.email?.toLowerCase() ?? "";
+      const tier = getLoyaltyTier(client).toLowerCase();
+
+      return (
+        fullName.includes(q) ||
+        email.includes(q) ||
+        tier.includes(q)
+      );
+    });
+  }, [query, huespedes]);
+
+  const totalClients = huespedes?.length ?? 0;
+  const inHouseCount = huespedes?.filter((c) => (c.estancias ?? 0) > 0).length ?? 0;
+  const totalSpent = huespedes?.reduce((sum, c) => sum + (c.total_gastado ?? 0), 0);
   const avgStays = totalClients
-    ? (huespedes?.reduce((sum, c) => sum + c.estancias!, 0) / totalClients).toFixed(1)
+    ? (huespedes?.reduce((sum, c) => sum + (c.estancias ?? 0), 0) / totalClients).toFixed(1)
     : "0";
 
   const validateGuestForm = () => {
@@ -181,12 +201,20 @@ export default function ClientesPage() {
         name="Clientes"
         subtitle="Perfiles de huéspedes, historial y preferencias"
         buttons={
-          <button
-            onClick={() => setIsFormOpen(true)}
-            className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg"
-          >
-            <span className="material-symbols-outlined text-[18px]">add</span> Nuevo Cliente
-          </button>
+          <div className="flex gap-3">
+            <Link
+              href="/bd/clientes/nuevo"
+              className="hover:cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span> Nuevo Cliente
+            </Link>
+            <button
+              onClick={() => setIsFormOpen(true)}
+              className="hover:cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 rounded-[2.5rem] border border-slate-300 bg-white px-6 py-4 text-[14px] font-semibold text-slate-700 shadow-sm transition-transform active:scale-95"
+            >
+              <span className="material-symbols-outlined text-[18px]">open_in_new</span> Crear rápido
+            </button>
+          </div>
         }
       />
 
@@ -251,7 +279,7 @@ export default function ClientesPage() {
                   onFocus={() => setTouched((prev) => ({ ...prev, telefono: true }))}
                   error={formErrors.telefono}
                   touched={touched.telefono || Boolean(formErrors.telefono)}
-                  placeholder="+504 9999-9999"
+                  placeholder="96751977"
                   required
                 />
               </div>
@@ -304,20 +332,12 @@ export default function ClientesPage() {
             )}
 
             <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50"
-              >
+              <Button type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>
                 Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
+              </Button>
+              <Button type="submit" disabled={isSubmitting} variant="primary">
                 {isSubmitting ? "Guardando..." : "Guardar huésped"}
-              </button>
+              </Button>
             </div>
           </form>
         </Modal>
@@ -405,13 +425,14 @@ export default function ClientesPage() {
                 </tr>
               </thead>
               <tbody className="text-slate-800 divide-y divide-slate-100">
-                {huespedes?.map((client) => {
+                {filtered.map((client) => {
+                  const fullName = getFullName(client) || "Cliente sin nombre";
                   return (
                     <tr key={client.huesped_id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-6">
-                        <div className="font-medium text-slate-900">{client.nombre}</div>
+                        <div className="font-medium text-slate-900">{fullName}</div>
                         <div className="text-xs text-slate-400">
-                          Última visita: {'2026-06-03'}
+                          Última visita: —
                         </div>
                       </td>
                       <td className="py-3.5 px-6 text-slate-500">
@@ -421,11 +442,11 @@ export default function ClientesPage() {
                       <td className="py-3.5 px-6">
                         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
                           <span className="material-symbols-outlined text-[14px]">star</span>
-                          {client.estancias}
+                          {getLoyaltyTier(client)}
                         </span>
                       </td>
-                      <td className="py-3.5 px-6 text-right font-semibold">{client.estancias}</td>
-                      <td className="py-3.5 px-6 text-right font-bold text-slate-900">{client.total_gastado!.toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}</td>
+                      <td className="py-3.5 px-6 text-right font-semibold">{client.estancias ?? 0}</td>
+                      <td className="py-3.5 px-6 text-right font-bold text-slate-900">{(client.total_gastado ?? 0).toLocaleString('es-HN', { style: 'currency', currency: 'HNL' })}</td>
 
                       <td className="py-3.5 px-6 text-right">
                         <Link href={`/bd/clientes/${client.huesped_id}`} className="text-sm text-[#008cc7] hover:underline font-semibold">
@@ -438,7 +459,7 @@ export default function ClientesPage() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-10 px-6 text-center text-sm text-slate-400">
-                      No se encontraron clientes que coincidan con &quot;{query}&quot;.
+                      {huespedes?.length === 0 ? "No hay clientes registrados." : `No se encontraron clientes que coincidan con "${query}".`}
                     </td>
                   </tr>
                 ) : null}

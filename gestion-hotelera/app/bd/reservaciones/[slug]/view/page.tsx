@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, use } from "react";
 import PageHeader from "@/components/pageheader";
+import { toast } from "sonner";
 import { getReserva, Reserva } from "@/functions/reservas";
 import Link from "next/link";
 
@@ -69,7 +70,7 @@ export default function CheckInReservaPage({ params }: Props) {
     // Procesar Check-in
     const handleProcesarCheckIn = async () => {
         if (!documentoIdentidad.trim()) {
-            alert("Por favor confirma o ingresa el número de documento de identidad.");
+            toast.error("Por favor confirma o ingresa el número de documento de identidad.");
             return;
         }
 
@@ -81,10 +82,10 @@ export default function CheckInReservaPage({ params }: Props) {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulación API
 
             setCheckInRealizado(true);
-            alert("¡Check-in registrado con éxito! La habitación está oficialmente ocupada.");
+            toast.success("¡Check-in registrado con éxito! La habitación está oficialmente ocupada.");
         } catch (error) {
             console.error("Error al procesar Check-in:", error);
-            alert("Ocurrió un error al procesar el Check-in.");
+            toast.error("Ocurrió un error al procesar el Check-in.");
         } finally {
             setProcesando(false);
         }
