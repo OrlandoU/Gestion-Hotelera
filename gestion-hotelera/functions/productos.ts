@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { fetchAPI } from './http-base';
 
 export interface Producto {
@@ -27,6 +26,10 @@ export interface Compra {
 
 export async function getProductos(proveedor_id?: number): Promise<Producto[]> {
     return fetchAPI<Producto[]>('/productos', { params: { proveedor_id } });
+}
+
+export async function getProductosStock(): Promise<Producto[]> {
+    return fetchAPI<Producto[]>('/productos/stock');
 }
 
 export interface RespuestaCompra {

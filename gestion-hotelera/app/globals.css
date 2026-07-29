@@ -7,6 +7,22 @@
   font-family: 'Hanken Grotesk', sans-serif;
 }
 
+@media print {
+
+  html,
+  body {
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Evita saltos de página forzados innecesarios */
+  div {
+    page-break-inside: avoid;
+  }
+}
+
 .gantt-grid {
   display: grid;
   grid-template-columns: 200px repeat(14, minmax(60px, 1fr));

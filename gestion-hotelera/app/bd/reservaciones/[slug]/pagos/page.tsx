@@ -7,6 +7,9 @@ import { getReserva, Reserva, registrarPago } from "@/functions/reservas";
 import { usePagos, Pago } from "@/functions/pagos";
 import Link from "next/link";
 
+const formatLempiras = (val: number) =>
+    `L. ${val.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 interface Props {
     params: Promise<{ slug: string }>;
 }
@@ -24,13 +27,8 @@ export default function PagoReservaPage({ params }: Props) {
     const [tipoPago, setTipoPago] = useState<"parcial" | "completo">("parcial");
     const [metodoPago, setMetodoPago] = useState("Efectivo");
     const [monto, setMonto] = useState<number>(0);
-    const [fecha, setFecha] = useState("");
+    const [fecha] = useState(() => new Date().toISOString().split("T")[0]);
     const [saldoPendiente, setSaldoPendiente] = useState<number>(0);
-
-    // Asigna fecha inicial
-    useEffect(() => {
-        setFecha(new Date().toISOString().split("T")[0]);
-    }, []);
 
     // Carga inicial de la reserva
     useEffect(() => {
@@ -60,11 +58,12 @@ export default function PagoReservaPage({ params }: Props) {
     const pagosData = useMemo(() => pagosApi || [], [pagosApi]);
 
     // Autocompletar monto si selecciona "Pago Completo"
-    useEffect(() => {
-        if (tipoPago === "completo") {
+    const handleTipoPagoChange = (nextTipo: "parcial" | "completo") => {
+        setTipoPago(nextTipo);
+        if (nextTipo === "completo") {
             setMonto(saldoPendiente);
         }
-    }, [tipoPago, saldoPendiente]);
+    };
 
     // Guardar Pago
     const handleGuardarPago = async () => {
@@ -104,9 +103,40 @@ export default function PagoReservaPage({ params }: Props) {
     const montoPagado = totalPagar - saldoPendiente;
     const porcentajePagado = totalPagar > 0 ? Math.min(100, Math.round((montoPagado / totalPagar) * 100)) : 0;
 
-    // Formatting Helper
-    const formatLempiras = (val: number) =>
-        `L. ${val.toLocaleString("es-HN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const handleGenerarFactura = async () => {
+        if (!reserva) return;
+
+        try {
+            const payload = {
+                reserva,
+                pagos: pagosData,
+            };
+
+            const params = new URLSearchParams({
+                reserva: encodeURIComponent(JSON.stringify(payload.reserva)),
+                pagos: encodeURIComponent(JSON.stringify(payload.pagos)),
+            });
+
+            const response = await fetch(`/api/factura-reserva-pdf/generate?${params.toString()}`);
+            if (!response.ok) {
+                throw new Error("No se pudo generar la factura");
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `factura-reserva-${reserva.reserva_id || idNumero}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+            toast.success("Factura generada correctamente.");
+        } catch (error) {
+            console.error("Error al generar la factura:", error);
+            toast.error("No se pudo generar la factura.");
+        }
+    };
 
     // ==========================================
     // ESTADOS DE CARGA Y ERROR
@@ -254,14 +284,15 @@ export default function PagoReservaPage({ params }: Props) {
                     <div className="bg-slate-50 rounded-2xl border border-slate-200/80 p-5 space-y-3">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Acciones Adicionales</span>
                         <div className="grid grid-cols-1 gap-2">
-                            <button className="flex items-center gap-3 p-2.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-100/80 hover:text-slate-900 border border-slate-200 rounded-xl transition-all text-left shadow-2xs">
+                            <button
+                                type="button"
+                                onClick={handleGenerarFactura}
+                                className="flex items-center gap-3 p-2.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-100/80 hover:text-slate-900 border border-slate-200 rounded-xl transition-all text-left shadow-2xs"
+                            >
                                 <span className="material-symbols-outlined text-slate-500 text-lg">receipt_long</span>
                                 Generar Factura / Recibo
                             </button>
-                            <button className="flex items-center gap-3 p-2.5 text-xs font-medium text-slate-600 bg-white hover:bg-slate-100/80 hover:text-slate-900 border border-slate-200 rounded-xl transition-all text-left shadow-2xs">
-                                <span className="material-symbols-outlined text-slate-500 text-lg">add_shopping_cart</span>
-                                Agregar Consumo Extra
-                            </button>
+
                         </div>
                     </div>
                 </div>
@@ -290,7 +321,7 @@ export default function PagoReservaPage({ params }: Props) {
                                     <div className="grid grid-cols-2 gap-3">
                                         <button
                                             type="button"
-                                            onClick={() => setTipoPago("parcial")}
+                                            onClick={() => handleTipoPagoChange("parcial")}
                                             className={`flex items-center justify-center gap-2 p-3.5 rounded-xl border font-medium text-sm transition-all ${tipoPago === "parcial"
                                                 ? "border-blue-600 bg-blue-50/60 text-blue-700 font-bold shadow-xs"
                                                 : "border-slate-200 hover:bg-slate-50 text-slate-600"
@@ -301,7 +332,7 @@ export default function PagoReservaPage({ params }: Props) {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setTipoPago("completo")}
+                                            onClick={() => handleTipoPagoChange("completo")}
                                             className={`flex items-center justify-center gap-2 p-3.5 rounded-xl border font-medium text-sm transition-all ${tipoPago === "completo"
                                                 ? "border-emerald-600 bg-emerald-50/60 text-emerald-700 font-bold shadow-xs"
                                                 : "border-slate-200 hover:bg-slate-50 text-slate-600"

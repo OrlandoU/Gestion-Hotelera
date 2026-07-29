@@ -197,6 +197,7 @@ export default function NuevoMantenimientoPage() {
                 nombre_responsable: esInterno ? null : formData.nombre_responsable?.trim() || null,
                 telefono_responsable: esInterno ? null : formData.telefono_responsable?.trim() || null,
             };
+            console.log("Datos a enviar al crear el ticket:", datosAEnviar);
 
             await crearTicket(datosAEnviar);
             toast.success("Ticket de mantenimiento creado correctamente.");
@@ -211,8 +212,8 @@ export default function NuevoMantenimientoPage() {
 
     return (
         <ViewTransition enter={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
-            <div className=" flex w-full flex-col gap-6">
-                <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+            <div className=" flex w-full flex-col">
+                <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
                     <Link className="hover:text-sky-600 font-medium transition-colors" href="/bd/mantenimiento" transitionTypes={["nav-back"]}>Mantenimiento</Link>
                     <span className="material-symbols-outlined text-[18px]">chevron_right</span>
                     <span className="text-slate-800 font-semibold">Nuevo ticket</span>
@@ -231,7 +232,7 @@ export default function NuevoMantenimientoPage() {
                     }
                 />
 
-                <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] mt-6">
                     <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
                         <div className="mb-6 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
                             <p className="text-sm font-semibold text-slate-700">Define el tipo, el responsable y el espacio afectado para abrir el ticket.</p>

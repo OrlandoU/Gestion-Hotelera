@@ -3,8 +3,8 @@ import { Hanken_Grotesk, Manrope, Inter } from "next/font/google";
 import "./globals.css";
 import "material-symbols";
 import KeyboardShortcuts from "@/components/KeyboardShortcuts";
-import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 

@@ -1,8 +1,65 @@
+"use client";
+
 import PageHeader from "@/components/pageheader";
-import { ViewTransition } from "react";
+import { useEffect, useMemo, useState, ViewTransition } from "react";
 import Link from "next/link";
+import { getProductosStock, type Producto } from "@/functions/productos";
 
 export default function InventarioPage() {
+    const [productos, setProductos] = useState<Producto[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const cargarProductos = async () => {
+            try {
+                setLoading(true);
+                setError(null);
+                const data = await getProductosStock();
+                if (isMounted) {
+                    setProductos(data);
+                }
+            } catch (err) {
+                if (isMounted) {
+                    setError("No se pudo cargar el inventario en este momento.");
+                    console.error("Error al obtener productos en stock:", err);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        cargarProductos();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    const resumen = useMemo(() => {
+        const stockBajo = productos.filter((producto) => (producto.cantidad ?? 0) <= 5).length;
+        const agotados = productos.filter((producto) => (producto.cantidad ?? 0) === 0).length;
+        const activos = productos.filter((producto) => producto.estado_activo !== false).length;
+        const alertas = [...productos]
+            .filter((producto) => (producto.cantidad ?? 0) <= 5)
+            .sort((a, b) => (a.cantidad ?? 0) - (b.cantidad ?? 0))
+            .slice(0, 3);
+
+        return { stockBajo, agotados, activos, alertas };
+    }, [productos]);
+
+    const getEstadoStock = (producto: Producto) => {
+        const cantidad = producto.cantidad ?? 0;
+        if (!producto.estado_activo) return { label: "Inactivo", color: "bg-slate-400", text: "text-slate-600" };
+        if (cantidad === 0) return { label: "Agotado", color: "bg-red-600", text: "text-red-600" };
+        if (cantidad <= 5) return { label: "Stock bajo", color: "bg-amber-500", text: "text-amber-600" };
+        return { label: "En stock", color: "bg-emerald-500", text: "text-emerald-600" };
+    };
+
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
             <PageHeader name="Inventario" subtitle="Gestione y supervise los activos del hotel en tiempo real" buttons={<Link href="/bd/inventario/nuevo" className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
@@ -23,15 +80,15 @@ export default function InventarioPage() {
                         <div className="grid grid-cols-3 gap-4 mt-1">
                             <div className="bg-slate-50 rounded-xl p-4 flex flex-col gap-1 border border-slate-100">
                                 <span className="text-xs font-medium text-slate-500">Total de activos</span>
-                                <span className="text-xl font-bold text-slate-950">12,450</span>
+                                <span className="text-xl font-bold text-slate-950">{productos.length}</span>
                             </div>
                             <div className="bg-red-50 rounded-xl p-4 flex flex-col gap-1 border border-red-100">
                                 <span className="text-xs font-bold text-red-600">Críticamente bajo</span>
-                                <span className="text-xl font-bold text-red-600">14</span>
+                                <span className="text-xl font-bold text-red-600">{resumen.stockBajo}</span>
                             </div>
                             <div className="bg-slate-50 rounded-xl p-4 flex flex-col gap-1 border border-slate-100">
-                                <span className="text-xs font-medium text-slate-500">Pedidos pendientes</span>
-                                <span className="text-xl font-bold text-slate-950">8</span>
+                                <span className="text-xs font-medium text-slate-500">Activos habilitados</span>
+                                <span className="text-xl font-bold text-slate-950">{resumen.activos}</span>
                             </div>
                         </div>
                     </div>
@@ -52,12 +109,16 @@ export default function InventarioPage() {
                     <div className="bg-white rounded-xl border border-slate-300 card-shadow  p-6 card-shadow flex flex-col gap-2">
                         <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Alertas urgentes</h3>
                         <ul className="flex flex-col gap-2.5">
-                            <li className="flex items-center gap-2 text-xs font-medium text-slate-800">
-                                <div className="w-2 h-2 rounded-full bg-red-600"></div> Gel desinfectante (Vestíbulo)
-                            </li>
-                            <li className="flex items-center gap-2 text-xs font-medium text-slate-800">
-                                <div className="w-2 h-2 rounded-full bg-red-600"></div> Toallas de baño (Piso 4)
-                            </li>
+                            {resumen.alertas.length > 0 ? (
+                                resumen.alertas.map((producto) => (
+                                    <li key={producto.producto_id ?? producto.nombre} className="flex items-center gap-2 text-xs font-medium text-slate-800">
+                                        <div className="w-2 h-2 rounded-full bg-red-600"></div>
+                                        {producto.nombre} ({producto.cantidad ?? 0} {producto.unidad})
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="text-xs font-medium text-slate-500">No hay alertas de stock por el momento.</li>
+                            )}
                         </ul>
                     </div>
                 </div>
@@ -77,80 +138,49 @@ export default function InventarioPage() {
                     </div>
 
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 border-b border-slate-300 card-shadow ">
-                                    <th className="text-xs font-bold text-slate-500 py-3 px-6">Nombre</th>
-                                    <th className="text-xs font-bold text-slate-500 py-3 px-6">Categoría</th>
-                                    <th className="text-xs font-bold text-slate-500 py-3 px-6 text-right">Stock actual</th>
-                                    <th className="text-xs font-bold text-slate-500 py-3 px-6">Unidad</th>
-                                    <th className="text-xs font-bold text-slate-500 py-3 px-6">Estado</th>
-                                    <th className="text-xs font-bold text-slate-500 py-3 px-6 text-right">Acción</th>
-                                </tr>
-                            </thead>
-                            <tbody className="text-slate-800 divide-y divide-slate-100">
-                                <tr className="hover:bg-slate-50/80 transition-colors">
-                                    <td className="py-3.5 px-6 font-medium text-slate-900">Cloro Magia Blanca</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Suministros de limpieza</td>
-                                    <td className="py-3.5 px-6 text-right font-bold text-red-600">12</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Galones</td>
-                                    <td className="py-3.5 px-6">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-red-600"></div>
-                                            <span className="text-xs font-semibold text-red-600">Stock bajo</span>
-                                        </div>
-                                    </td>
-                                    <td className="py-3.5 px-6 text-right">
-                                        <button className="bg-sky-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-sky-500 transition-all shadow-sm">Reordenar</button>
-                                    </td>
-                                </tr>
-                                <tr className="hover:bg-slate-50/80 transition-colors">
-                                    <td className="py-3.5 px-6 font-medium text-slate-900">Cafe Oro</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Alimentos y bebidas</td>
-                                    <td className="py-3.5 px-6 text-right font-semibold">45</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Libras</td>
-                                    <td className="py-3.5 px-6">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                            <span className="text-xs font-medium text-slate-500">En stock</span>
-                                        </div>
-                                    </td>
-                                    <td className="py-3.5 px-6 text-right">
-                                        <button className="border border-slate-300 card-shadow  text-slate-600 font-semibold text-xs px-3 py-1.5 hover:bg-slate-50 rounded-lg transition-colors">Detalles</button>
-                                    </td>
-                                </tr>
-                                <tr className="hover:bg-slate-50/80 transition-colors bg-red-50/30">
-                                    <td className="py-3.5 px-6 font-medium text-red-600">Edredón King Size</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Muebles / Ropa de cama</td>
-                                    <td className="py-3.5 px-6 text-right font-bold text-red-600">0</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Piezas</td>
-                                    <td className="py-3.5 px-6">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-red-600 flex items-center justify-center"></div>
-                                            <span className="text-xs font-bold text-red-600">Agotado</span>
-                                        </div>
-                                    </td>
-                                    <td className="py-3.5 px-6 text-right">
-                                        <button className="bg-sky-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-sky-500 transition-all shadow-sm">Reordenar</button>
-                                    </td>
-                                </tr>
-                                <tr className="hover:bg-slate-50/80 transition-colors">
-                                    <td className="py-3.5 px-6 font-medium text-slate-900">Limpia Vidrios</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Suministros de limpieza</td>
-                                    <td className="py-3.5 px-6 text-right font-semibold">88</td>
-                                    <td className="py-3.5 px-6 text-slate-500">Botellas</td>
-                                    <td className="py-3.5 px-6">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                                            <span className="text-xs font-medium text-slate-500">En stock</span>
-                                        </div>
-                                    </td>
-                                    <td className="py-3.5 px-6 text-right">
-                                        <button className="border border-slate-300 card-shadow  text-slate-600 font-semibold text-xs px-3 py-1.5 hover:bg-slate-50 rounded-lg transition-colors">Detalles</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        {loading ? (
+                            <div className="py-10 text-center text-sm text-slate-500">Cargando inventario...</div>
+                        ) : error ? (
+                            <div className="py-10 text-center text-sm text-red-600">{error}</div>
+                        ) : productos.length === 0 ? (
+                            <div className="py-10 text-center text-sm text-slate-500">No hay productos disponibles en stock.</div>
+                        ) : (
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-300 card-shadow ">
+                                        <th className="text-xs font-bold text-slate-500 py-3 px-6">Nombre</th>
+                                        <th className="text-xs font-bold text-slate-500 py-3 px-6">Categoría</th>
+                                        <th className="text-xs font-bold text-slate-500 py-3 px-6 text-right">Stock actual</th>
+                                        <th className="text-xs font-bold text-slate-500 py-3 px-6">Unidad</th>
+                                        <th className="text-xs font-bold text-slate-500 py-3 px-6">Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="text-slate-800 divide-y divide-slate-100">
+                                    {productos.map((producto) => {
+                                        const estado = getEstadoStock(producto);
+                                        return (
+                                            <tr key={producto.producto_id ?? producto.nombre} className="hover:bg-slate-50/80 transition-colors">
+                                                <td className="py-3.5 px-6 font-medium text-slate-900">
+                                                    <div className="flex flex-col">
+                                                        <span>{producto.nombre}</span>
+                                                        <span className="text-xs text-slate-500">Proveedor #{producto.proveedor_id ?? "—"}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3.5 px-6 text-slate-500">{producto.categoria ?? "Sin categoría"}</td>
+                                                <td className="py-3.5 px-6 text-right font-bold text-slate-900">{producto.cantidad ?? 0}</td>
+                                                <td className="py-3.5 px-6 text-slate-500">{producto.unidad ?? "—"}</td>
+                                                <td className="py-3.5 px-6">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className={`w-2 h-2 rounded-full ${estado.color}`}></div>
+                                                        <span className={`text-xs font-semibold ${estado.text}`}>{estado.label}</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
 
                     <div className="p-4 border-t border-slate-300 card-shadow  bg-white flex justify-between items-center text-xs text-slate-500">
@@ -169,6 +199,6 @@ export default function InventarioPage() {
                     </div>
                 </div>
             </div>
-        </ ViewTransition>
+        </ViewTransition>
     );
 }

@@ -2,7 +2,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-
 class ReservaSchema(BaseModel):
     reserva_id: Optional[int] = None
     huesped_id: Optional[int] = None

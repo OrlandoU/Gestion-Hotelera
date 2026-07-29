@@ -3,18 +3,25 @@ import { fetchAPI } from "./http-base";
 
 
 export interface Ticket {
+    ticket_id?: number | null;
     numero_ticket?: string;
-    espacio_id: number;
+    espacio_id?: number | string | null;
+    numero_espacio?: string | null;
     reserva_id?: number | null;
-    usuario_id: number;
-    responsable_id: number | null;
-    nombre_responsable: string | null;
-    telefono_responsable: string | null;
-    titulo: string | null;
-    descripcion: string | null;
-    estado: string | null;
+    usuario_id?: number | null;
+    usuario?: string | null;
+    responsable_id?: number | null;
+    responsable?: string | null;
+    nombre_responsable?: string | null;
+    telefono_responsable?: string | null;
+    rol?: string | null;
+    titulo?: string | null;
+    descripcion?: string | null;
+    estado?: string | null;
     fecha_creacion?: string | null;
     fecha_limite?: string | null;
+    tipo?: string | null;
+    prioridad?: string | null;
     [key: string]: unknown;
 }
 
@@ -24,6 +31,7 @@ export interface Comentario {
     usuario_id: number;
     contenido: string;
     fecha_creacion: string;
+    usuario?: string | null;
     [key: string]: unknown;
 }
 
@@ -44,11 +52,11 @@ export async function getTickets(numero_ticket?: string | null, fecha_creacion?:
     });
 }
 
-export async function getComentarios(numero_ticket?: string | null, fecha_creacion?: string | null, usuario_id?: number | null): Promise<Comentario[]> {
+export async function getComentarios(ticket_id?: int | null, fecha_creacion?: string | null, usuario_id?: number | null): Promise<Comentario[]> {
     return fetchAPI<Comentario[]>(`/tickets/comentarios`, {
         method: 'GET',
         params: {
-            numero_ticket: numero_ticket,
+            ticket_id: ticket_id,
             fecha_creacion: fecha_creacion,
             usuario: usuario_id ?? null,
         }
@@ -56,7 +64,7 @@ export async function getComentarios(numero_ticket?: string | null, fecha_creaci
 }
 
 export async function createComentario(comentario: {
-    numero_ticket: string;
+    ticket_id: string;
     usuario_id: number;
     contenido: string;
     fecha_creacion?: string;

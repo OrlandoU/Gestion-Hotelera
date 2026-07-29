@@ -13,7 +13,7 @@ export default function MantenimientoPage() {
 
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
-            <div className="max-w-360 mx-auto w-full flex flex-col gap-6">
+            <div className="w-full flex flex-col gap-6">
                 <PageHeader
                     name="Mantenimiento"
                     subtitle="Gestión de solicitudes y tareas de mantenimiento"
@@ -22,7 +22,6 @@ export default function MantenimientoPage() {
                             <Link href="/bd/mantenimiento/nuevo" className="hover:cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 bg-[#000000] text-[#ffffff] py-4 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold font-['Hanken_Grotesk'] tracking-wider transition-transform active:scale-95 shadow-lg">
                                 <span className="material-symbols-outlined text-[18px]">add</span> Nuevo ticket
                             </Link>
-                            <NewSolicitud />
                         </div>
                     }
                 />

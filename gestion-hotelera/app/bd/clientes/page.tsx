@@ -208,17 +208,11 @@ export default function ClientesPage() {
             >
               <span className="material-symbols-outlined text-[18px]">add</span> Nuevo Cliente
             </Link>
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="hover:cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 rounded-[2.5rem] border border-slate-300 bg-white px-6 py-4 text-[14px] font-semibold text-slate-700 shadow-sm transition-transform active:scale-95"
-            >
-              <span className="material-symbols-outlined text-[18px]">open_in_new</span> Crear rápido
-            </button>
           </div>
         }
       />
 
-      <div className="flex-1 flex flex-col gap-6 max-w-360 mx-auto w-full">
+      <div className="flex-1 flex flex-col gap-6 w-full">
         <Modal open={isFormOpen} onClose={() => setIsFormOpen(false)} title="Crear huésped">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">

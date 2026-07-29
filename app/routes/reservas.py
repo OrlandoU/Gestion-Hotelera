@@ -77,7 +77,6 @@ async def crear_reserva(
     reserva: ReservaSchema,
     repo: ReservaRepository = Depends(get_reserva_repo)
 ):
-    print(reserva)
     repo.crear(reserva)
     return {"message": "Reserva creada exitosamente"}
 

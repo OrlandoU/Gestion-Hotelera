@@ -10,7 +10,7 @@ class HuespedRepository(BaseRepository):
 
     def crear(self, payload: Huesped):
         data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
-        query = "EXEC sp_crear_huesped %s, %s, %s, %s, %s"
+        query = "EXEC crear_huesped %s, %s, %s, %s, %s"
         params = (
             data.get("nombres"),
             data.get("apellidos"),

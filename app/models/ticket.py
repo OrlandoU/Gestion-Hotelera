@@ -14,9 +14,11 @@ class TicketSchema(BaseModel):
     estado: str = 'Pendiente'
     fecha_creacion: Optional[str] = None
     fecha_limite: Optional[str] = None
+    tipo: Optional[str] = None
+    prioridad: Optional[str] = None
 
 class ComentarioSchema(BaseModel):
     usuario_id: int
-    numero_ticket: str
+    ticket_id: int
     contenido: str
     fecha_creacion: datetime = None

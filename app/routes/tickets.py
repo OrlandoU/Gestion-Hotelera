@@ -34,13 +34,13 @@ async def read_tickets(
 
 @router.get("/comentarios")
 async def read_comentarios(
-    numero_ticket: str = Query(default=None, description="Numero del ticket"),
+    ticket_id: int = Query(default=None, description="Numero del ticket"),
     fecha_creacion: date = Query(default=None, description="Fecha de creacion del comentario"),
     usuario: str = Query(default=None, description="Usuario que creo el comentario"),
     repo: TicketRepository = Depends(get_ticket_repo)
 ):
     
-    comentarios = repo.listar_comentarios(numero_ticket, fecha_creacion, usuario)
+    comentarios = repo.listar_comentarios(ticket_id, fecha_creacion, usuario)
 
     if not comentarios:
         raise HTTPException(

@@ -5,6 +5,7 @@ import { useForm, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import PageHeader from "@/components/pageheader";
 import Link from "next/link";
 import { getHabitacionesDisponibles, crearReserva, EspacioHabitacion } from "@/functions/reservas";
@@ -90,6 +91,7 @@ function ValidatedInput({
 }
 
 export default function CrearReservacion() {
+    const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedRoom, setSelectedRoom] = useState("");
     const [rooms, setRooms] = useState<EspacioHabitacion[]>([]);
@@ -248,6 +250,11 @@ export default function CrearReservacion() {
 
         setIsSubmitting(true);
         try {
+            console.log("Datos a enviar al crear la reserva:", {
+                ...formData,
+                ...guestValues,
+                espacio_id: selectedRoomData.espacio_id,
+            });
             await crearReserva({
                 ...formData,
                 ...guestValues,
@@ -255,10 +262,10 @@ export default function CrearReservacion() {
                 // Puedes enviar el precio total si tu API lo requiere:
                 // precio_total: totalPrice 
             });
-            window.location.href = "/bd/reservaciones";
+            router.push("/bd/reservaciones");
         } catch (error) {
+            toast.error("Hubo un problema al procesar la reserva.");
             console.error("Error al enviar la reserva:", error);
-            alert("Hubo un problema al procesar la reserva.");
         } finally {
             setIsSubmitting(false);
         }

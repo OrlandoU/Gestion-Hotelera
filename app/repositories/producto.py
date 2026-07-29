@@ -13,6 +13,13 @@ class ProductoRepository(BaseRepository):
         params = (proveedor_id,) if proveedor_id is not None else (None,)
         return self._execute_query(query, params)
 
+    def listar_stock(self):
+        """
+        Lista Productos en stock
+        """
+        query = "SELECT * FROM Productos"
+        return self._execute_query(query)
+    
     def registrar_compra(self, compra_data: CompraCreateSchema) -> dict:
         """
         Registra una compra procesando el esquema estructurado de Pydantic y

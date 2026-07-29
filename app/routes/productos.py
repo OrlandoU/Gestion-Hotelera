@@ -26,21 +26,22 @@ async def read_productos(
     return repo.listar(proveedor_id=proveedor_id)
 
 
+@router.get("/stock", status_code=status.HTTP_200_OK)
+async def read_productos(
+    repo: ProductoRepository = Depends(get_producto_repo)
+):
+    return repo.listar_stock()
+
+
 ### 2. REGISTRAR UNA COMPRA DE PRODUCTOS
 @router.post("/registrar-compra", status_code=status.HTTP_201_CREATED)
 async def registrar_compra(
     compra_data: CompraCreateSchema, 
     repo: ProductoRepository = Depends(get_producto_repo)
 ):
-    resultado = repo.registrar_compra(compra_data)
+    repo.registrar_compra(compra_data)
     
-    if not resultado or "compra_id" not in resultado:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="La compra se procesó pero no se pudo recuperar el ID generado."
-        )
         
     return {
         "message": "Compra registrada con éxito", 
-        "compra_id": resultado["compra_id"]
     }

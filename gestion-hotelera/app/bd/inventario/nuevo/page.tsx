@@ -232,7 +232,7 @@ export default function NuevoActivoPage() {
             // 3. Enviamos a la API
             const respuesta = await registrarCompra(nuevaCompra);
 
-            toast.success(`¡Compra guardada con éxito! ID: ${respuesta.compra_id}`);
+            toast.success(`Compra guardada con éxito!`);
 
             // Opcional: Reiniciar la tabla a su estado inicial tras guardar con éxito
             setEntradas([{ id: crypto.randomUUID(), producto_id: 0, cantidad: 1, costo_unitario: 0 }]);
@@ -245,6 +245,11 @@ export default function NuevoActivoPage() {
 
     return (
         <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+            <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
+                <Link className="hover:text-sky-600 font-medium transition-colors" href="/bd/inventario" transitionTypes={["nav-back"]}>Inventario</Link>
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                <span className="text-slate-800 font-semibold">Nuevo Activo</span>
+            </div>
             <PageHeader
                 name="Nueva Entrada de Activos"
                 subtitle="Registre el ingreso de insumos y mercadería comprada al almacén central"

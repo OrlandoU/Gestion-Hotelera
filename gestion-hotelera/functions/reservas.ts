@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 
 // URL base de la API - usa variable de entorno o localhost como fallback
 export const API_BASE_URL = "http://127.0.0.1:8000";
@@ -29,7 +30,54 @@ export interface Reserva {
     monto_pagado?: number;
     total_pagar?: number;
     precio_unidad?: number;
-    [key: string]: any;
+    bookingId?: string;
+    status?: string;
+    reservationStatus?: string;
+    createdAt?: string;
+    email?: string;
+    telefono?: string;
+    loyalty_tier?: string;
+    tier?: string;
+    guest?: {
+        name?: string;
+        email?: string;
+        telefono?: string;
+        loyalty?: { tier?: string };
+    };
+    stay?: {
+        checkIn?: string;
+        checkOut?: string;
+        checkInTime?: string;
+        checkOutTime?: string;
+        nights?: number;
+        specialRequests?: string;
+    };
+    room?: {
+        type?: string;
+        number?: string;
+    };
+    party?: {
+        adults?: number;
+    };
+    internalNotes?: Array<{ id?: string; text?: string; author?: string; createdAt?: string }>;
+    notas_internas?: Array<{ id?: string; text?: string; author?: string; createdAt?: string }>;
+    payment?: {
+        breakdown?: { roomRate?: number; taxesAndFees?: number; extras?: number };
+        total?: number;
+        amountPaid?: number;
+        guaranteeMethod?: string;
+    };
+    activity?: Array<{ time?: string; text?: string }>;
+    historial_actividad?: Array<{ time?: string; text?: string }>;
+    solicitudes_especiales?: string;
+    impuestos?: number;
+    extras?: number;
+    tipo_espacio?: string;
+    tipo?: string;
+    cantidad_huespedes?: number;
+    metodos_garantia?: string;
+    metodo_garantia?: string;
+    [key: string]: unknown;
 }
 
 export interface EspacioHabitacion {
@@ -39,7 +87,7 @@ export interface EspacioHabitacion {
     estado?: string;
     capacidad_huespedes?: number;
     precio_unidad?: number;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 interface UseReporteState<T> {
@@ -49,10 +97,10 @@ interface UseReporteState<T> {
 }
 
 interface FetchOptions extends RequestInit {
-    params?: Record<string, any>;
+    params?: Record<string, string | number | boolean | null | undefined>;
 }
 
-async function fetchAPI<T = any>(
+async function fetchAPI<T = unknown>(
     endpoint: string,
     options: FetchOptions = {}
 ): Promise<T> {
@@ -104,25 +152,44 @@ export async function getReserva(reserva_id: number): Promise<Reserva> {
     return fetchAPI<Reserva>(`/reservas/${reserva_id}`, { method: 'GET' });
 }
 
-export function useReserva(reserva_id: number) {
+export function useReserva(reserva_id: number | null | undefined) {
     const [data, setData] = useState<Reserva | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(Boolean(reserva_id));
     const [error, setError] = useState<Error | null>(null);
 
     useEffect(() => {
+        let cancelled = false;
+
+        if (!reserva_id) {
+            return () => {
+                cancelled = true;
+            };
+        }
+
         const fetchReserva = async () => {
             setLoading(true);
             setError(null);
             try {
                 const data = await getReserva(reserva_id);
-                setData(data);
+                if (!cancelled) {
+                    setData(data);
+                }
             } catch (error) {
-                setError(error as Error);
+                if (!cancelled) {
+                    setError(error as Error);
+                }
             } finally {
-                setLoading(false);
+                if (!cancelled) {
+                    setLoading(false);
+                }
             }
         };
-        fetchReserva();
+
+        void fetchReserva();
+
+        return () => {
+            cancelled = true;
+        };
     }, [reserva_id]);
 
     return { data, loading, error };
@@ -183,10 +250,15 @@ export async function getHabitacionesDisponibles(
  * Ahora: /reservas (El método POST a la raíz crea el elemento)
  */
 export async function crearReserva(datos: Reserva): Promise<{ message: string }> {
-    console.log(datos)
     return fetchAPI<{ message: string }>('/reservas', {
         method: 'POST',
         body: JSON.stringify(datos)
+    }).then(response => {
+        toast.success("Reservación creada exitosamente.");
+        return response;
+    }).catch(error => {
+        toast.error("Hubo un problema al procesar la reserva.");
+        throw error;
     });
 }
 
@@ -201,9 +273,7 @@ export function useReservas(fecha_entrada?: Date | null) {
         error: null,
     });
 
-    const fechaKey = fecha_entrada ? fecha_entrada.toISOString().split('T')[0] : 'all';
-
-    const refetch = useCallback(async (fecha_entrada_new: Date | null) => {
+    const refetch = useCallback(async (fecha_entrada_new?: Date | null) => {
         setState(prev => ({ ...prev, loading: true, error: null }));
         try {
             const data = await getReservas(fecha_entrada_new || fecha_entrada);
@@ -211,10 +281,11 @@ export function useReservas(fecha_entrada?: Date | null) {
         } catch (error) {
             setState({ data: null, loading: false, error: error as Error });
         }
-    }, [fechaKey, fecha_entrada]);
+    }, [fecha_entrada]);
 
     useEffect(() => {
-        refetch();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void refetch();
     }, [refetch]);
 
     return { ...state, refetch };
@@ -249,7 +320,8 @@ export function useHabitacionesDisponibles(
     }, [fechaEntrada, fechaSalida]);
 
     useEffect(() => {
-        refetch();
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        void refetch();
     }, [refetch]);
 
     return { ...state, refetch };

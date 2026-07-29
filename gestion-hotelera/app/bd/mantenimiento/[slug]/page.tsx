@@ -6,11 +6,14 @@ import { useParams } from "next/navigation";
 import PageHeader from "@/components/pageheader";
 import { ValidatedInput } from "@/components/ui/validated-field";
 import { createComentario, getComentarios, getTickets, Ticket, Comentario } from "@/functions/tickets";
+import { toast } from "sonner";
+import { getCurrentUser, LoggedUser } from "@/functions/auth";
 
 export default function TicketDetailPage() {
     const params = useParams<{ slug: string }>();
     const slug = params?.slug as string | undefined;
 
+    const [user] = useState<LoggedUser | null>(() => getCurrentUser());
     const [ticket, setTicket] = useState<Ticket | null>(null);
     const [comentarios, setComentarios] = useState<Comentario[]>([]);
     const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ export default function TicketDetailPage() {
             }
 
             try {
-                const commentsResponse = await getComentarios(slug);
+                const commentsResponse = await getComentarios(ticket?.ticket_id ?? undefined);
                 setComentarios(commentsResponse ?? []);
             } catch (error) {
                 console.error("Error cargando comentarios", error);
@@ -74,16 +77,22 @@ export default function TicketDetailPage() {
         try {
             setIsSubmitting(true);
             const created = await createComentario({
-                numero_ticket: slug,
-                usuario_id: 1,
+                ticket_id: ticket?.ticket_id?.toString() || "",
+                usuario_id: user?.usuario_id || 0,
                 contenido: commentText.trim(),
                 fecha_creacion: new Date().toISOString(),
             });
-            setComentarios((prev) => [created, ...prev]);
+            setComentarios((prev) => [...prev, {...created,
+                ticket_id: ticket?.ticket_id?.toString() || "",
+                usuario_id: user?.usuario_id || 0,
+                contenido: commentText.trim(),
+                fecha_creacion: new Date().toISOString(), usuario: user?.nombre || "Usuario"}]);
+            toast.success("Comentario agregado correctamente.");
             setCommentText("");
             setFormErrors({});
             setTouched({});
         } catch (error) {
+            toast.error("Error agregando comentario");
             console.error("Error agregando comentario", error);
             setFormErrors((prev) => ({ ...prev, comment: "No se pudo guardar el comentario. Inténtalo de nuevo." }));
         } finally {
@@ -102,8 +111,41 @@ export default function TicketDetailPage() {
         return "bg-red-50 text-red-700 border-red-200";
     }, [ticket?.estado]);
 
+    const prioridadClasses = useMemo(() => {
+        const prioridad = ticket?.prioridad?.toLowerCase() ?? "media";
+        if (prioridad.includes("alta") || prioridad.includes("urgente")) {
+            return "bg-rose-50 text-rose-700 border-rose-200";
+        }
+        if (prioridad.includes("baja")) {
+            return "bg-emerald-50 text-emerald-700 border-emerald-200";
+        }
+        return "bg-sky-50 text-sky-700 border-sky-200";
+    }, [ticket?.prioridad]);
+
+    const espacioLabel = ticket?.numero_espacio ?? (ticket?.espacio_id != null ? String(ticket.espacio_id) : "Sin asignar");
+    const responsableLabel = ticket?.responsable ?? ticket?.nombre_responsable ?? "Sin asignar";
+    const usuarioLabel = ticket?.usuario ?? (ticket?.usuario_id != null ? `Usuario ${ticket.usuario_id}` : "Sin asignar");
+    const tipoLabel = ticket?.tipo ?? "Sin tipo";
+    const prioridadLabel = ticket?.prioridad ?? "Sin prioridad";
+    const rolLabel = ticket?.rol ?? "—";
+    const estadoLabel = ticket?.estado ?? "Pendiente";
+    const fechaCreacionLabel = ticket?.fecha_creacion ? new Date(ticket.fecha_creacion).toLocaleString("es-ES", {
+        dateStyle: "medium",
+        timeStyle: "short",
+    }) : "—";
+    const fechaLimiteLabel = ticket?.fecha_limite ? new Date(ticket.fecha_limite).toLocaleString("es-ES", {
+        dateStyle: "medium",
+        timeStyle: "short",
+    }) : "Sin límite";
+
     return (
-        <div className="max-w-360 mx-auto w-full flex flex-col gap-6">
+        <div className="w-full flex flex-col">
+            <div className="mb-4 flex items-center gap-2 text-sm text-slate-500">
+                <Link className="font-medium transition-colors hover:text-sky-600" href="/bd/mantenimiento" transitionTypes={["nav-back"]}>Mantenimiento</Link>
+                <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                <span className="font-semibold text-slate-800">Detalle del ticket</span>
+            </div>
+
             <PageHeader
                 name="Detalle del ticket"
                 subtitle={ticket?.titulo ?? "Solicitud de mantenimiento"}
@@ -115,77 +157,121 @@ export default function TicketDetailPage() {
             />
 
             {loading ? (
-                <div className="rounded-xl border border-slate-300 bg-white p-8 text-center text-slate-500">Cargando ticket...</div>
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500 shadow-sm">
+                    Cargando ticket...
+                </div>
             ) : !ticket ? (
-                <div className="rounded-xl border border-slate-300 bg-white p-8 text-center text-slate-500">
+                <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-500 shadow-sm">
                     No se encontró el ticket solicitado.
                 </div>
             ) : (
-                <>
-                    <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-                        <section className="rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">{ticket.numero_ticket}</p>
-                                    <h2 className="mt-1 text-xl font-bold text-slate-950">{ticket.titulo}</h2>
+                <div className="mt-6 space-y-6">
+                    <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+                        <div className="bg-linear-to-r from-slate-950 via-slate-900 to-slate-800 px-6 py-6 text-white">
+                            <div className="flex flex-wrap items-start justify-between gap-4">
+                                <div className="space-y-3">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-200">
+                                            {ticket.numero_ticket ?? "Ticket sin número"}
+                                        </span>
+                                        <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-200">
+                                            {tipoLabel}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-semibold text-white">{ticket.titulo}</h2>
+                                        <p className="mt-2 text-sm text-slate-300">Seguimiento del caso y registro de actualizaciones para el equipo.</p>
+                                    </div>
                                 </div>
-                                <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${estadoClasses}`}>
-                                    {ticket.estado}
-                                </span>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${estadoClasses}`}>
+                                        {estadoLabel}
+                                    </span>
+                                    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${prioridadClasses}`}>
+                                        {prioridadLabel}
+                                    </span>
+                                </div>
                             </div>
+                        </div>
 
-                            <div className="mt-6 grid gap-4 md:grid-cols-2">
-                                <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm">
+                        <div className="grid gap-6 p-6 xl:grid-cols-[1.5fr_0.9fr]">
+                            <div className="space-y-6">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-[18px] text-slate-500">description</span>
-                                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Descripción</p>
+                                        <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Descripción</h3>
                                     </div>
-                                    <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">{ticket.descripcion}</p>
+                                    <p className="mt-4 whitespace-pre-wrap wrap-break-word text-sm leading-7 text-slate-700">
+                                        {ticket.descripcion || "Sin descripción registrada."}
+                                    </p>
                                 </div>
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Área / espacio</p>
-                                    <p className="mt-2 text-sm font-semibold text-slate-900">{ticket.espacio_id}</p>
-                                </div>
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Responsable</p>
-                                    <p className="mt-2 text-sm font-semibold text-slate-900">{ticket.nombre_responsable ?? "Sin asignar"}</p>
-                                    <p className="text-sm text-slate-600">{ticket.telefono_responsable ?? "—"}</p>
-                                </div>
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                                    <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Fechas</p>
-                                    <p className="mt-2 text-sm text-slate-700">Creado: {ticket.fecha_creacion ? new Date(ticket.fecha_creacion).toLocaleString() : "—"}</p>
-                                    <p className="text-sm text-slate-700">Límite: {ticket.fecha_limite ? new Date(ticket.fecha_limite).toLocaleString() : "Sin límite"}</p>
-                                </div>
-                            </div>
-                        </section>
 
-                        <aside className="rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
-                            <h3 className="text-base font-bold text-slate-950">Resumen rápido</h3>
-                            <div className="mt-4 space-y-3 text-sm text-slate-600">
-                                <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                                    <span>Reserva asociada</span>
-                                    <span className="font-semibold text-slate-900">{ticket.reserva_id ?? "—"}</span>
-                                </div>
-                                <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                                    <span>Usuario</span>
-                                    <span className="font-semibold text-slate-900">{ticket.usuario_id}</span>
-                                </div>
-                                <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                                    <span>Responsable ID</span>
-                                    <span className="font-semibold text-slate-900">{ticket.responsable_id ?? "—"}</span>
+                                <div className="grid gap-4 md:grid-cols-2">
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Espacio</p>
+                                        <p className="mt-2 text-sm font-semibold text-slate-900">{espacioLabel}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Responsable</p>
+                                        <p className="mt-2 text-sm font-semibold text-slate-900">{responsableLabel}</p>
+                                        <p className="text-sm text-slate-600">{ticket.telefono_responsable ?? "—"}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Fecha de creación</p>
+                                        <p className="mt-2 text-sm font-semibold text-slate-900">{fechaCreacionLabel}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-500">Fecha límite</p>
+                                        <p className="mt-2 text-sm font-semibold text-slate-900">{fechaLimiteLabel}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </aside>
-                    </div>
 
-                    <section className="rounded-xl border border-slate-300 bg-white p-6 shadow-sm">
-                        <div className="flex items-center justify-between gap-3">
-                            <div>
-                                <h3 className="text-base font-bold text-slate-950">Comentarios</h3>
-                                <p className="text-sm text-slate-500">Añade actualizaciones o notas de seguimiento.</p>
-                            </div>
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">{comentarios.length}</span>
+                            <aside className="space-y-4">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                                    <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Resumen rápido</h3>
+                                    <div className="mt-4 space-y-3 text-sm text-slate-600">
+                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
+                                            <span>Reserva asociada</span>
+                                            <span className="font-semibold text-slate-900">{ticket.reserva_id ?? "—"}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
+                                            <span>Usuario</span>
+                                            <span className="font-semibold text-slate-900">{usuarioLabel}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
+                                            <span>Responsable</span>
+                                            <span className="font-semibold text-slate-900">{responsableLabel}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
+                                            <span>Rol</span>
+                                            <span className="font-semibold text-slate-900">{rolLabel}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[18px] text-amber-700">tips_and_updates</span>
+                                        <h3 className="text-sm font-semibold text-amber-800">Recomendación</h3>
+                                    </div>
+                                    <p className="mt-3 text-sm leading-6 text-amber-800">
+                                        Mantén el seguimiento activo y prioriza la atención cuando el estado está pendiente o la prioridad es alta.
+                                    </p>
+                                </div>
+                            </aside>
                         </div>
+                    </section>
+
+                    <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h3 className="text-base font-bold text-slate-950">Comentarios y seguimiento</h3>
+                                <p className="text-sm text-slate-500">Registra actualizaciones claras para mantener el caso bien documentado.</p>
+                            </div>
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-600">{comentarios.length} mensajes</span>
+                        </div>
+
                         <div className="mt-6 space-y-3">
                             {comentarios.length === 0 ? (
                                 <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
@@ -193,24 +279,23 @@ export default function TicketDetailPage() {
                                 </div>
                             ) : (
                                 comentarios.map((comment) => (
-                                    <div key={comment.comentario_id} className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-4 shadow-sm">
-                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">
-                                                    U{comment.usuario_id}
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-semibold text-slate-900">Usuario {comment.usuario_id}</p>
-                                                    <p className="text-xs text-slate-500">{comment.fecha_creacion ? new Date(comment.fecha_creacion).toLocaleString() : "—"}</p>
-                                                </div>
+                                    <div key={comment.comentario_id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">
+                                                {comment.usuario ? comment.usuario.split(" ")[0][0].toUpperCase() + comment.usuario.split(" ")[1][0].toUpperCase() : "U"}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold text-slate-900">{comment.usuario}</p>
+                                                <p className="text-xs text-slate-500">{comment.fecha_creacion ? new Date(comment.fecha_creacion).toLocaleString() : "—"}</p>
                                             </div>
                                         </div>
-                                        <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">{comment.contenido}</p>
+                                        <p className="mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-7 text-slate-700">{comment.contenido}</p>
                                     </div>
                                 ))
                             )}
                         </div>
-                        <form onSubmit={handleSubmitComment} className="mt-6 rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5 shadow-sm">
+
+                        <form onSubmit={handleSubmitComment} className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
                             <div className="flex items-start gap-3">
                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-950 text-white">
                                     <span className="material-symbols-outlined text-[20px]">chat</span>
@@ -218,8 +303,8 @@ export default function TicketDetailPage() {
                                 <div className="flex-1">
                                     <div className="flex flex-wrap items-start justify-between gap-2">
                                         <div>
-                                            <h4 className="text-sm font-semibold text-slate-900">Nuevo comentario</h4>
-                                            <p className="text-sm text-slate-500">Registra una actualización o nota de seguimiento para este ticket.</p>
+                                            <h4 className="text-sm font-semibold text-slate-900">Añadir actualización</h4>
+                                            <p className="text-sm text-slate-500">Comparte un avance, una observación o el siguiente paso.</p>
                                         </div>
                                         <span className="rounded-full bg-slate-200/70 px-2.5 py-1 text-xs font-semibold text-slate-600">Equipo</span>
                                     </div>
@@ -238,7 +323,7 @@ export default function TicketDetailPage() {
                                             placeholder="Escribe una actualización..."
                                             multiline
                                             rows={4}
-                                            className="min-h-[120px]"
+                                            className="min-h-30"
                                         />
                                     </div>
                                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -254,10 +339,8 @@ export default function TicketDetailPage() {
                                 </div>
                             </div>
                         </form>
-
-
                     </section>
-                </>
+                </div>
             )}
         </div>
     );
