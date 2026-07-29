@@ -209,6 +209,15 @@ export async function registrarPago(reserva_id: number, metodo: string, monto: n
     });
 }
 
+export async function modificarReserva(reserva_id: number, es_entrada: boolean): Promise<{ message: string }> {
+    return fetchAPI<{ message: string }>(`/reservas/${reserva_id}`, {
+        method: 'PUT',
+        params: {
+            es_entrada: es_entrada.toString()
+        }
+    });
+}
+
 /**
  * Antes: /reservas/listar-reservaciones
  * Ahora: /reservas (El verbo GET en la raíz del recurso implica listar)

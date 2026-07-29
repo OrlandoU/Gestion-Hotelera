@@ -9,6 +9,7 @@ import { formatLempiras } from "@/lib/utils";
 import Button from "@/components/ui/button";
 import { toast } from "sonner";
 import { usePagos } from "@/functions/pagos";
+import { modificarReserva } from "@/functions/reservas";
 
 const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
     Pending: { label: "Pendiente", badge: "bg-amber-100 text-amber-800 border-amber-300", dot: "bg-amber-500" },
@@ -86,6 +87,24 @@ export default function ReservationPage() {
     const { data: rawReserva, loading: loadingReserva, error: errorReserva } = useReserva(numericId);
     const { data: pagosApi } = usePagos(null, null, rawReserva?.reserva_id);
     const pagosData = pagosApi ?? [];
+
+    const checkin = async () => {
+        try {
+            await modificarReserva(rawReserva?.reserva_id, true);
+            toast.success("Reserva checkeada exitosamente");
+        } catch (error) {
+            toast.error("Error al checkear la reserva");
+        }
+    }
+
+    const checkout = async () => {
+        try {
+            await modificarReserva(rawReserva?.reserva_id, false);
+            toast.success("Reserva checkeada exitosamente");
+        } catch (error) {
+            toast.error("Error al checkear la reserva");
+        }
+    }
 
     const handleGenerarFactura = async () => {
         if (!rawReserva) {
@@ -332,10 +351,12 @@ export default function ReservationPage() {
                                 </button>
                             ) : (
                                 <Button
+                                    disabled={status === 'Pendiente' ? true : false}
+                                    onClick={status === 'Reservada' ? checkin : checkout}
                                     className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">login</span>
-                                    Procesar Check-in
+                                    {status === 'Reservada' ? 'Procesar Check-in' : 'Procesar Check-out'}
                                 </Button>
                             )}
                             <Link href={`/bd/reservaciones/${id}/pagos`} className="w-full min-h-11 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">

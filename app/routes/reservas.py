@@ -71,6 +71,14 @@ async def obtener_reserva(
         )
     return reserva
 
+@router.put("/{reserva_id}", status_code=status.HTTP_200_OK)
+async def modificar_estado(
+    reserva_id: int = Path(..., description="ID de la reserva a modificar"),
+    es_entrada: bool = Query(..., description="Estado de la reserva (entrada/salida)"),
+    repo: ReservaRepository = Depends(get_reserva_repo)
+):
+    repo.modificar_estado(reserva_id, es_entrada)
+    return {"message": "Estado de la reserva modificado exitosamente"}
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def crear_reserva(
