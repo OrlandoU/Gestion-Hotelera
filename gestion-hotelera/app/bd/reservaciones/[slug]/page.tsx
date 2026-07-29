@@ -100,11 +100,12 @@ export default function ReservationPage() {
     const checkout = async () => {
         try {
             await modificarReserva(rawReserva?.reserva_id, false);
-            toast.success("Reserva checkeada exitosamente");
-        } catch (error) {
-            toast.error("Error al checkear la reserva");
+            toast.success("Reserva finalizada exitosamente");
+        } catch (error: any) {
+            // error.message ya contiene el texto extraído del THROW de SQL Server
+            toast.error(error.message || "Error al procesar la reserva");
         }
-    }
+    };
 
     const handleGenerarFactura = async () => {
         if (!rawReserva) {
@@ -351,12 +352,12 @@ export default function ReservationPage() {
                                 </button>
                             ) : (
                                 <Button
-                                    disabled={status === 'Pendiente' ? true : false}
+                                    disabled={status === 'Pendiente' || status === 'Finalizada' ? true : false}
                                     onClick={status === 'Reservada' ? checkin : checkout}
                                     className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">login</span>
-                                    {status === 'Reservada' ? 'Procesar Check-in' : 'Procesar Check-out'}
+                                    {status === 'Reservada' ? 'Procesar Check-in' : status === 'Hospedado' ? 'Procesar Check-out' : 'Finalizada'}
                                 </Button>
                             )}
                             <Link href={`/bd/reservaciones/${id}/pagos`} className="w-full min-h-11 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">

@@ -183,13 +183,22 @@ export default function PagoReservaPage({ params }: Props) {
                 name="Gestión de Pagos"
                 subtitle={`Registro y control financiero para la reserva #${reserva.reserva_id}`}
                 buttons={
-                    <Link
-                        href="/bd/reservaciones"
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-xs"
-                    >
-                        <span className="material-symbols-outlined text-lg">arrow_back</span>
-                        Volver a la lista
-                    </Link>
+                    <>
+                        <Link
+                            href={`/bd/reservaciones/${reserva.reserva_id}`}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-xs"
+                        >
+                            <span className="material-symbols-outlined text-lg">arrow_back</span>
+                            Ver detalles
+                        </Link>
+                        <Link
+                            href="/bd/reservaciones"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all shadow-xs"
+                        >
+                            <span className="material-symbols-outlined text-lg">arrow_back</span>
+                            Volver a la lista
+                        </Link>
+                    </>
                 }
             />
 

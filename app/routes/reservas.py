@@ -4,6 +4,8 @@ from app.database import get_db
 from app.repositories.reserva import ReservaRepository
 from app.models import ReservaSchema
 from app.utils.security import get_current_user
+import pymssql
+from fastapi import HTTPException # o jsonify en Flask
 
 # Inyector de dependencia para el repositorio
 def get_reserva_repo(db = Depends(get_db)):
@@ -77,8 +79,32 @@ async def modificar_estado(
     es_entrada: bool = Query(..., description="Estado de la reserva (entrada/salida)"),
     repo: ReservaRepository = Depends(get_reserva_repo)
 ):
-    repo.modificar_estado(reserva_id, es_entrada)
-    return {"message": "Estado de la reserva modificado exitosamente"}
+    try:
+        repo.modificar_estado(reserva_id, es_entrada)
+        return {"message": "Estado modificado exitosamente"}
+
+    except (pymssql.OperationalError, pymssql.DatabaseError, Exception) as e:
+        mensaje_bruto = ""
+
+        # 1. Extraer el mensaje que viene en los argumentos de pymssql
+        if hasattr(e, 'args') and len(e.args) > 1:
+            mensaje_bruto = e.args[1]
+            if isinstance(mensaje_bruto, bytes):
+                mensaje_bruto = mensaje_bruto.decode('utf-8', errors='ignore')
+        else:
+            mensaje_bruto = str(e)
+
+        # 2. Cortar el texto sobrante de "DB-Lib error message..."
+        if "DB-Lib error message" in mensaje_bruto:
+            mensaje_limpio = mensaje_bruto.split("DB-Lib error message")[0]
+        else:
+            mensaje_limpio = mensaje_bruto
+
+        # 3. Quitar espacios sobrantes y devolver error 400
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=mensaje_limpio.strip()
+        )
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def crear_reserva(
