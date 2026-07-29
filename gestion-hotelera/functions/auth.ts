@@ -54,6 +54,7 @@ interface SignupPayload {
     fecha_nacimiento: string;
     email: string;
     password: string;
+    telefono: string
 }
 
 export async function signup(payload: SignupPayload) {

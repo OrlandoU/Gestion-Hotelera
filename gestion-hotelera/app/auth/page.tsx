@@ -19,6 +19,7 @@ export default function AuthPage() {
     const [fechaNacimiento, setFechaNacimiento] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [telefono, setTelefono] = useState("");
 
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
@@ -71,6 +72,14 @@ export default function AuthPage() {
                     nextErrors.fechaNacimiento = "Debes ser mayor de 18 años.";
                 }
             }
+
+            // Validación de teléfono corregida en el formulario general
+            const telefonoDigits = telefono.replace(/\D/g, "");
+            if (!telefonoDigits) {
+                nextErrors.telefono = "Ingresa un teléfono.";
+            } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
+                nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+            }
         }
 
         setFormErrors(nextErrors);
@@ -82,6 +91,7 @@ export default function AuthPage() {
             fechaNacimiento: true,
             email: true,
             password: true,
+            telefono: true // Corregido el nombre de la propiedad
         });
         return Object.keys(nextErrors).length === 0;
     };
@@ -144,6 +154,18 @@ export default function AuthPage() {
                     delete nextErrors.email;
                 }
                 break;
+            case "telefono": {
+                // Corregido: lee directamente la variable de estado `telefono` en lugar de `formData.telefono`
+                const telefonoDigits = telefono.replace(/\D/g, "");
+                if (!telefonoDigits) {
+                    nextErrors.telefono = "Ingresa un teléfono.";
+                } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
+                    nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+                } else {
+                    delete nextErrors.telefono;
+                }
+                break;
+            }
             case "password":
                 if (!password.trim()) {
                     nextErrors.password = "Ingresa tu contraseña.";
@@ -184,6 +206,7 @@ export default function AuthPage() {
                     fecha_nacimiento: fechaNacimiento,
                     email,
                     password,
+                    telefono
                 });
                 router.push("/bd");
             }
@@ -198,9 +221,9 @@ export default function AuthPage() {
         <div className="min-h-screen bg-slate-100 py-10">
             <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-7xl overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_70px_rgba(15,23,42,0.14)]">
                 <aside className="hidden w-1/2 flex-col justify-between bg-linear-to-br from-sky-700 via-cyan-600 to-cyan-500 px-12 py-14 text-white lg:flex">
-                    <div>
-                        <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-white/15 mb-6">
-                            <Image src={logo} alt="Hotel San Pedro logo" width={40} height={40} className="object-contain" />
+                    <div className="flex items-center flex-col">
+                        <div className="inline-flex items-center justify-center rounded-3xl mx-auto  mb-6">
+                            <Image src={logo} alt="Hotel San Pedro logo" width={150} height={150} className="object-contain" />
                         </div>
                         <h1 className="text-4xl font-extrabold tracking-tight">Hotel San Pedro</h1>
                         <p className="mt-5 max-w-lg text-base leading-7 text-slate-100/85">
@@ -368,6 +391,28 @@ export default function AuthPage() {
                                             required
                                         />
                                     </div>
+                                    <div className="sm:col-span-2">
+                                        <label className="block text-xs font-medium text-slate-600 mb-2">Teléfono</label>
+                                        <ValidatedInput
+                                            id="telefono"
+                                            type="text"
+                                            value={telefono}
+                                            onChange={(value) => {
+                                                setTelefono(value);
+                                                setFormErrors((prev) => ({ ...prev, telefono: "" }));
+                                            }}
+                                            onBlur={() => {
+                                                setTouched((prev) => ({ ...prev, telefono: true }));
+                                                validateField("telefono");
+                                            }}
+                                            onFocus={() => setTouched((prev) => ({ ...prev, telefono: true }))}
+                                            error={formErrors.telefono}
+                                            touched={touched.telefono || Boolean(formErrors.telefono)}
+                                            placeholder="96751977"
+                                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                                            required
+                                        />
+                                    </div>
                                 </div>
                             )}
 
@@ -458,45 +503,6 @@ export default function AuthPage() {
                                 {loading ? "Procesando…" : mode === "login" ? "Ingresar al Panel" : "Completar Registro"}
                             </button>
                         </form>
-
-                        {mode === "login" && (
-                            <div className="mt-6">
-                                <button
-                                    type="button"
-                                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-                                >
-                                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-700">G</span>
-                                    Iniciar con Google
-                                </button>
-                            </div>
-                        )}
-
-                        <div className="mt-6 border-t border-slate-200 pt-5 text-center text-sm text-slate-500">
-                            {mode === "login" ? (
-                                <p>
-                                    ¿No tienes cuenta registrada?{' '}
-                                    <button
-                                        type="button"
-                                        className="font-semibold text-slate-900 hover:text-slate-700"
-                                        onClick={() => setMode('signup')}
-                                    >
-                                        Regístrate aquí
-                                    </button>
-                                </p>
-                            ) : (
-                                <p>
-                                    ¿Ya posees acceso?{' '}
-                                    <button
-                                        type="button"
-                                        className="font-semibold text-slate-900 hover:text-slate-700"
-                                        onClick={() => setMode('login')}
-                                    >
-                                        Inicia sesión
-                                    </button>
-                                </p>
-                            )}
-                            <p className="mt-4 text-xs text-slate-400">© {new Date().getFullYear()} Hotel San Pedro. Todos los derechos reservados.</p>
-                        </div>
                     </div>
                 </main>
             </div>

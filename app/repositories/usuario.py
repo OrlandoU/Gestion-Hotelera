@@ -30,19 +30,9 @@ class UsuarioRepository(BaseRepository):
         self._execute_query(query, is_write=True)
 
     def crear(self, usuario: UsuarioCreateSchema, hashed_password: str) -> int:
+        print(usuario)
         query = """
-        INSERT INTO dbo.usuarios (
-            primer_nombre,
-            segundo_nombre,
-            primer_apellido,
-            segundo_apellido,
-            fecha_nacimiento,
-            telefono,
-            email,
-            password_hash
-        )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
-        SELECT SCOPE_IDENTITY() AS usuario_id;
+        Exec crear_usuario %s, %s, %s, %s, %s, %s, %s, %s, %s, %s;
         """
         result = self._execute_query(
             query,
@@ -52,15 +42,19 @@ class UsuarioRepository(BaseRepository):
                 usuario.primer_apellido,
                 usuario.segundo_apellido,
                 usuario.fecha_nacimiento,
-                None,
+                usuario.telefono,
                 usuario.email,
+                None,
                 hashed_password,
+                None
             ),
             is_write=True,
-            fetch_one=True,
         )
-        if isinstance(result, dict) and result.get("usuario_id") is not None:
-            return int(result["usuario_id"])
+        if result:
+            if isinstance(result, dict):
+                return int(result.get("usuario_id", 0))
+            elif isinstance(result, (list, tuple)):
+                return int(result[0])
         return 0
 
     def obtener_por_email(self, email: str) -> Optional[dict]:

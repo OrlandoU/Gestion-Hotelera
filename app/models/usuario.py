@@ -13,6 +13,7 @@ class UsuarioSchema(BaseModel):
     fecha_nacimiento: date
     email: EmailStr
     password_hash: str
+    telefono: str
     created_at: Optional[datetime] = None
 
 
@@ -23,6 +24,7 @@ class UsuarioCreateSchema(BaseModel):
     segundo_apellido: str
     fecha_nacimiento: date
     email: EmailStr
+    telefono: str
     password: str
 
 
