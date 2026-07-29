@@ -12,8 +12,6 @@ import {
 export default function Page() {
   // Inicializamos en abril de 2026 de acuerdo al set de datos de muestra
   const [mesFiltro, setMesFiltro] = useState<string>("2026-07-06");
-  const [paginaActual, setPaginaActual] = useState(1);
-  const elementosPorPagina = 8;
 
   const { data: consumoApi, loading, error, refetch } = useConsumoAmenidadesMensual();
 
@@ -59,7 +57,6 @@ export default function Page() {
 
   const handleMesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMesFiltro(e.target.value);
-    setPaginaActual(1);
     refetch(e.target.value + "-01"); // Agregar día para formar una fecha completa
   }
 
@@ -134,12 +131,7 @@ export default function Page() {
     return { totalUnidades, variedadProductos };
   }, [consumoData, productosUnicos]);
 
-  const totalPaginas = Math.max(1, Math.ceil(consumoData.length / elementosPorPagina));
-  const paginaValida = Math.min(paginaActual, totalPaginas);
-  const datosPaginados = useMemo(() => {
-    const inicio = (paginaValida - 1) * elementosPorPagina;
-    return consumoData.slice(inicio, inicio + elementosPorPagina);
-  }, [consumoData, paginaValida]);
+  const topProducts = dataGraficoBarras.slice(0, 5);
 
   if (error && !loading) {
     return (
@@ -364,10 +356,10 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Tabla Desglose Detallada */}
+      {/* Resumen Sintético de Consumo */}
       <section className="bg-[#ffffff] border border-slate-300 rounded-xl overflow-hidden shadow-level-1">
         <div className="px-6 py-4 border-b border-slate-300 bg-[#f7f9fb]">
-          <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000]">Desglose de Consumo de Amenidades</h3>
+          <h3 className="font-['Hanken_Grotesk'] text-[18px] font-semibold text-[#000000]">Resumen Sintético de Consumo</h3>
         </div>
 
         {loading ? (
@@ -381,65 +373,58 @@ export default function Page() {
             <p className="text-sm">No existen registros de salida para el mes seleccionado.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-300 bg-[#f7f9fb]">
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">ID Log</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Amenidad / Insumo</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Cantidad Extraída</th>
-                  <th className="px-6 py-3 text-left text-[11px] font-bold text-[#515f74] uppercase tracking-wider">Rango</th>
-                </tr>
-              </thead>
-              <tbody>
-                {datosPaginados.map((item, index) => {
-                  const colorLinea = coloresProductos[item.nombre] || colorFallback;
-                  return (
-                    <tr key={`${item.producto_gastado_id}-${index}`} className="border-b border-slate-300 hover:bg-[#f2f4f6] transition-colors">
-                      <td className="px-6 py-4 text-[13px] font-mono text-slate-500">
-                        #{item.producto_gastado_id}
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-bold text-[#000000] flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: colorLinea }} />
-                        {item.nombre}
-                      </td>
-                      <td className="px-6 py-4 text-[14px] font-mono font-bold text-slate-900">
-                        {item.cantidad_gastada} uds
-                      </td>
-                      <td className="px-6 py-4 text-[13px] font-medium text-slate-600">
-                        {formatearRangoSemana(item.fecha)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+          <div className="px-6 py-6 space-y-6">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Total consumido</p>
+                <p className="mt-3 text-3xl font-bold text-slate-900">{stats.totalUnidades}</p>
+                <p className="text-sm text-slate-500 mt-1">Unidades gastadas en el periodo</p>
+              </div>
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Productos activos</p>
+                <p className="mt-3 text-3xl font-bold text-slate-900">{stats.variedadProductos}</p>
+                <p className="text-sm text-slate-500 mt-1">Líneas distintas usadas en los gráficos</p>
+              </div>
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Top producto</p>
+                <p className="mt-3 text-3xl font-bold text-slate-900">{topProducts[0]?.nombre || 'N/A'}</p>
+                <p className="text-sm text-slate-500 mt-1">Basado en el resumen acumulado del gráfico de barras</p>
+              </div>
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Cantidad top</p>
+                <p className="mt-3 text-3xl font-bold text-slate-900">{topProducts[0]?.total ?? 0}</p>
+                <p className="text-sm text-slate-500 mt-1">Unidades del producto más consumido</p>
+              </div>
+            </div>
 
-        {!loading && consumoData.length > 0 && (
-          <div className="flex flex-col gap-3 border-t border-slate-300 bg-slate-50 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-sm text-slate-500">
-              Mostrando {((paginaValida - 1) * elementosPorPagina) + 1} - {Math.min(paginaValida * elementosPorPagina, consumoData.length)} de {consumoData.length} registros
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
-                disabled={paginaValida === 1}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#008cc7] hover:text-[#008cc7] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Anterior
-              </button>
-              <span className="rounded-lg bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm">
-                Página {paginaValida} de {totalPaginas}
-              </span>
-              <button
-                onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
-                disabled={paginaValida === totalPaginas}
-                className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:border-[#008cc7] hover:text-[#008cc7] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Siguiente
-              </button>
+            <div className="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+              <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+                <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Resumen por producto</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse text-sm">
+                  <thead>
+                    <tr className="bg-[#f7f9fb] text-left text-[11px] uppercase tracking-[0.18em] text-[#515f74]">
+                      <th className="px-5 py-4">Amenidad / Insumo</th>
+                      <th className="px-5 py-4">Total consumido</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {topProducts.map((item) => (
+                      <tr key={item.nombre} className="border-t border-slate-200 hover:bg-slate-50 transition-colors">
+                        <td className="px-5 py-4 font-semibold text-slate-900 flex items-center gap-3">
+                          <span className="inline-flex h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.fill }} />
+                          {item.nombre}
+                        </td>
+                        <td className="px-5 py-4 font-semibold text-slate-900">{item.total} uds</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-5 py-4 bg-slate-50 text-xs text-slate-500">
+                Resumen sintético basado en los mismos datos que alimentan los gráficos de arriba.
+              </div>
             </div>
           </div>
         )}

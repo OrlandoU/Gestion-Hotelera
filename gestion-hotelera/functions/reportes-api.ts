@@ -108,9 +108,9 @@ export interface Incidente {
   causas: string;
   recomendaciones: string;
   fecha: string;
-  nombre: string,
-    telefono: string,
-    rol: string
+  nombre: string;
+  telefono: string;
+  rol: string;
 }
 
 // ============================================
@@ -248,13 +248,28 @@ export async function getConsumoAmenidadesMensual(fecha?: string): Promise<Consu
   );
 }
 
-export async function getIncidentes(year?: number): Promise<Incidente[]>{
-  return fetchAPI<Incidente[]>('/reportes/incidentes', {  
+export async function getIncidentes(year?: number): Promise<Incidente[]> {
+  return fetchAPI<Incidente[]>('/reportes/incidentes', {
     params: { year }
-  }
-  )
-
+  });
 }
+
+export interface IncidenteCreatePayload {
+  usuario_id: number;
+  tipo: string;
+  detalles: string;
+  causas?: string;
+  recomendaciones?: string;
+  fecha: string;
+}
+
+export async function crearIncidente(payload: IncidenteCreatePayload): Promise<{ message: string }> {
+  return fetchAPI<{ message: string }>('/reportes/incidentes', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 // ============================================
 // CUSTOM HOOKS
 // ============================================

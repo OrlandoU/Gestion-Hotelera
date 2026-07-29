@@ -4,7 +4,6 @@ import PageHeader from "@/components/pageheader";
 import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { useIncidentes } from "@/functions/reportes-api";
-import { Toaster, toast } from "sonner";
 
 interface Incidente {
   incidente_id: number;
@@ -262,8 +261,6 @@ export default function Page() {
           </div>
         </div>
       )}
-
-      <Toaster richColors expand />
     </ViewTransition>
   );
 }

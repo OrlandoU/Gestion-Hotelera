@@ -1,54 +1,57 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
 import Modal from "./Modal";
 import Button from "./ui/button";
-import { ValidatedInput } from "./ui/validated-field";
+import { ValidatedInput, ValidatedSelect } from "./ui/validated-field";
+import { getCurrentUser } from "@/functions/auth";
+import { crearIncidente } from "@/functions/reportes-api";
 
-const initialForm = {
-    usuario_id: "",
+const getDefaultForm = () => ({
+    usuario_id: getCurrentUser()?.usuario_id ? String(getCurrentUser()!.usuario_id) : "",
     tipo: "",
     detalles: "",
     causas: "",
     recomendaciones: "",
     fecha: "",
-};
+});
+
+type IncidenteFormFields = keyof ReturnType<typeof getDefaultForm>;
+
+const tipoIncidenteOptions = [
+    { label: "Electricidad / Apagón", value: "Electricidad" },
+    { label: "Red / Sistema / Internet", value: "Red" },
+    { label: "Incendio / Fuego / Humo", value: "Incendio" },
+    { label: "Agua / Fuga / Inundación", value: "Agua" },
+    { label: "Seguridad / Robo / Intrusión", value: "Seguridad" },
+    { label: "Otro", value: "Otro" },
+];
 
 export default function Footer() {
     const [isIncidentOpen, setIsIncidentOpen] = useState(false);
-    const [formData, setFormData] = useState(initialForm);
+    const [formData, setFormData] = useState(getDefaultForm);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<string | null>(null);
 
     const resetForm = () => {
-        setFormData(initialForm);
+        setFormData(getDefaultForm());
         setTouched({});
         setFormErrors({});
         setSubmitMessage(null);
     };
 
-    const handleFieldChange = (field: keyof typeof initialForm, value: string) => {
+    const handleFieldChange = (field: IncidenteFormFields, value: string) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
         setFormErrors((prev) => ({ ...prev, [field]: "" }));
     };
 
-    const validateField = (field: keyof typeof initialForm) => {
+    const validateField = (field: IncidenteFormFields) => {
         const nextErrors: Record<string, string> = { ...formErrors };
 
         switch (field) {
-            case "usuario_id": {
-                const value = Number(formData.usuario_id);
-                if (!formData.usuario_id.trim()) {
-                    nextErrors.usuario_id = "Ingresa el identificador del usuario.";
-                } else if (!Number.isInteger(value) || value <= 0) {
-                    nextErrors.usuario_id = "El usuario debe ser un ID válido.";
-                } else {
-                    delete nextErrors.usuario_id;
-                }
-                break;
-            }
             case "tipo": {
                 if (!formData.tipo.trim() || formData.tipo.trim().length < 3) {
                     nextErrors.tipo = "Indica un tipo de incidente válido.";
@@ -100,13 +103,6 @@ export default function Footer() {
 
     const validateForm = () => {
         const nextErrors: Record<string, string> = {};
-        const usuarioId = Number(formData.usuario_id);
-
-        if (!formData.usuario_id.trim()) {
-            nextErrors.usuario_id = "Ingresa el identificador del usuario.";
-        } else if (!Number.isInteger(usuarioId) || usuarioId <= 0) {
-            nextErrors.usuario_id = "El usuario debe ser un ID válido.";
-        }
 
         if (!formData.tipo.trim() || formData.tipo.trim().length < 3) {
             nextErrors.tipo = "Indica un tipo de incidente válido.";
@@ -125,23 +121,40 @@ export default function Footer() {
         }
 
         setFormErrors(nextErrors);
-        setTouched({ usuario_id: true, tipo: true, detalles: true, causas: true, recomendaciones: true, fecha: true });
+        setTouched({ tipo: true, detalles: true, causas: true, recomendaciones: true, fecha: true });
         return Object.keys(nextErrors).length === 0;
     };
 
-    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!validateForm()) return;
+        if (!formData.usuario_id) {
+            toast.error("No se encontró el usuario actual. Vuelve a iniciar sesión.");
+            return;
+        }
 
         setIsSubmitting(true);
         setSubmitMessage(null);
 
-        window.setTimeout(() => {
+        try {
+            await crearIncidente({
+                usuario_id: Number(formData.usuario_id),
+                tipo: formData.tipo,
+                detalles: formData.detalles,
+                causas: formData.causas || undefined,
+                recomendaciones: formData.recomendaciones || undefined,
+                fecha: formData.fecha,
+            });
             setIsSubmitting(false);
             setSubmitMessage("Incidente registrado correctamente.");
             setIsIncidentOpen(false);
             resetForm();
-        }, 700);
+            toast.success("Incidente registrado. Se añadirá al reporte correspondiente.");
+        } catch (error) {
+            setIsSubmitting(false);
+            const message = error instanceof Error ? error.message : "No se pudo registrar el incidente.";
+            toast.error(message);
+        }
     };
 
     return (
@@ -171,19 +184,7 @@ export default function Footer() {
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                        <ValidatedInput
-                            label="Usuario"
-                            value={formData.usuario_id}
-                            type="number"
-                            onChange={(value) => handleFieldChange("usuario_id", value)}
-                            onBlur={() => validateField("usuario_id")}
-                            onFocus={() => setTouched((prev) => ({ ...prev, usuario_id: true }))}
-                            error={formErrors.usuario_id}
-                            touched={touched.usuario_id || Boolean(formErrors.usuario_id)}
-                            placeholder="ID del usuario"
-                            required
-                        />
-                        <ValidatedInput
+                        <ValidatedSelect
                             label="Tipo"
                             value={formData.tipo}
                             onChange={(value) => handleFieldChange("tipo", value)}
@@ -191,7 +192,8 @@ export default function Footer() {
                             onFocus={() => setTouched((prev) => ({ ...prev, tipo: true }))}
                             error={formErrors.tipo}
                             touched={touched.tipo || Boolean(formErrors.tipo)}
-                            placeholder="Ej. Seguridad"
+                            placeholder="Selecciona un tipo"
+                            options={tipoIncidenteOptions}
                             required
                         />
                     </div>
@@ -206,6 +208,7 @@ export default function Footer() {
                         touched={touched.detalles || Boolean(formErrors.detalles)}
                         placeholder="Describe el incidente"
                         required
+                        multiline
                     />
 
                     <ValidatedInput

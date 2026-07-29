@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ViewTransition } from "react";
+import { useState, useEffect, type ChangeEvent, ViewTransition } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +9,14 @@ import { useRouter } from "next/navigation";
 import PageHeader from "@/components/pageheader";
 import Link from "next/link";
 import { getHabitacionesDisponibles, crearReserva, EspacioHabitacion } from "@/functions/reservas";
+import { getHuespedes, Huesped } from "@/functions/huesped";
+
+const ROOM_TYPES = [
+    "Básica",
+    "Doble-Básica",
+    "Estándar",
+    "Doble-Estándar",
+];
 
 const guestSchema = z.object({
     nombres: z.string().trim().min(2, "Ingresa al menos 2 letras para los nombres."),
@@ -90,6 +98,53 @@ function ValidatedInput({
     );
 }
 
+type GuestSuggestionsProps = {
+    huespedes: Huesped[];
+    search: string;
+    onSelect: (guest: Huesped) => void;
+};
+
+function GuestSuggestions({ huespedes, search, onSelect }: GuestSuggestionsProps) {
+    const normalizedSearch = search.trim().toLowerCase();
+    const filteredHuespedes = huespedes.filter((guest) => {
+        const searchText = [guest.nombres, guest.apellidos, guest.nombre, guest.email, guest.dni]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+        return searchText.includes(normalizedSearch);
+    });
+
+    if (!normalizedSearch) {
+        return <div className="p-4 text-slate-500">Ingresa nombres, correo o DNI para buscar.</div>;
+    }
+
+    if (filteredHuespedes.length === 0) {
+        return <div className="p-4 text-slate-500">No se encontraron huéspedes para esta búsqueda.</div>;
+    }
+
+    return (
+        <ul className="divide-y divide-slate-200">
+            {filteredHuespedes.map((guest) => (
+                <li key={guest.huesped_id ?? `${guest.nombres}-${guest.apellidos}-${guest.dni}`}>
+                    <button
+                        type="button"
+                        onClick={() => onSelect(guest)}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
+                    >
+                        <div className="flex items-center justify-between gap-4">
+                            <div>
+                                <p className="font-semibold text-slate-900">{guest.nombres ?? guest.nombre} {guest.apellidos}</p>
+                                <p className="text-sm text-slate-500">{guest.email || guest.dni || guest.telefono}</p>
+                            </div>
+                            <span className="text-slate-400 material-symbols-outlined">arrow_forward_ios</span>
+                        </div>
+                    </button>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 export default function CrearReservacion() {
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
@@ -102,6 +157,7 @@ export default function CrearReservacion() {
 
     const {
         register,
+        setValue,
         trigger,
         watch,
         formState: { errors, touchedFields, dirtyFields },
@@ -125,6 +181,11 @@ export default function CrearReservacion() {
         fecha_salida: "",
         espacio_id: selectedRoom
     });
+    const [selectedRoomType, setSelectedRoomType] = useState("");
+    const [huespedes, setHuespedes] = useState<Huesped[]>([]);
+    const [guestSearch, setGuestSearch] = useState("");
+    const [selectedGuest, setSelectedGuest] = useState<Huesped | null>(null);
+    const [isFetchingGuests, setIsFetchingGuests] = useState(false);
 
     const stepLabels = [
         "Fechas",
@@ -184,7 +245,7 @@ export default function CrearReservacion() {
         return `${baseClasses} border-slate-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20`;
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
         if (name === "fecha_entrada") {
@@ -226,22 +287,65 @@ export default function CrearReservacion() {
         }
     }, [currentStep, formData.fecha_entrada, formData.fecha_salida, selectedRoom]);
 
+    const availableRoomTypes = ROOM_TYPES;
+
+    const filteredRooms = selectedRoomType
+        ? rooms.filter((room) => room.tipo === selectedRoomType)
+        : rooms;
+
     useEffect(() => {
-        if (currentStep === 2 && formData.fecha_entrada && formData.fecha_salida) {
-            const fetchRooms = async () => {
-                setLoadingRooms(true);
-                try {
-                    const data = await getHabitacionesDisponibles(formData.fecha_entrada, formData.fecha_salida);
-                    setRooms(data);
-                } catch (error) {
-                    console.error("Error al buscar habitaciones disponibles:", error);
-                } finally {
-                    setLoadingRooms(false);
-                }
-            };
-            fetchRooms();
+        if (!formData.fecha_entrada || !formData.fecha_salida) {
+            setRooms([]);
+            setSelectedRoomType("");
+            return;
         }
-    }, [currentStep, formData.fecha_entrada, formData.fecha_salida]);
+
+        const fetchRooms = async () => {
+            setLoadingRooms(true);
+            try {
+                const data = await getHabitacionesDisponibles(formData.fecha_entrada, formData.fecha_salida);
+                setRooms(data);
+            } catch (error) {
+                console.error("Error al buscar habitaciones disponibles:", error);
+            } finally {
+                setLoadingRooms(false);
+            }
+        };
+
+        void fetchRooms();
+    }, [formData.fecha_entrada, formData.fecha_salida]);
+
+    useEffect(() => {
+        if (selectedRoom && !rooms.some((room) => room.numero_espacio === selectedRoom)) {
+            setSelectedRoom("");
+        }
+    }, [rooms, selectedRoom]);
+
+    useEffect(() => {
+        if (selectedRoomType && !availableRoomTypes.includes(selectedRoomType)) {
+            setSelectedRoomType("");
+        }
+    }, [availableRoomTypes, selectedRoomType]);
+
+    useEffect(() => {
+        if (currentStep !== 3 || huespedes.length > 0) {
+            return;
+        }
+
+        const fetchGuests = async () => {
+            setIsFetchingGuests(true);
+            try {
+                const data = await getHuespedes();
+                setHuespedes(data || []);
+            } catch (error) {
+                console.error("Error al cargar los huéspedes existentes:", error);
+            } finally {
+                setIsFetchingGuests(false);
+            }
+        };
+
+        void fetchGuests();
+    }, [currentStep, huespedes.length]);
 
     const handleConfirmReservation = async () => {
         if (!selectedRoomData) return;
@@ -392,6 +496,32 @@ export default function CrearReservacion() {
                                     </div>
                                 </div>
 
+                                <div className="mt-6">
+                                    <div className="flex items-center justify-between gap-4 mb-4">
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-700">Tipo de habitación</p>
+                                            <p className="text-xs text-slate-500">Elige la categoría que quieres reservar.</p>
+                                        </div>
+                                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{selectedRoomType || "Todas"}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                                        {availableRoomTypes.map((tipo) => {
+                                            const isActive = selectedRoomType === tipo;
+                                            return (
+                                                <button
+                                                    key={tipo}
+                                                    type="button"
+                                                    onClick={() => setSelectedRoomType(tipo)}
+                                                    className={`rounded-3xl border p-4 text-left transition-all duration-200 ${isActive ? 'border-sky-500 bg-sky-50 shadow-sm' : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'}`}
+                                                >
+                                                    <p className={`font-semibold ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>{tipo}</p>
+                                                    {/* <p className="text-xs leading-5 text-slate-500 mt-1"></p> */}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
                                 {nights > 0 && (
                                     <div className="mt-6 p-4 bg-sky-50 rounded-xl border border-sky-100 flex items-center gap-3 text-sky-800">
                                         <span className="material-symbols-outlined">night_shelter</span>
@@ -419,19 +549,39 @@ export default function CrearReservacion() {
                                     Mostrando opciones disponibles para {nights} noche{nights > 1 ? 's' : ''}.
                                 </p>
 
+                                <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-600">
+                                    <span className="font-semibold">Tipo seleccionado:</span>
+                                    <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                                        {selectedRoomType || 'Todas'}
+                                    </span>
+                                </div>
+
                                 {loadingRooms ? (
                                     <div className="text-center py-16 text-slate-500 font-medium flex flex-col items-center gap-3">
                                         <span className="material-symbols-outlined animate-spin text-[40px] text-sky-500">progress_activity</span>
                                         Buscando disponibilidad...
                                     </div>
-                                ) : rooms.length === 0 ? (
+                                ) : filteredRooms.length === 0 ? (
                                     <div className="text-center py-12 px-4 bg-rose-50 rounded-xl border border-rose-100 text-rose-600 font-medium flex flex-col items-center gap-3">
                                         <span className="material-symbols-outlined text-[40px]">search_off</span>
-                                        No hay habitaciones disponibles para estas fechas.
+                                        {rooms.length === 0 ? (
+                                            "No hay habitaciones disponibles para estas fechas."
+                                        ) : (
+                                            <>
+                                                No hay habitaciones disponibles para el tipo seleccionado.
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedRoomType("")}
+                                                    className="mt-3 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                                                >
+                                                    Ver todas las habitaciones
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {rooms.map((room: EspacioHabitacion) => {
+                                        {filteredRooms.map((room: EspacioHabitacion) => {
                                             const isSelected = selectedRoom === room.numero_espacio;
                                             const totalRoomPrice = (room.precio_unidad ?? 0) * nights;
 
@@ -456,7 +606,10 @@ export default function CrearReservacion() {
 
                                                     <div>
                                                         <h4 className="text-xl font-bold text-slate-900">Habitación {room.numero_espacio}</h4>
-                                                        <p className="text-sm font-medium text-slate-500 mt-1 flex items-center gap-1.5">
+                                                        <p className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
+                                                            {room.tipo || 'Sin tipo'}
+                                                        </p>
+                                                        <p className="text-sm font-medium text-slate-500 mt-3 flex items-center gap-1.5">
                                                             <span className="material-symbols-outlined text-[18px]">group</span>
                                                             Capacidad: {room.capacidad_huespedes} personas
                                                         </p>
@@ -500,6 +653,74 @@ export default function CrearReservacion() {
                                     <span className="material-symbols-outlined text-sky-500">person</span>
                                     Datos del huésped
                                 </h3>
+
+                                <div className="space-y-4 mb-6">
+                                    <label className="text-sm font-bold text-slate-700" htmlFor="guest_search">Buscar huésped existente</label>
+                                    <div className="relative">
+                                        <input
+                                            id="guest_search"
+                                            value={guestSearch}
+                                            onChange={(event) => {
+                                                setGuestSearch(event.target.value);
+                                                setSelectedGuest(null);
+                                            }}
+                                            placeholder="Nombre, correo o DNI"
+                                            className="w-full h-11 bg-slate-50 border border-slate-300 rounded-lg px-4 text-slate-800 outline-none transition-all duration-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20"
+                                        />
+                                        {guestSearch && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setGuestSearch("")}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                                            >
+                                                <span className="material-symbols-outlined">close</span>
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {guestSearch && (
+                                        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm max-h-72 overflow-y-auto">
+                                            {isFetchingGuests ? (
+                                                <div className="p-4 text-slate-500">Cargando huéspedes...</div>
+                                            ) : (
+                                                <GuestSuggestions
+                                                    huespedes={huespedes}
+                                                    search={guestSearch}
+                                                    onSelect={(guest) => {
+                                                        setSelectedGuest(guest);
+                                                        setGuestSearch(`${guest.nombres ?? guest.nombre ?? ""} ${guest.apellidos ?? ""}`);
+                                                        setValue("nombres", guest.nombres ?? guest.nombre ?? "");
+                                                        setValue("apellidos", guest.apellidos ?? "");
+                                                        setValue("email", guest.email ?? "");
+                                                        setValue("telefono", guest.telefono ?? "");
+                                                        setValue("dni", guest.dni ?? "");
+                                                    }}
+                                                />
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {selectedGuest && (
+                                    <div className="mb-6 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-slate-700">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900">Huésped seleccionado</p>
+                                                <p className="text-sm text-slate-600">{selectedGuest.nombres} {selectedGuest.apellidos}</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setSelectedGuest(null);
+                                                    setGuestSearch("");
+                                                }}
+                                                className="text-sky-700 text-sm font-semibold hover:underline"
+                                            >
+                                                Limpiar selección
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <ValidatedInput
@@ -653,12 +874,17 @@ export default function CrearReservacion() {
                                 <div>
                                     <p className="text-xs text-slate-400 font-bold uppercase mb-2">Detalles de Habitación</p>
                                     {selectedRoomData ? (
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <p className="font-bold text-slate-900 text-lg">Hab. {selectedRoomData.numero_espacio}</p>
-                                                <p className="text-xs text-slate-500 mt-1">Capacidad: {selectedRoomData.capacidad_huespedes} pax</p>
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-bold text-slate-900 text-lg">Hab. {selectedRoomData.numero_espacio}</p>
+                                                    <p className="text-xs text-slate-500 mt-1">Capacidad: {selectedRoomData.capacidad_huespedes} pax</p>
+                                                </div>
+                                                <p className="font-bold text-slate-700">L. {selectedRoomData.precio_unidad} <span className="text-xs font-normal text-slate-400">/noche</span></p>
                                             </div>
-                                            <p className="font-bold text-slate-700">L. {selectedRoomData.precio_unidad} <span className="text-xs font-normal text-slate-400">/noche</span></p>
+                                            <div className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-slate-600">
+                                                {selectedRoomData.tipo || selectedRoomType || 'Sin tipo'}
+                                            </div>
                                         </div>
                                     ) : (
                                         <p className="text-sm font-medium text-slate-400 italic">No seleccionada aún</p>

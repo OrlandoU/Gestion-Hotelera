@@ -108,7 +108,7 @@ export default function ClientDetailPage() {
   const fullName = getFullName(client);
   const guestEmail = client.email ?? "—";
   const guestPhone = client.telefono ?? "—";
-  const guestTotalSpent = client.total_gastado ?? 0;
+  const guestTotalSpent = client.total_pagado ?? 0;
   const guestTotalStays = client.estancias ?? 0;
   const guestLoyaltyTier = client.loyaltyTier ?? getLoyaltyTier(client);
   const guestNotes = client.notes ?? [];
@@ -175,7 +175,7 @@ export default function ClientDetailPage() {
                   </li>
                   <li className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm">
                     <span className="material-symbols-outlined text-[16px] text-slate-400">call</span>
-                    <span className="truncate">{client.phone}</span>
+                    <span className="truncate">{guestPhone}</span>
                   </li>
                   <li className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm">
                     <span className="material-symbols-outlined text-[16px] text-slate-400">event</span>
@@ -233,8 +233,18 @@ export default function ClientDetailPage() {
                     {reservations.map((reservation) => {
                       const reservationId = reservation.reserva_id ?? 0;
                       const roomName = reservation.numero_espacio ?? reservation.numero_reserva ?? `Reserva ${reservationId}`;
-                      const checkIn = reservation.fecha_entrada ?? "—";
-                      const checkOut = reservation.fecha_salida ?? "—";
+                      const formatDate = (value?: string | null) => {
+                        if (!value) return "—";
+                        const date = new Date(value);
+                        if (Number.isNaN(date.getTime())) return value;
+                        return date.toLocaleDateString("es-HN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        });
+                      };
+                      const checkIn = formatDate(reservation.fecha_entrada);
+                      const checkOut = formatDate(reservation.fecha_salida);
                       const totalAmount = reservation.total_pagar ?? reservation.monto_pagado ?? 0;
                       const reservationStatus = reservation.reserva_estado ?? reservation.status ?? "Pendiente";
                       const cfg = STATUS_CONFIG[reservationStatus] || {

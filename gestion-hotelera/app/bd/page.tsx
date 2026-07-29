@@ -8,6 +8,7 @@ import Button from "@/components/ui/button";
 import NewReservation from "@/components/NewReservation";
 import Modal from "@/components/Modal";
 import MantenimientoModal from "@/components/MantenimientoModal";
+import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
 import { useMemo, useState } from "react";
 import { createHuesped } from "@/functions/huesped";
 import {
@@ -16,9 +17,11 @@ import {
     useActividadesMantenimiento,
     useConsumoStockSemanal,
     useOcupacionMensual,
+    crearIncidente,
 } from "@/functions/reportes-api";
 import { toast } from "sonner";
 import { formatLempiras } from "@/lib/utils";
+import { getCurrentUser } from "@/functions/auth";
 
 const formatCurrency = (value: number) => formatLempiras(value);
 
@@ -52,12 +55,30 @@ export default function Page() {
         dni: "",
     });
     const [clienteSubmitting, setClienteSubmitting] = useState(false);
-    const [incidenteForm, setIncidenteForm] = useState({
+    const [clienteTouched, setClienteTouched] = useState<Record<string, boolean>>({});
+    const [clienteErrors, setClienteErrors] = useState<Record<string, string>>({});
+    const getDefaultIncidenteForm = () => ({
+        usuario_id: getCurrentUser()?.usuario_id ? String(getCurrentUser()!.usuario_id) : "",
         tipo: "",
         detalles: "",
         causas: "",
         recomendaciones: "",
+        fecha: "",
     });
+    const [incidenteForm, setIncidenteForm] = useState(getDefaultIncidenteForm);
+    const [incidenteTouched, setIncidenteTouched] = useState<Record<string, boolean>>({});
+    const [incidenteErrors, setIncidenteErrors] = useState<Record<string, string>>({});
+
+    const tipoIncidenteOptions = [
+        { label: "Electricidad / Apagón", value: "Electricidad" },
+        { label: "Red / Sistema / Internet", value: "Red" },
+        { label: "Incendio / Fuego / Humo", value: "Incendio" },
+        { label: "Agua / Fuga / Inundación", value: "Agua" },
+        { label: "Seguridad / Robo / Intrusión", value: "Seguridad" },
+        { label: "Otro", value: "Otro" },
+    ];
+    const [incidenteSubmitting, setIncidenteSubmitting] = useState(false);
+    const [incidenteSubmitMessage, setIncidenteSubmitMessage] = useState<string | null>(null);
 
     const habitacionesData = useMemo(() => habitacionesApi || [], [habitacionesApi]);
     const ocupacionData = useMemo(() => ocupacionApi || [], [ocupacionApi]);
@@ -110,11 +131,97 @@ export default function Page() {
         icon: reserva.reserva_estado?.toLowerCase().includes("check") ? "how_to_reg" : "calendar_month",
     }));
 
+    const validateClienteField = (field: keyof typeof clienteForm) => {
+        const nextErrors: Record<string, string> = { ...clienteErrors };
+
+        switch (field) {
+            case "nombres":
+                if (!clienteForm.nombres.trim() || clienteForm.nombres.trim().length < 2 || clienteForm.nombres.trim().length > 60) {
+                    nextErrors.nombres = "Ingresa un nombre válido de 2 a 60 caracteres.";
+                } else {
+                    delete nextErrors.nombres;
+                }
+                break;
+            case "apellidos":
+                if (!clienteForm.apellidos.trim() || clienteForm.apellidos.trim().length < 2 || clienteForm.apellidos.trim().length > 80) {
+                    nextErrors.apellidos = "Ingresa un apellido válido de 2 a 80 caracteres.";
+                } else {
+                    delete nextErrors.apellidos;
+                }
+                break;
+            case "telefono": {
+                const telefonoDigits = clienteForm.telefono.replace(/\D/g, "");
+                if (!telefonoDigits) {
+                    nextErrors.telefono = "Ingresa un teléfono.";
+                } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
+                    nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+                } else {
+                    delete nextErrors.telefono;
+                }
+                break;
+            }
+            case "email":
+                if (!clienteForm.email.trim()) {
+                    nextErrors.email = "Ingresa un correo electrónico.";
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteForm.email)) {
+                    nextErrors.email = "El correo electrónico no es válido.";
+                } else if (clienteForm.email.trim().length > 120) {
+                    nextErrors.email = "El correo electrónico no puede superar 120 caracteres.";
+                } else {
+                    delete nextErrors.email;
+                }
+                break;
+            case "dni":
+                if (!clienteForm.dni.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(clienteForm.dni.trim())) {
+                    nextErrors.dni = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
+                } else {
+                    delete nextErrors.dni;
+                }
+                break;
+            default:
+                break;
+        }
+
+        setClienteErrors(nextErrors);
+        setClienteTouched((prev) => ({ ...prev, [field]: true }));
+        return !nextErrors[field];
+    };
+
+    const validateClienteForm = () => {
+        const nextErrors: Record<string, string> = {};
+
+        if (!clienteForm.nombres.trim() || clienteForm.nombres.trim().length < 2 || clienteForm.nombres.trim().length > 60) {
+            nextErrors.nombres = "Ingresa un nombre válido de 2 a 60 caracteres.";
+        }
+        if (!clienteForm.apellidos.trim() || clienteForm.apellidos.trim().length < 2 || clienteForm.apellidos.trim().length > 80) {
+            nextErrors.apellidos = "Ingresa un apellido válido de 2 a 80 caracteres.";
+        }
+        const telefonoDigits = clienteForm.telefono.replace(/\D/g, "");
+        if (!telefonoDigits) {
+            nextErrors.telefono = "Ingresa un teléfono.";
+        } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
+            nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+        }
+        if (!clienteForm.email.trim()) {
+            nextErrors.email = "Ingresa un correo electrónico.";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clienteForm.email)) {
+            nextErrors.email = "El correo electrónico no es válido.";
+        } else if (clienteForm.email.trim().length > 120) {
+            nextErrors.email = "El correo electrónico no puede superar 120 caracteres.";
+        }
+        if (!clienteForm.dni.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(clienteForm.dni.trim())) {
+            nextErrors.dni = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
+        }
+
+        setClienteErrors(nextErrors);
+        setClienteTouched({ nombres: true, apellidos: true, telefono: true, email: true, dni: true });
+        return Object.keys(nextErrors).length === 0;
+    };
+
     const handleClienteSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        if (!clienteForm.nombres.trim() || !clienteForm.apellidos.trim() || !clienteForm.telefono.trim() || !clienteForm.email.trim() || !clienteForm.dni.trim()) {
-            toast.error("Completa todos los campos para crear el cliente.");
+        if (!validateClienteForm()) {
             return;
         }
 
@@ -123,6 +230,8 @@ export default function Page() {
             await createHuesped(clienteForm);
             toast.success("Cliente creado correctamente.");
             setClienteForm({ nombres: "", apellidos: "", telefono: "", email: "", dni: "" });
+            setClienteTouched({});
+            setClienteErrors({});
             setClienteModalOpen(false);
         } catch (error) {
             console.error(error);
@@ -132,17 +241,124 @@ export default function Page() {
         }
     };
 
-    const handleIncidenteSubmit = (event: React.FormEvent) => {
+    const resetIncidenteForm = () => {
+        setIncidenteForm(getDefaultIncidenteForm());
+        setIncidenteErrors({});
+        setIncidenteTouched({});
+        setIncidenteSubmitMessage(null);
+    };
+
+    const validateIncidenteField = (field: keyof typeof incidenteForm) => {
+        const nextErrors: Record<string, string> = { ...incidenteErrors };
+
+        if (field === "tipo") {
+            if (!incidenteForm.tipo.trim() || incidenteForm.tipo.trim().length < 3) {
+                nextErrors.tipo = "Indica un tipo de incidente válido.";
+            } else {
+                delete nextErrors.tipo;
+            }
+        }
+
+        if (field === "detalles") {
+            if (!incidenteForm.detalles.trim() || incidenteForm.detalles.trim().length < 10) {
+                nextErrors.detalles = "Describe el incidente con al menos 10 caracteres.";
+            } else {
+                delete nextErrors.detalles;
+            }
+        }
+
+        if (field === "causas") {
+            if (incidenteForm.causas.trim() && incidenteForm.causas.trim().length < 6) {
+                nextErrors.causas = "La causa debe tener al menos 6 caracteres.";
+            } else {
+                delete nextErrors.causas;
+            }
+        }
+
+        if (field === "recomendaciones") {
+            if (incidenteForm.recomendaciones.trim() && incidenteForm.recomendaciones.trim().length < 6) {
+                nextErrors.recomendaciones = "La recomendación debe tener al menos 6 caracteres.";
+            } else {
+                delete nextErrors.recomendaciones;
+            }
+        }
+
+        if (field === "fecha") {
+            if (!incidenteForm.fecha.trim()) {
+                nextErrors.fecha = "Selecciona la fecha del incidente.";
+            } else {
+                delete nextErrors.fecha;
+            }
+        }
+
+        setIncidenteErrors(nextErrors);
+        setIncidenteTouched((prev) => ({ ...prev, [field]: true }));
+        return !nextErrors[field];
+    };
+
+    const validateIncidenteForm = () => {
+        const nextErrors: Record<string, string> = {};
+
+        if (!incidenteForm.tipo.trim() || incidenteForm.tipo.trim().length < 3) {
+            nextErrors.tipo = "Indica un tipo de incidente válido.";
+        }
+
+        if (!incidenteForm.detalles.trim() || incidenteForm.detalles.trim().length < 10) {
+            nextErrors.detalles = "Describe el incidente con al menos 10 caracteres.";
+        }
+
+        if (incidenteForm.causas.trim() && incidenteForm.causas.trim().length < 6) {
+            nextErrors.causas = "La causa debe tener al menos 6 caracteres.";
+        }
+
+        if (incidenteForm.recomendaciones.trim() && incidenteForm.recomendaciones.trim().length < 6) {
+            nextErrors.recomendaciones = "La recomendación debe tener al menos 6 caracteres.";
+        }
+
+        if (!incidenteForm.fecha.trim()) {
+            nextErrors.fecha = "Selecciona la fecha del incidente.";
+        }
+
+        setIncidenteErrors(nextErrors);
+        setIncidenteTouched({ tipo: true, detalles: true, causas: true, recomendaciones: true, fecha: true });
+        return Object.keys(nextErrors).length === 0;
+    };
+
+    const handleIncidenteSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        if (!incidenteForm.tipo.trim() || !incidenteForm.detalles.trim()) {
-            toast.error("Indica el tipo y los detalles del incidente.");
+        if (!validateIncidenteForm()) {
+            toast.error("Revisa los campos del incidente antes de guardar.");
             return;
         }
 
-        toast.success("Incidente registrado. Se añadirá al reporte correspondiente.");
-        setIncidenteForm({ tipo: "", detalles: "", causas: "", recomendaciones: "" });
-        setIncidenteModalOpen(false);
+        if (!incidenteForm.usuario_id) {
+            toast.error("No se encontró el usuario actual. Vuelve a iniciar sesión.");
+            return;
+        }
+
+        setIncidenteSubmitting(true);
+        setIncidenteSubmitMessage(null);
+
+        try {
+            await crearIncidente({
+                usuario_id: Number(incidenteForm.usuario_id),
+                tipo: incidenteForm.tipo,
+                detalles: incidenteForm.detalles,
+                causas: incidenteForm.causas || undefined,
+                recomendaciones: incidenteForm.recomendaciones || undefined,
+                fecha: incidenteForm.fecha,
+            });
+            setIncidenteSubmitMessage("Incidente registrado correctamente.");
+            toast.success("Incidente registrado. Se añadirá al reporte correspondiente.");
+            resetIncidenteForm();
+            setIncidenteModalOpen(false);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "No se pudo registrar el incidente.";
+            toast.error(message);
+        } finally {
+            setIncidenteSubmitting(false);
+        }
     };
 
     return (
@@ -174,7 +390,10 @@ export default function Page() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setIncidenteModalOpen(true)}
+                            onClick={() => {
+                                resetIncidenteForm();
+                                setIncidenteModalOpen(true);
+                            }}
                             className="col-span-1 inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-300 bg-white px-4 py-4 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
                             <span className="material-symbols-outlined">report_problem</span>
@@ -342,58 +561,93 @@ export default function Page() {
                         Registra un nuevo huésped o cliente desde el panel principal.
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
-                        <label className="text-sm font-semibold text-slate-700">
-                            <span className="mb-2 block">Nombres</span>
-                            <input
-                                value={clienteForm.nombres}
-                                onChange={(event) => setClienteForm((prev) => ({ ...prev, nombres: event.target.value }))}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                                placeholder="Ej. Orlando"
-                                required
-                            />
-                        </label>
-                        <label className="text-sm font-semibold text-slate-700">
-                            <span className="mb-2 block">Apellidos</span>
-                            <input
-                                value={clienteForm.apellidos}
-                                onChange={(event) => setClienteForm((prev) => ({ ...prev, apellidos: event.target.value }))}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                                placeholder="Ej. Mendoza"
-                                required
-                            />
-                        </label>
-                        <label className="text-sm font-semibold text-slate-700">
-                            <span className="mb-2 block">Teléfono</span>
-                            <input
-                                value={clienteForm.telefono}
-                                onChange={(event) => setClienteForm((prev) => ({ ...prev, telefono: event.target.value }))}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                                placeholder="96751977"
-                                required
-                            />
-                        </label>
-                        <label className="text-sm font-semibold text-slate-700">
-                            <span className="mb-2 block">Correo</span>
-                            <input
-                                type="email"
-                                value={clienteForm.email}
-                                onChange={(event) => setClienteForm((prev) => ({ ...prev, email: event.target.value }))}
-                                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                                placeholder="cliente@hotel.com"
-                                required
-                            />
-                        </label>
-                    </div>
-                    <label className="block text-sm font-semibold text-slate-700">
-                        <span className="mb-2 block">Documento</span>
-                        <input
-                            value={clienteForm.dni}
-                            onChange={(event) => setClienteForm((prev) => ({ ...prev, dni: event.target.value }))}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                            placeholder="12345678"
+                        <ValidatedInput
+                            label="Nombres"
+                            value={clienteForm.nombres}
+                            onChange={(value) => {
+                                setClienteForm((prev) => ({ ...prev, nombres: value }));
+                                setClienteErrors((prev) => ({ ...prev, nombres: "" }));
+                            }}
+                            onBlur={() => {
+                                setClienteTouched((prev) => ({ ...prev, nombres: true }));
+                                validateClienteField("nombres");
+                            }}
+                            onFocus={() => setClienteTouched((prev) => ({ ...prev, nombres: true }))}
+                            error={clienteErrors.nombres}
+                            touched={clienteTouched.nombres || Boolean(clienteErrors.nombres)}
+                            placeholder="Ej. Orlando"
                             required
                         />
-                    </label>
+                        <ValidatedInput
+                            label="Apellidos"
+                            value={clienteForm.apellidos}
+                            onChange={(value) => {
+                                setClienteForm((prev) => ({ ...prev, apellidos: value }));
+                                setClienteErrors((prev) => ({ ...prev, apellidos: "" }));
+                            }}
+                            onBlur={() => {
+                                setClienteTouched((prev) => ({ ...prev, apellidos: true }));
+                                validateClienteField("apellidos");
+                            }}
+                            onFocus={() => setClienteTouched((prev) => ({ ...prev, apellidos: true }))}
+                            error={clienteErrors.apellidos}
+                            touched={clienteTouched.apellidos || Boolean(clienteErrors.apellidos)}
+                            placeholder="Ej. Mendoza"
+                            required
+                        />
+                        <ValidatedInput
+                            label="Teléfono"
+                            value={clienteForm.telefono}
+                            onChange={(value) => {
+                                setClienteForm((prev) => ({ ...prev, telefono: value }));
+                                setClienteErrors((prev) => ({ ...prev, telefono: "" }));
+                            }}
+                            onBlur={() => {
+                                setClienteTouched((prev) => ({ ...prev, telefono: true }));
+                                validateClienteField("telefono");
+                            }}
+                            onFocus={() => setClienteTouched((prev) => ({ ...prev, telefono: true }))}
+                            error={clienteErrors.telefono}
+                            touched={clienteTouched.telefono || Boolean(clienteErrors.telefono)}
+                            placeholder="96751977"
+                            required
+                        />
+                        <ValidatedInput
+                            label="Correo"
+                            type="email"
+                            value={clienteForm.email}
+                            onChange={(value) => {
+                                setClienteForm((prev) => ({ ...prev, email: value }));
+                                setClienteErrors((prev) => ({ ...prev, email: "" }));
+                            }}
+                            onBlur={() => {
+                                setClienteTouched((prev) => ({ ...prev, email: true }));
+                                validateClienteField("email");
+                            }}
+                            onFocus={() => setClienteTouched((prev) => ({ ...prev, email: true }))}
+                            error={clienteErrors.email}
+                            touched={clienteTouched.email || Boolean(clienteErrors.email)}
+                            placeholder="cliente@hotel.com"
+                            required
+                        />
+                    </div>
+                    <ValidatedInput
+                        label="Documento"
+                        value={clienteForm.dni}
+                        onChange={(value) => {
+                            setClienteForm((prev) => ({ ...prev, dni: value }));
+                            setClienteErrors((prev) => ({ ...prev, dni: "" }));
+                        }}
+                        onBlur={() => {
+                            setClienteTouched((prev) => ({ ...prev, dni: true }));
+                            validateClienteField("dni");
+                        }}
+                        onFocus={() => setClienteTouched((prev) => ({ ...prev, dni: true }))}
+                        error={clienteErrors.dni}
+                        touched={clienteTouched.dni || Boolean(clienteErrors.dni)}
+                        placeholder="12345678"
+                        required
+                    />
                     <div className="flex justify-end">
                         <Button type="submit" disabled={clienteSubmitting} variant="primary">
                             {clienteSubmitting ? "Guardando..." : "Guardar cliente"}
@@ -409,51 +663,105 @@ export default function Page() {
             />
 
             <Modal open={incidenteModalOpen} onClose={() => setIncidenteModalOpen(false)} title="Registrar incidente">
-                <form onSubmit={handleIncidenteSubmit} className="space-y-4">
-                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-600">
-                        Describe lo sucedido para dejarlo registrado en el seguimiento del hotel.
+                <form onSubmit={handleIncidenteSubmit} className="space-y-5">
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                        <p className="text-sm font-medium text-slate-700">Registra el incidente con la información necesaria para seguimiento y control.</p>
                     </div>
-                    <label className="block text-sm font-semibold text-slate-700">
-                        <span className="mb-2 block">Tipo de incidente</span>
-                        <input
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <ValidatedSelect
+                            label="Tipo"
                             value={incidenteForm.tipo}
-                            onChange={(event) => setIncidenteForm((prev) => ({ ...prev, tipo: event.target.value }))}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                            placeholder="Ej. Corte de energía"
+                            onChange={(value) => {
+                                setIncidenteForm((prev) => ({ ...prev, tipo: value }));
+                                setIncidenteErrors((prev) => ({ ...prev, tipo: "" }));
+                            }}
+                            onBlur={() => validateIncidenteField("tipo")}
+                            onFocus={() => setIncidenteTouched((prev) => ({ ...prev, tipo: true }))}
+                            error={incidenteErrors.tipo}
+                            touched={incidenteTouched.tipo || Boolean(incidenteErrors.tipo)}
+                            placeholder="Selecciona un tipo"
+                            options={tipoIncidenteOptions}
                             required
                         />
-                    </label>
-                    <label className="block text-sm font-semibold text-slate-700">
-                        <span className="mb-2 block">Detalles</span>
-                        <textarea
-                            value={incidenteForm.detalles}
-                            onChange={(event) => setIncidenteForm((prev) => ({ ...prev, detalles: event.target.value }))}
-                            className="min-h-28 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                            placeholder="Describe el problema, el impacto y el momento en que ocurrió."
-                            required
-                        />
-                    </label>
-                    <label className="block text-sm font-semibold text-slate-700">
-                        <span className="mb-2 block">Causas</span>
-                        <textarea
-                            value={incidenteForm.causas}
-                            onChange={(event) => setIncidenteForm((prev) => ({ ...prev, causas: event.target.value }))}
-                            className="min-h-20 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                            placeholder="Opcional"
-                        />
-                    </label>
-                    <label className="block text-sm font-semibold text-slate-700">
-                        <span className="mb-2 block">Recomendaciones</span>
-                        <textarea
-                            value={incidenteForm.recomendaciones}
-                            onChange={(event) => setIncidenteForm((prev) => ({ ...prev, recomendaciones: event.target.value }))}
-                            className="min-h-20 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
-                            placeholder="Opcional"
-                        />
-                    </label>
-                    <div className="flex justify-end">
-                        <Button type="submit" variant="primary">
-                            Guardar incidente
+                    </div>
+
+                    <ValidatedInput
+                        label="Detalles"
+                        value={incidenteForm.detalles}
+                        onChange={(value) => {
+                            setIncidenteForm((prev) => ({ ...prev, detalles: value }));
+                            setIncidenteErrors((prev) => ({ ...prev, detalles: "" }));
+                        }}
+                        onBlur={() => validateIncidenteField("detalles")}
+                        onFocus={() => setIncidenteTouched((prev) => ({ ...prev, detalles: true }))}
+                        error={incidenteErrors.detalles}
+                        touched={incidenteTouched.detalles || Boolean(incidenteErrors.detalles)}
+                        placeholder="Describe el incidente"
+                        required
+                        multiline
+                    />
+
+                    <ValidatedInput
+                        label="Causas"
+                        value={incidenteForm.causas}
+                        onChange={(value) => {
+                            setIncidenteForm((prev) => ({ ...prev, causas: value }));
+                            setIncidenteErrors((prev) => ({ ...prev, causas: "" }));
+                        }}
+                        onBlur={() => validateIncidenteField("causas")}
+                        onFocus={() => setIncidenteTouched((prev) => ({ ...prev, causas: true }))}
+                        error={incidenteErrors.causas}
+                        touched={incidenteTouched.causas || Boolean(incidenteErrors.causas)}
+                        placeholder="Opcional"
+                    />
+
+                    <ValidatedInput
+                        label="Recomendaciones"
+                        value={incidenteForm.recomendaciones}
+                        onChange={(value) => {
+                            setIncidenteForm((prev) => ({ ...prev, recomendaciones: value }));
+                            setIncidenteErrors((prev) => ({ ...prev, recomendaciones: "" }));
+                        }}
+                        onBlur={() => validateIncidenteField("recomendaciones")}
+                        onFocus={() => setIncidenteTouched((prev) => ({ ...prev, recomendaciones: true }))}
+                        error={incidenteErrors.recomendaciones}
+                        touched={incidenteTouched.recomendaciones || Boolean(incidenteErrors.recomendaciones)}
+                        placeholder="Opcional"
+                    />
+
+                    <ValidatedInput
+                        label="Fecha"
+                        value={incidenteForm.fecha}
+                        type="datetime-local"
+                        onChange={(value) => {
+                            setIncidenteForm((prev) => ({ ...prev, fecha: value }));
+                            setIncidenteErrors((prev) => ({ ...prev, fecha: "" }));
+                        }}
+                        onBlur={() => validateIncidenteField("fecha")}
+                        onFocus={() => setIncidenteTouched((prev) => ({ ...prev, fecha: true }))}
+                        error={incidenteErrors.fecha}
+                        touched={incidenteTouched.fecha || Boolean(incidenteErrors.fecha)}
+                        required
+                    />
+
+                    {incidenteSubmitMessage ? (
+                        <div className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-700">
+                            {incidenteSubmitMessage}
+                        </div>
+                    ) : null}
+
+                    <div className="flex justify-end gap-3 border-t border-slate-200 pt-4">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIncidenteModalOpen(false)}
+                            className="rounded-xl px-4 py-2 text-sm font-medium text-slate-600"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button type="submit" variant="primary" disabled={incidenteSubmitting} className="rounded-xl px-4 py-2 text-sm font-semibold">
+                            {incidenteSubmitting ? "Guardando..." : "Guardar incidente"}
                         </Button>
                     </div>
                 </form>

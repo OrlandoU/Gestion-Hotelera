@@ -89,21 +89,31 @@ export default function ReservationPage() {
     const pagosData = pagosApi ?? [];
 
     const checkin = async () => {
+        if (!rawReserva?.reserva_id) {
+            toast.error("No se pudo identificar la reserva.");
+            return;
+        }
+
         try {
-            await modificarReserva(rawReserva?.reserva_id, true);
+            await modificarReserva(rawReserva.reserva_id, true);
             toast.success("Reserva checkeada exitosamente");
-        } catch (error) {
+        } catch {
             toast.error("Error al checkear la reserva");
         }
-    }
+    };
 
     const checkout = async () => {
+        if (!rawReserva?.reserva_id) {
+            toast.error("No se pudo identificar la reserva.");
+            return;
+        }
+
         try {
-            await modificarReserva(rawReserva?.reserva_id, false);
+            await modificarReserva(rawReserva.reserva_id, false);
             toast.success("Reserva finalizada exitosamente");
-        } catch (error: any) {
-            // error.message ya contiene el texto extraído del THROW de SQL Server
-            toast.error(error.message || "Error al procesar la reserva");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Error al procesar la reserva";
+            toast.error(message || "Error al procesar la reserva");
         }
     };
 
@@ -206,12 +216,14 @@ export default function ReservationPage() {
     console.log("Normalized Reservation Data:", { bookingId, guest, status, createdAt, stay, room, party, internalNotes, payment, activity });
     const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
 
-    const roomRate = payment?.breakdown?.roomRate ?? 0;
+    const roomRate = payment?.breakdown?.roomRate ?? rawReserva?.precio_unidad ?? 0;
     const extras = payment?.breakdown?.extras ?? 0;
-    const totalCargos = payment?.total ?? (roomRate + extras);
-
-    const amountPaid = payment?.amountPaid ?? (status !== "Pending" ? totalCargos : 0);
-    const saldoPendiente = totalCargos - amountPaid;
+    const nights = stay?.nights ?? rawReserva?.cantidad_unidades ?? 0;
+    const subtotal = (nights > 0 ? roomRate * nights : rawReserva?.total_pagar ?? 0) * .85;
+    const impuesto = subtotal * 0.15;
+    const totalCargos = payment?.total ?? rawReserva?.total_pagar ?? subtotal + impuesto + extras;
+    const amountPaid = payment?.amountPaid ?? rawReserva?.monto_pagado ?? 0;
+    const saldoPendiente = Math.max(0, totalCargos - amountPaid);
 
     const currentStatus = STATUS_CONFIG[status ?? "Pending"] || { label: status ?? "Pendiente", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" };
 
@@ -357,7 +369,7 @@ export default function ReservationPage() {
                                     className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">login</span>
-                                    {status === 'Reservada' ? 'Procesar Check-in' : status === 'Hospedado' ? 'Procesar Check-out' : 'Finalizada'}
+                                    {status === 'Reservada' ? 'Procesar Check-in' : status === 'Hospedado' ? 'Procesar Check-out' : status === 'Finalizada' ? 'Finalizada' : 'Procesar Check-in (Deposito faltante)'}
                                 </Button>
                             )}
                             <Link href={`/bd/reservaciones/${id}/pagos`} className="w-full min-h-11 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
@@ -383,17 +395,23 @@ export default function ReservationPage() {
                         </h3>
 
                         {/* Desglose de cargos */}
-                        <div className="space-y-2 mb-4 text-sm">
+                        <div className="space-y-2.5 mb-4 text-sm">
                             <div className="flex justify-between text-slate-600">
-                                <span>Tarifa de habitación ({stay?.nights ?? "0"} noches)</span>
-                                <span className="text-slate-900 font-medium">{formatLempiras(roomRate * 0.85)}</span>
+                                <span>Subtotal ({nights} noches × {formatLempiras(roomRate)})</span>
+                                <span className="text-slate-900 font-medium">{formatLempiras(subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-slate-600">
-                                <span>Impuestos y cargos</span>
-                                <span className="text-slate-900 font-medium">{formatLempiras(roomRate * 0.15)}</span>
+                                <span>Impuestos (15%)</span>
+                                <span className="text-slate-900 font-medium">{formatLempiras(impuesto)}</span>
                             </div>
+                            {extras > 0 ? (
+                                <div className="flex justify-between text-slate-600">
+                                    <span>Cargos adicionales</span>
+                                    <span className="text-slate-900 font-medium">{formatLempiras(extras)}</span>
+                                </div>
+                            ) : null}
                             <div className="flex justify-between pt-2 border-t border-slate-100 font-semibold text-slate-900">
-                                <span>Total Cargos</span>
+                                <span>Total de reserva</span>
                                 <span>{formatLempiras(totalCargos)}</span>
                             </div>
                         </div>
@@ -402,16 +420,15 @@ export default function ReservationPage() {
                         <div className="pt-3 border-t border-slate-200 space-y-2 text-sm bg-slate-50/50 -mx-6 px-6 py-3">
                             <div className="flex justify-between text-emerald-700 font-medium">
                                 <span className="flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-[16px]">check_circle</span> Total Abonado
+                                    <span className="material-symbols-outlined text-[16px]">check_circle</span> Total abonado
                                 </span>
-                                <span>-L {amountPaid.toFixed(2)}</span>
+                                <span>{formatLempiras(amountPaid)}</span>
                             </div>
 
-                            {/* Estado del Balance */}
                             <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200">
-                                <span className="font-bold text-slate-900">Saldo Pendiente</span>
+                                <span className="font-bold text-slate-900">Saldo pendiente</span>
                                 <span className={`text-base font-bold px-2 py-0.5 rounded ${saldoPendiente > 0 ? "text-amber-700 bg-amber-50" : "text-emerald-700 bg-emerald-50"}`}>
-                                    L {saldoPendiente.toFixed(2)}
+                                    {formatLempiras(saldoPendiente)}
                                 </span>
                             </div>
                         </div>

@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.database import get_db
+from app.models.incidente import IncidenteCreateSchema
+from app.repositories.incidente import IncidenteRepository
 from datetime import date
 import pymssql
 
@@ -151,6 +153,10 @@ def read_consumo_amenidades_mensual(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
 
+def get_incidente_repo(db = Depends(get_db)):
+    return IncidenteRepository(db)
+
+
 @router.get("/incidentes")
 def read_incidentes(
     year: int = Query(default=None, description="Formato Entero"),
@@ -164,3 +170,12 @@ def read_incidentes(
         return incidentes
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en BD: {str(e)}")
+
+
+@router.post("/incidentes", status_code=status.HTTP_201_CREATED)
+async def crear_incidente(
+    payload: IncidenteCreateSchema,
+    repo: IncidenteRepository = Depends(get_incidente_repo),
+):
+    repo.crear(payload)
+    return {"message": "Incidente registrado exitosamente"}
