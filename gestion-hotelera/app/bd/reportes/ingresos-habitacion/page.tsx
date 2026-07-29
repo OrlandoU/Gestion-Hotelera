@@ -169,7 +169,7 @@ export default function Page() {
             </div>
           </div>
           <h2 className="font-['Hanken_Grotesk'] text-[20px] font-semibold text-[#000000]">
-            {loading ? <span className="animate-pulse">--</span> : `${globales.totalIngresos.toLocaleString()} Lps`}
+            {loading ? <span className="animate-pulse">--</span> : `L. ${globales.totalIngresos.toLocaleString()}`}
           </h2>
         </div>
 
@@ -322,7 +322,7 @@ export default function Page() {
                             {item.total_noches}
                           </td>
                           <td className="px-6 py-4 text-right text-[14px] font-bold text-[#008cc7]">
-                            {item.ingresos_totales.toLocaleString()} Lps
+                            L. {item.ingresos_totales.toLocaleString()}
                           </td>
                         </tr>
                       );

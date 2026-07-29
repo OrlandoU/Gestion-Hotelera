@@ -373,7 +373,7 @@ export default function Page() {
                             {habitacion.capacidad_huespedes}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">{habitacion.precio_unidad} Lps</td>
+                        <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7]">L. {habitacion.precio_unidad}</td>
                       </tr>
                     );
                   })}
@@ -472,7 +472,7 @@ export default function Page() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingreso Filtrado</p>
-              <h4 className="text-[24px] font-bold text-[#000000]">{(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / 1000).toFixed(1)}k Lps</h4>
+              <h4 className="text-[24px] font-bold text-[#000000]">L. {(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / 1000).toFixed(1)}k</h4>
               <p className="text-[12px] text-[#515f74] mt-2">Total potencial</p>
             </div>
             <span className="material-symbols-outlined text-[32px] text-[#008cc7]">attach_money</span>

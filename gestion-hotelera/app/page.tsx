@@ -454,7 +454,7 @@ export default function HomePage() {
                           >
                             <p className="text-sm font-bold text-[#0f172a]">{TARIFAS[key].nombre}</p>
                             <p className="text-[11px] text-slate-400 mb-2 leading-tight">{TARIFAS[key].desc}</p>
-                            <p className="text-xs font-semibold text-blue-700">{TARIFAS[key].precio}.00 Lps. <span className="text-[10px] font-normal text-slate-400">/ noche</span></p>
+                            <p className="text-xs font-semibold text-blue-700">L. {TARIFAS[key].precio}.00 <span className="text-[10px] font-normal text-slate-400">/ noche</span></p>
                           </div>
                         ))}
                       </div>

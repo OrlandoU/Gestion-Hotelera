@@ -441,10 +441,10 @@ export default function Page() {
                           {reserva.cantidad_unidades}
                         </td>
                         <td className="px-6 py-4 text-[14px] font-medium text-slate-600">
-                          {reserva.precio_unidad} Lps
+                          L. {reserva.precio_unidad}
                         </td>
                         <td className="px-6 py-4 text-[14px] font-bold text-[#008cc7] text-nowrap">
-                          {reserva.total_pagar} Lps
+                          L. {reserva.total_pagar}
                         </td>
                       </tr>
                     );
@@ -482,7 +482,7 @@ export default function Page() {
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingresos de la Selección</p>
               <h4 className="text-[24px] font-bold text-[#000000]">
-                {reservacionesFiltradas.reduce((sum, r) => sum + (r.total_pagar || 0), 0).toLocaleString()} Lps
+                L. {reservacionesFiltradas.reduce((sum, r) => sum + (r.total_pagar || 0), 0).toLocaleString()}
               </h4>
               <p className="text-[12px] text-[#515f74] mt-2">Impacto monetario neto de los elementos visibles</p>
             </div>

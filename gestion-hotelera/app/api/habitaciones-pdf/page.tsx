@@ -251,7 +251,7 @@ function EstadoHabitacionesPdfContent() {
                                             {habitacion.capacidad_huespedes}
                                         </td>
                                         <td className="px-3 py-2 text-[11px] font-bold text-[#008cc7]">
-                                            {habitacion.precio_unidad} Lps
+                                            L. {habitacion.precio_unidad}
                                         </td>
                                     </tr>
                                 ))}
@@ -270,13 +270,13 @@ function EstadoHabitacionesPdfContent() {
 
                 <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
                     <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Ingreso Filtrado</p>
-                    <h4 className="text-[22px] font-bold text-[#000000]">{(ingresoFiltrado / 1000).toFixed(1)}k Lps</h4>
+                    <h4 className="text-[22px] font-bold text-[#000000]">L. {(ingresoFiltrado / 1000).toFixed(1)}k</h4>
                     <p className="text-[12px] text-[#515f74] mt-2">Total potencial</p>
                 </div>
 
                 <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
                     <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Precio Promedio</p>
-                    <h4 className="text-[22px] font-bold text-[#000000]">{precioPromedio} Lps</h4>
+                    <h4 className="text-[22px] font-bold text-[#000000]">L. {precioPromedio}</h4>
                     <p className="text-[12px] text-[#515f74] mt-2">Del filtrado</p>
                 </div>
             </section>
