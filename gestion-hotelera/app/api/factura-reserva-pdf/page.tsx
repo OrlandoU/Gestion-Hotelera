@@ -9,8 +9,8 @@ interface ReservaPdfData {
     reserva_id?: number | string;
     nombres?: string;
     apellidos?: string;
-    email_huesped?: string;
-    telefono_huesped?: string;
+    email?: string;
+    telefono?: string;
     numero_espacio?: string;
     fecha_entrada?: string;
     fecha_salida?: string;
@@ -161,8 +161,8 @@ function FacturaReservaPdfContent() {
                     <div>
                         <p className="font-bold text-slate-900 uppercase tracking-wider mb-2">Facturar a</p>
                         <p className="font-bold text-slate-800 text-sm">{reserva?.nombres || "Huésped"} {reserva?.apellidos || ""}</p>
-                        <p className="text-slate-600 mt-1">{reserva?.email_huesped || "correo@huesped.com"}</p>
-                        <p className="text-slate-600">{reserva?.telefono_huesped || "—"}</p>
+                        <p className="text-slate-600 mt-1">{reserva?.email || "correo@huesped.com"}</p>
+                        <p className="text-slate-600">{reserva?.telefono || "—"}</p>
                         <p className="text-slate-600">Ref: {reserva?.numero_reserva || `#${reserva?.reserva_id ?? "—"}`}</p>
                     </div>
                     <div>
