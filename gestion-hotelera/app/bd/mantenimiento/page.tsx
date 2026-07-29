@@ -58,24 +58,24 @@ export default function MantenimientoPage() {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-xl border border-slate-200 p-5">
+                <div className="bg-white rounded-xl border border-slate-300 p-5 shadow-sm b-1" >
                     <div className="text-xs text-slate-500 uppercase font-semibold">Tickets</div>
                     <div className="text-2xl font-bold mt-2">{total}</div>
                     <div className="text-sm text-slate-500 mt-1">Total en el sistema</div>
                 </div>
-                <div className="bg-white rounded-xl border border-slate-200 p-5">
+                <div className="bg-white rounded-xl border border-slate-300 p-5 shadow-sm b-1" >
                     <div className="text-xs text-slate-500 uppercase font-semibold">Pendientes</div>
                     <div className="text-2xl font-bold mt-2">{pendientes}</div>
                     <div className="text-sm text-amber-600 mt-1">Requiere acción</div>
                 </div>
-                <div className="bg-white rounded-xl border border-slate-200 p-5">
+                <div className="bg-white rounded-xl border border-slate-300 p-5 shadow-sm b-1" >
                     <div className="text-xs text-slate-500 uppercase font-semibold">Alta prioridad</div>
                     <div className="text-2xl font-bold mt-2 text-red-600">{altas}</div>
                     <div className="text-sm text-red-500 mt-1">Atender urgente</div>
                 </div>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 p-5">
+            <div className="bg-white rounded-xl border border-slate-300 p-5 shadow-sm b-1" >
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                     <div className="flex items-center gap-3 w-full md:w-1/2">
                         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por ticket, título, descripción, habitación o responsable" className="w-full px-3 py-2 border rounded-md text-sm" />
