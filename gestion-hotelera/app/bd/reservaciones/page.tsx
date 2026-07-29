@@ -71,7 +71,7 @@ const handleEnlace = (telefono: string, nombre_huesped: string, total_pagar: num
 
     const mensaje = `Hola ${nombre_huesped} ${saludo}. Soy el recepcionista de Hotel San Pedro. Para confirmar su reservación, por favor realice un depósito del 50% del saldo total (${total_depositar} Lempiras). Muchas gracias.`;
 
-    return `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    return `https://wa.me/504${telefono}?text=${encodeURIComponent(mensaje)}`;
 };
 
 function getDatesInRange(start: Date, end: Date) {

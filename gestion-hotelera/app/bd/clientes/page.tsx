@@ -94,11 +94,14 @@ export default function ClientesPage() {
     if (!formData.apellidos.trim() || formData.apellidos.trim().length < 2 || formData.apellidos.trim().length > 80) {
       nextErrors.apellidos = "Ingresa un apellido válido de 2 a 80 caracteres.";
     }
-    const telefonoDigits = formData.telefono.replace(/\D/g, "");
+    const telefonoDigits = (formData.telefono || "").replace(/\D/g, "");
+
     if (!telefonoDigits) {
       nextErrors.telefono = "Ingresa un teléfono.";
-    } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
-      nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+    } else if (telefonoDigits.length !== 8) {
+      nextErrors.telefono = "El teléfono debe tener 8 dígitos.";
+    } else {
+      delete nextErrors.telefono; // Limpia el error cuando la validación pasa correctamente
     }
     if (!formData.email.trim()) {
       nextErrors.email = "Ingresa un correo electrónico.";
@@ -134,18 +137,18 @@ export default function ClientesPage() {
           delete nextErrors.apellidos;
         }
         break;
-      case "telefono":
-        {
-          const telefonoDigits = formData.telefono.replace(/\D/g, "");
-          if (!telefonoDigits) {
-            nextErrors.telefono = "Ingresa un teléfono.";
-          } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
-            nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
-          } else {
-            delete nextErrors.telefono;
-          }
+      case "telefono": {
+        const tel = formData.telefono?.trim() || "";
+        // Limpia cualquier carácter que no sea número
+        const digits = tel.replace(/\D/g, "");
+
+        if (!tel || !/^[0-9]{8}$/.test(digits)) {
+          nextErrors.telefono = "El teléfono debe tener exactamente 8 dígitos.";
+        } else {
+          delete nextErrors.telefono;
         }
         break;
+      }
       case "email":
         if (!formData.email.trim()) {
           nextErrors.email = "Ingresa un correo electrónico.";
@@ -259,10 +262,14 @@ export default function ClientesPage() {
               </div>
               <div>
                 <ValidatedInput
+                  id="telefono"
+                  type="tel"
                   label="Teléfono"
                   value={formData.telefono}
                   onChange={(value) => {
-                    setFormData((prev) => ({ ...prev, telefono: value }));
+                    // 1. Sanitización en tiempo real: Solo permite números y un máximo de 8 dígitos
+                    const cleanValue = value.replace(/\D/g, "").slice(0, 8);
+                    setFormData((prev) => ({ ...prev, telefono: cleanValue }));
                     setFormErrors((prev) => ({ ...prev, telefono: "" }));
                   }}
                   onBlur={() => {
@@ -273,6 +280,8 @@ export default function ClientesPage() {
                   error={formErrors.telefono}
                   touched={touched.telefono || Boolean(formErrors.telefono)}
                   placeholder="96751977"
+                  maxLength={8}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20"
                   required
                 />
               </div>

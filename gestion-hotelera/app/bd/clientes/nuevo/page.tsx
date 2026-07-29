@@ -41,11 +41,12 @@ export default function NuevoClientePage() {
                 }
                 break;
             case "telefono": {
-                const telefonoDigits = formData.telefono.replace(/\D/g, "");
-                if (!telefonoDigits) {
-                    nextErrors.telefono = "Ingresa un teléfono.";
-                } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
-                    nextErrors.telefono = "El teléfono debe tener entre 8 y 12 dígitos.";
+                const tel = formData.telefono?.trim() || "";
+                // Limpia cualquier carácter que no sea número
+                const digits = tel.replace(/\D/g, "");
+
+                if (!tel || !/^[0-9]{8}$/.test(digits)) {
+                    nextErrors.telefono = "El teléfono debe tener exactamente 8 dígitos.";
                 } else {
                     delete nextErrors.telefono;
                 }

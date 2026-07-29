@@ -103,8 +103,10 @@ export default function HomePage() {
     const telefonoDigits = telefonoHuesped.replace(/\D/g, "");
     if (!telefonoDigits) {
       nextErrors.telefonoHuesped = "Ingresa un teléfono.";
-    } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
-      nextErrors.telefonoHuesped = "El teléfono debe tener entre 8 y 12 dígitos.";
+    } else if (telefonoDigits.length != 8) {
+      nextErrors.telefonoHuesped = "El teléfono debe tener 8 dígitos.";
+    } else {
+      delete nextErrors.telefonoHuesped;
     }
     if (!dniHuesped.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(dniHuesped.trim())) {
       nextErrors.dniHuesped = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
@@ -171,8 +173,8 @@ export default function HomePage() {
           const telefonoDigits = telefonoHuesped.replace(/\D/g, "");
           if (!telefonoDigits) {
             nextErrors.telefonoHuesped = "Ingresa un teléfono.";
-          } else if (telefonoDigits.length < 8 || telefonoDigits.length > 12) {
-            nextErrors.telefonoHuesped = "El teléfono debe tener entre 8 y 12 dígitos.";
+          } else if (telefonoDigits.length != 8) {
+            nextErrors.telefonoHuesped = "El teléfono debe tener 8 dígitos.";
           } else {
             delete nextErrors.telefonoHuesped;
           }
@@ -356,169 +358,348 @@ export default function HomePage() {
 
         {/* ================= MODAL DE RESERVAS ESTILIZADO ================= */}
         {isActive && (
-          <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-500">
-            <section className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transform animate-fade-up">
+          <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-md z-50 flex items-center justify-center p-3 sm:p-4 transition-all duration-300">
+            <section className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col transform animate-fade-up border border-slate-100">
 
-              {/* Encabezado elegante a juego con la marca oscura */}
-              <div className="px-8 py-5 bg-[#0f172a] text-white flex justify-between items-center">
+              {/* Encabezado elegante con paleta corporativa */}
+              <div className="px-6 py-5 bg-[#282B59] text-white flex justify-between items-center border-b border-white/10">
                 <div>
-                  <h2 className="text-xl font-bold uppercase tracking-wider text-white">Solicitud de Reserva</h2>
-                  <p className="text-xs text-white/60">Personaliza tus datos y confirma tu estadía tradicional</p>
+                  <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-[#777CD9] bg-white/10 px-2.5 py-0.5 rounded-full mb-1">
+                    Reserva Directa
+                  </span>
+                  <h2 className="text-xl font-bold tracking-tight text-white">Solicitud de Reserva</h2>
+                  <p className="text-xs text-slate-300">Personaliza tus datos y confirma tu estadía con nosotros</p>
                 </div>
-                <button onClick={() => setIsActive(false)} className="text-white/60 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors">
-                  ✕
+                <button
+                  type="button"
+                  onClick={() => setIsActive(false)}
+                  className="text-white/70 hover:text-white p-2 rounded-full hover:bg-white/10 transition-all focus:outline-none"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 
-              {/* Formulario en dos columnas */}
-              <form onSubmit={handleFinalizarReserva} className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12">
+              {/* Formulario e resumen */}
+              <form onSubmit={handleFinalizarReserva} className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-slate-100">
 
-                {/* Columna Izquierda: Formulario */}
-                <div className="p-8 md:col-span-7 space-y-6">
+                {/* Columna Izquierda: Formulario (7/12) */}
+                <div className="p-6 md:p-8 md:col-span-7 space-y-8">
+
+                  {/* Sección 1: Datos de Contacto */}
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">1. Datos de Contacto</h3>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#777CD9]/15 text-xs font-bold text-[#42468C]">1</span>
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-[#282B59]">Datos de Contacto</h3>
+                    </div>
+
                     <div className="space-y-4">
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Nombre Completo *</label>
-                        <ValidatedInput label="Nombre Completo *" value={nombreHuesped} onChange={(value) => { setNombreHuesped(value); setFormErrors((prev) => ({ ...prev, nombreHuesped: "" })); }} onBlur={() => { setTouched((prev) => ({ ...prev, nombreHuesped: true })); validateReservationField("nombreHuesped"); }} onFocus={() => setTouched((prev) => ({ ...prev, nombreHuesped: true }))} error={formErrors.nombreHuesped} touched={touched.nombreHuesped || Boolean(formErrors.nombreHuesped)} placeholder="Ej. Jeferson Alexander" className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Nombre Completo *</label>*/}
+                          <ValidatedInput
+                            label="Nombre Completo"
+                            value={nombreHuesped}
+                            onChange={(value) => { setNombreHuesped(value); setFormErrors((prev) => ({ ...prev, nombreHuesped: "" })); }}
+                            onBlur={() => { setTouched((prev) => ({ ...prev, nombreHuesped: true })); validateReservationField("nombreHuesped"); }}
+                            onFocus={() => setTouched((prev) => ({ ...prev, nombreHuesped: true }))}
+                            error={formErrors.nombreHuesped}
+                            touched={touched.nombreHuesped || Boolean(formErrors.nombreHuesped)}
+                            placeholder="Ej. Jeferson Alexander"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                            containerClassName=""
+                            required
+                          />
+                        </div>
+                        <div>
+                          {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Apellido Completo *</label>*/}
+                          <ValidatedInput
+                            label="Apellido Completo"
+                            value={apellidoHuesped}
+                            onChange={(value) => { setApellidoHuesped(value); setFormErrors((prev) => ({ ...prev, apellidoHuesped: "" })); }}
+                            onBlur={() => { setTouched((prev) => ({ ...prev, apellidoHuesped: true })); validateReservationField("apellidoHuesped"); }}
+                            onFocus={() => setTouched((prev) => ({ ...prev, apellidoHuesped: true }))}
+                            error={formErrors.apellidoHuesped}
+                            touched={touched.apellidoHuesped || Boolean(formErrors.apellidoHuesped)}
+                            placeholder="Ej. Umanzor Lagos"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                            containerClassName=""
+                            required
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Apellido Completo *</label>
-                        <ValidatedInput label="Apellido Completo *" value={apellidoHuesped} onChange={(value) => { setApellidoHuesped(value); setFormErrors((prev) => ({ ...prev, apellidoHuesped: "" })); }} onBlur={() => { setTouched((prev) => ({ ...prev, apellidoHuesped: true })); validateReservationField("apellidoHuesped"); }} onFocus={() => setTouched((prev) => ({ ...prev, apellidoHuesped: true }))} error={formErrors.apellidoHuesped} touched={touched.apellidoHuesped || Boolean(formErrors.apellidoHuesped)} placeholder="Ej. Umanzor Lagos" className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Email *</label>*/}
+                          <ValidatedInput
+                            label="Email"
+                            type="email"
+                            value={emailHuesped}
+                            onChange={(value) => { setEmailHuesped(value); setFormErrors((prev) => ({ ...prev, emailHuesped: "" })); }}
+                            onBlur={() => { setTouched((prev) => ({ ...prev, emailHuesped: true })); validateReservationField("emailHuesped"); }}
+                            onFocus={() => setTouched((prev) => ({ ...prev, emailHuesped: true }))}
+                            error={formErrors.emailHuesped}
+                            touched={touched.emailHuesped || Boolean(formErrors.emailHuesped)}
+                            placeholder="huesped@gmail.com"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                            containerClassName=""
+                            required
+                          />
+                        </div>
+                        <div>
+                          {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Teléfono *</label>*/}
+                          <ValidatedInput
+                            label="Teléfono"
+                            type="tel"
+                            value={telefonoHuesped}
+                            onChange={(value) => { setTelefonoHuesped(value); setFormErrors((prev) => ({ ...prev, telefonoHuesped: "" })); }}
+                            onBlur={() => { setTouched((prev) => ({ ...prev, telefonoHuesped: true })); validateReservationField("telefonoHuesped"); }}
+                            onFocus={() => setTouched((prev) => ({ ...prev, telefonoHuesped: true }))}
+                            error={formErrors.telefonoHuesped}
+                            touched={touched.telefonoHuesped || Boolean(formErrors.telefonoHuesped)}
+                            placeholder="25501122"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                            containerClassName=""
+                            required
+                          />
+                        </div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <div>
-                          <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Email *</label>
-                          <ValidatedInput label="Email *" type="email" value={emailHuesped} onChange={(value) => { setEmailHuesped(value); setFormErrors((prev) => ({ ...prev, emailHuesped: "" })); }} onBlur={() => { setTouched((prev) => ({ ...prev, emailHuesped: true })); validateReservationField("emailHuesped"); }} onFocus={() => setTouched((prev) => ({ ...prev, emailHuesped: true }))} error={formErrors.emailHuesped} touched={touched.emailHuesped || Boolean(formErrors.emailHuesped)} placeholder="huesped@gmail.com" className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Teléfono *</label>
-                          <ValidatedInput label="Teléfono *" type="tel" value={telefonoHuesped} onChange={(value) => { setTelefonoHuesped(value); setFormErrors((prev) => ({ ...prev, telefonoHuesped: "" })); }} onBlur={() => { setTouched((prev) => ({ ...prev, telefonoHuesped: true })); validateReservationField("telefonoHuesped"); }} onFocus={() => setTouched((prev) => ({ ...prev, telefonoHuesped: true }))} error={formErrors.telefonoHuesped} touched={touched.telefonoHuesped || Boolean(formErrors.telefonoHuesped)} placeholder="50425500000" className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
-                        </div>
-                        <div>
-                          <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">DNI *</label>
-                          <ValidatedInput label="DNI *" value={dniHuesped} onChange={(value) => { setDniHuesped(value); setFormErrors((prev) => ({ ...prev, dniHuesped: "" })); }} onBlur={() => { setTouched((prev) => ({ ...prev, dniHuesped: true })); validateReservationField("dniHuesped"); }} onFocus={() => setTouched((prev) => ({ ...prev, dniHuesped: true }))} error={formErrors.dniHuesped} touched={touched.dniHuesped || Boolean(formErrors.dniHuesped)} placeholder="0501-2000-01234" className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
-                        </div>
+
+                      <div>
+                        {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">DNI / Identificación *</label>*/}
+                        <ValidatedInput
+                          label="DNI"
+                          value={dniHuesped}
+                          onChange={(value) => { setDniHuesped(value); setFormErrors((prev) => ({ ...prev, dniHuesped: "" })); }}
+                          onBlur={() => { setTouched((prev) => ({ ...prev, dniHuesped: true })); validateReservationField("dniHuesped"); }}
+                          onFocus={() => setTouched((prev) => ({ ...prev, dniHuesped: true }))}
+                          error={formErrors.dniHuesped}
+                          touched={touched.dniHuesped || Boolean(formErrors.dniHuesped)}
+                          placeholder="0501-2000-01234"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                          containerClassName=""
+                          required
+                        />
                       </div>
                     </div>
                   </div>
 
                   <hr className="border-slate-100" />
 
+                  {/* Sección 2: Detalles de la Estancia */}
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">2. Detalles de la Estancia</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#777CD9]/15 text-xs font-bold text-[#42468C]">2</span>
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-[#282B59]">Detalles de la Estancia</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Fecha de Entrada *</label>
-                        <ValidatedInput label="Fecha de Entrada *" type="date" value={fechaIn} onChange={(value) => { setFechaIn(value); setFormErrors((prev) => ({ ...prev, fechaIn: "" })); }} onBlur={() => { setTouched((prev) => ({ ...prev, fechaIn: true })); validateReservationField("fechaIn"); }} onFocus={() => setTouched((prev) => ({ ...prev, fechaIn: true }))} error={formErrors.fechaIn} touched={touched.fechaIn || Boolean(formErrors.fechaIn)} className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
+                        {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Fecha de Entrada *</label>*/}
+                        <ValidatedInput
+                          label="Fecha de Entrada"
+                          type="date"
+                          value={fechaIn}
+                          onChange={(value) => { setFechaIn(value); setFormErrors((prev) => ({ ...prev, fechaIn: "" })); }}
+                          onBlur={() => { setTouched((prev) => ({ ...prev, fechaIn: true })); validateReservationField("fechaIn"); }}
+                          onFocus={() => setTouched((prev) => ({ ...prev, fechaIn: true }))}
+                          error={formErrors.fechaIn}
+                          touched={touched.fechaIn || Boolean(formErrors.fechaIn)}
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                          containerClassName=""
+                          required
+                        />
                       </div>
                       <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Fecha de Salida *</label>
-                        <ValidatedInput label="Fecha de Salida *" type="date" value={fechaOut} onChange={(value) => { setFechaOut(value); setFormErrors((prev) => ({ ...prev, fechaOut: "" })); }} onBlur={() => { setTouched((prev) => ({ ...prev, fechaOut: true })); validateReservationField("fechaOut"); }} onFocus={() => setTouched((prev) => ({ ...prev, fechaOut: true }))} error={formErrors.fechaOut} touched={touched.fechaOut || Boolean(formErrors.fechaOut)} className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
+                        {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Fecha de Salida *</label>*/}
+                        <ValidatedInput
+                          label="Fecha de Salida"
+                          type="date"
+                          value={fechaOut}
+                          onChange={(value) => { setFechaOut(value); setFormErrors((prev) => ({ ...prev, fechaOut: "" })); }}
+                          onBlur={() => { setTouched((prev) => ({ ...prev, fechaOut: true })); validateReservationField("fechaOut"); }}
+                          onFocus={() => setTouched((prev) => ({ ...prev, fechaOut: true }))}
+                          error={formErrors.fechaOut}
+                          touched={touched.fechaOut || Boolean(formErrors.fechaOut)}
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                          containerClassName=""
+                          required
+                        />
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Número de Huéspedes *</label>
-                        <ValidatedInput label="Número de Huéspedes *" type="number" value={String(numeroHuespedes)} onChange={(value) => setNumeroHuespedes(Number(value))} onBlur={() => setTouched((prev) => ({ ...prev, numeroHuespedes: true }))} onFocus={() => setTouched((prev) => ({ ...prev, numeroHuespedes: true }))} touched={touched.numeroHuespedes} className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
+                        {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Número de Huéspedes *</label>*/}
+                        <ValidatedInput
+                          label="Número de Huéspedes"
+                          type="number"
+                          value={String(numeroHuespedes)}
+                          onChange={(value) => setNumeroHuespedes(Number(value))}
+                          onBlur={() => setTouched((prev) => ({ ...prev, numeroHuespedes: true }))}
+                          onFocus={() => setTouched((prev) => ({ ...prev, numeroHuespedes: true }))}
+                          touched={touched.numeroHuespedes}
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                          containerClassName=""
+                          required
+                        />
                       </div>
                       <div>
-                        <label className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Hora Estimada de Llegada *</label>
-                        <ValidatedInput label="Hora Estimada de Llegada *" type="time" value={horaLlegada} onChange={(value) => setHoraLlegada(value)} onBlur={() => setTouched((prev) => ({ ...prev, horaLlegada: true }))} onFocus={() => setTouched((prev) => ({ ...prev, horaLlegada: true }))} touched={touched.horaLlegada} className="border-b border-slate-200 bg-transparent px-0 py-2 text-sm focus:border-[#0f172a]" containerClassName="" required />
+                        {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Hora Estimada de Llegada *</label>*/}
+                        <ValidatedInput
+                          label="Hora Estimada de Llegada"
+                          type="time"
+                          value={horaLlegada}
+                          onChange={(value) => setHoraLlegada(value)}
+                          onBlur={() => setTouched((prev) => ({ ...prev, horaLlegada: true }))}
+                          onFocus={() => setTouched((prev) => ({ ...prev, horaLlegada: true }))}
+                          touched={touched.horaLlegada}
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                          containerClassName=""
+                          required
+                        />
                       </div>
                     </div>
                   </div>
 
                   <hr className="border-slate-100" />
 
+                  {/* Sección 3: Datos Adicionales */}
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">3. Datos Adicionales</h3>
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#777CD9]/15 text-xs font-bold text-[#42468C]">3</span>
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-[#282B59]">Preferencias Especiales</h3>
+                    </div>
                     <div>
-                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-2">Preferencia de Cama</label>
-                      <ValidatedSelect label="Preferencia de Cama" value={peticionesCama} onChange={(value) => setPeticionesCama(value)} onBlur={() => setTouched((prev) => ({ ...prev, peticionesCama: true }))} onFocus={() => setTouched((prev) => ({ ...prev, peticionesCama: true }))} touched={touched.peticionesCama} className="rounded-xl border-slate-200 bg-white p-3 text-sm" containerClassName="" options={[{ label: "Sin preferencia", value: "Indiferente" }, { label: "Una Cama Grande (Matrimonial/King)", value: "Una Cama Matrimonial / King" }, { label: "Dos Camas Separadas", value: "Dos Camas Individuales" }]} />
+                      {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Preferencia de Cama</label>*/}
+                      <ValidatedSelect
+                        label="Preferencia de Cama"
+                        value={peticionesCama}
+                        onChange={(value) => setPeticionesCama(value)}
+                        onBlur={() => setTouched((prev) => ({ ...prev, peticionesCama: true }))}
+                        onFocus={() => setTouched((prev) => ({ ...prev, peticionesCama: true }))}
+                        touched={touched.peticionesCama}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-900 outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
+                        containerClassName=""
+                        options={[
+                          { label: "Sin preferencia", value: "Indiferente" },
+                          { label: "Una Cama Grande (Matrimonial/King)", value: "Una Cama Matrimonial / King" },
+                          { label: "Dos Camas Separadas", value: "Dos Camas Individuales" }
+                        ]}
+                      />
                     </div>
                   </div>
 
                   <hr className="border-slate-100" />
 
+                  {/* Sección 4: Categoría de Alojamiento */}
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-widest text-blue-700 mb-4">4. Categoría de Alojamiento</h3>
-                    <div>
-                      <label className="block text-[10px] uppercase font-bold text-slate-500 mb-2">Selecciona tu habitación ideal</label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {(Object.keys(TARIFAS) as TipoHabitacion[]).map((key) => (
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#777CD9]/15 text-xs font-bold text-[#42468C]">4</span>
+                      <h3 className="text-xs font-bold uppercase tracking-widest text-[#282B59]">Categoría de Habitación</h3>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {(Object.keys(TARIFAS) as TipoHabitacion[]).map((key) => {
+                        const isSelected = tipoSeleccionado === key;
+                        return (
                           <div
                             key={key}
                             onClick={() => setTipoSeleccionado(key)}
-                            className={`p-4 rounded-xl border text-left cursor-pointer transition-all ${tipoSeleccionado === key ? 'border-[#0f172a] bg-slate-50 shadow-sm' : 'border-slate-200 hover:border-slate-400'}`}
+                            className={`relative p-4 rounded-2xl border text-left cursor-pointer transition-all ${isSelected
+                              ? 'border-[#777CD9] bg-[#777CD9]/5 ring-2 ring-[#777CD9]/30 shadow-xs'
+                              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                              }`}
                           >
-                            <p className="text-sm font-bold text-[#0f172a]">{TARIFAS[key].nombre}</p>
-                            <p className="text-[11px] text-slate-400 mb-2 leading-tight">{TARIFAS[key].desc}</p>
-                            <p className="text-xs font-semibold text-blue-700">L. {TARIFAS[key].precio}.00 <span className="text-[10px] font-normal text-slate-400">/ noche</span></p>
+                            {isSelected && (
+                              <span className="absolute top-3 right-3 h-2 w-2 rounded-full bg-[#777CD9]" />
+                            )}
+                            <p className="text-sm font-bold text-[#282B59]">{TARIFAS[key].nombre}</p>
+                            <p className="text-[11px] text-slate-500 my-1 leading-tight">{TARIFAS[key].desc}</p>
+                            <p className="text-xs font-bold text-[#42468C] mt-2">
+                              L. {TARIFAS[key].precio}.00 <span className="text-[10px] font-normal text-slate-400">/ noche</span>
+                            </p>
                           </div>
-                        ))}
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
 
-                {/* Columna Derecha: Checkout Sidebar */}
-                <div className="p-8 bg-slate-50 md:col-span-5 border-t md:border-t-0 md:border-l border-slate-100 flex flex-col justify-between">
+                {/* Columna Derecha: Checkout Sidebar (5/12) */}
+                <div className="p-6 md:p-8 bg-slate-50/80 md:col-span-5 flex flex-col justify-between">
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Resumen del Viaje</h3>
 
-                    <div className="bg-white p-4 rounded-xl border border-slate-200 grid grid-cols-2 text-center divide-x divide-slate-100 mb-6 shadow-xs">
+                    {/* Ficha Check-in / Check-out */}
+                    <div className="bg-white p-4 rounded-2xl border border-slate-200/80 grid grid-cols-2 text-center divide-x divide-slate-100 mb-6 shadow-xs">
                       <div>
                         <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Check-In</p>
-                        <p className="text-xs font-bold text-slate-700">{fechaIn}</p>
+                        <p className="text-xs font-bold text-[#282B59] mt-0.5">{fechaIn || "—"}</p>
                       </div>
                       <div>
                         <p className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Check-Out</p>
-                        <p className="text-xs font-bold text-slate-700">{fechaOut}</p>
+                        <p className="text-xs font-bold text-[#282B59] mt-0.5">{fechaOut || "—"}</p>
                       </div>
                     </div>
 
+                    {/* Desglose de Gastos */}
                     <div className="space-y-3 text-xs text-slate-600 px-1">
-                      <div className="flex justify-between">
-                        <span>{TARIFAS[tipoSeleccionado].nombre}</span>
-                        <span className="font-bold text-[#0f172a]">L. {calculosReserva.precioPorNoche.toFixed(2)}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{TARIFAS[tipoSeleccionado].nombre}</span>
+                        <span className="font-bold text-[#282B59]">L. {calculosReserva.precioPorNoche.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span>Huéspedes</span>
                         <span className="font-semibold text-slate-700">{numeroHuespedes} {numeroHuespedes === 1 ? 'persona' : 'personas'}</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span>Estadía completa</span>
                         <span className="font-semibold text-slate-700">{calculosReserva.noches} {calculosReserva.noches === 1 ? 'noche' : 'noches'}</span>
                       </div>
-                      <div className="flex justify-between text-slate-400">
+
+                      <hr className="border-slate-200/60 my-2" />
+
+                      <div className="flex justify-between text-slate-500">
                         <span>Subtotal</span>
                         <span>L. {calculosReserva.subtotal.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-slate-400">
+                      <div className="flex justify-between text-slate-500">
                         <span>Impuestos locales (15%)</span>
                         <span>L. {calculosReserva.impuestos.toFixed(2)}</span>
                       </div>
 
-                      <hr className="border-dashed border-slate-200 my-4" />
+                      <hr className="border-dashed border-slate-300 my-4" />
 
-                      <div className="flex justify-between text-sm font-bold text-[#0f172a]">
-                        <span className="uppercase tracking-wider">Total Final</span>
-                        <span className="text-lg text-emerald-700">L. {calculosReserva.total.toFixed(2)}</span>
+                      <div className="flex justify-between items-baseline text-[#282B59]">
+                        <span className="text-xs font-bold uppercase tracking-wider">Total Final</span>
+                        <span className="text-xl font-extrabold text-emerald-600">L. {calculosReserva.total.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
 
+                  {/* Botón de Confirmación y nota legal */}
                   <div className="pt-6">
                     <button
                       type="submit"
                       disabled={cargando}
-                      className="flex w-full items-center justify-center gap-2 rounded-[2.5rem] bg-slate-950 px-5 py-3 text-[14px] font-semibold leading-4 tracking-wider text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#282B59] px-5 py-3.5 text-sm font-semibold tracking-wide text-white shadow-md transition-all hover:bg-[#42468C] hover:shadow-lg active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-[#777CD9]/30 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {cargando ? "Procesando..." : "Confirmar Mi Estadía"}
+                      {cargando ? (
+                        <>
+                          <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          <span>Procesando...</span>
+                        </>
+                      ) : (
+                        "Confirmar Mi Estadía"
+                      )}
                     </button>
-                    <p className="text-[9px] text-center text-slate-400 mt-3 leading-tight">
-                      Al presionar confirmar se enviará una solicitud directa a recepción para asegurar tu espacio.
+                    <p className="text-[10px] text-center text-slate-400 mt-3 leading-relaxed">
+                      Al hacer clic en confirmar, enviamos tu solicitud directamente a recepción para reservar tu lugar.
                     </p>
                   </div>
                 </div>

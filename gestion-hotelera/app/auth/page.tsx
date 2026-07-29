@@ -73,7 +73,6 @@ export default function AuthPage() {
                 }
             }
 
-            // Validación de teléfono corregida en el formulario general
             const telefonoDigits = telefono.replace(/\D/g, "");
             if (!telefonoDigits) {
                 nextErrors.telefono = "Ingresa un teléfono.";
@@ -91,7 +90,7 @@ export default function AuthPage() {
             fechaNacimiento: true,
             email: true,
             password: true,
-            telefono: true // Corregido el nombre de la propiedad
+            telefono: true
         });
         return Object.keys(nextErrors).length === 0;
     };
@@ -155,7 +154,6 @@ export default function AuthPage() {
                 }
                 break;
             case "telefono": {
-                // Corregido: lee directamente la variable de estado `telefono` en lugar de `formData.telefono`
                 const telefonoDigits = telefono.replace(/\D/g, "");
                 if (!telefonoDigits) {
                     nextErrors.telefono = "Ingresa un teléfono.";
@@ -220,32 +218,49 @@ export default function AuthPage() {
     return (
         <div className="min-h-screen bg-slate-100 py-10">
             <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-7xl overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_70px_rgba(15,23,42,0.14)]">
-                <aside className="hidden w-1/2 flex-col justify-between bg-linear-to-br from-sky-700 via-cyan-600 to-cyan-500 px-12 py-14 text-white lg:flex">
+                {/* Panel lateral con degradado representativo de la marca */}
+                <aside className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-[#282B59] via-[#42468C] to-[#777CD9] px-12 py-14 text-white lg:flex">
                     <div className="flex items-center flex-col">
-                        <div className="inline-flex items-center justify-center rounded-3xl mx-auto  mb-6">
-                            <Image src={logo} alt="Hotel San Pedro logo" width={150} height={150} className="object-contain" />
+                        <div className="inline-flex items-center justify-center rounded-3xl mx-auto mb-6">
+                            <Image
+                                src={logo}
+                                alt="Hotel San Pedro logo"
+                                width={150}
+                                height={150}
+                                className="object-contain"
+                            />
                         </div>
                         <h1 className="text-4xl font-extrabold tracking-tight">Hotel San Pedro</h1>
-                        <p className="mt-5 max-w-lg text-base leading-7 text-slate-100/85">
+                        <p className="mt-5 max-w-lg text-base leading-7 text-slate-100/85 text-center">
                             Sistema desarrollado a medida para Hotel San Pedro — gestión de reservas, facturación e inventario adaptada a sus procesos internos.
                         </p>
                     </div>
 
                     <div className="space-y-4">
                         <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">Operaciones más simples</p>
-                            <p className="mt-3 text-sm text-slate-100/85">Controla check-ins, check-outs, facturación y disponibilidad con mayor rapidez.</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#B7AEF2]">
+                                Operaciones más simples
+                            </p>
+                            <p className="mt-3 text-sm text-slate-100/85">
+                                Controla check-ins, check-outs, facturación y disponibilidad con mayor rapidez.
+                            </p>
                         </div>
+
                         <div className="rounded-3xl border border-white/15 bg-white/10 p-5 backdrop-blur-sm">
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-200">Dashboard inteligente</p>
-                            <p className="mt-3 text-sm text-slate-100/85">Accede a reportes y métricas clave sin perder tiempo en navegación.</p>
+                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#B7AEF2]">
+                                Dashboard inteligente
+                            </p>
+                            <p className="mt-3 text-sm text-slate-100/85">
+                                Accede a reportes y métricas clave sin perder tiempo en navegación.
+                            </p>
                         </div>
                     </div>
                 </aside>
 
+                {/* Formulario Principal */}
                 <main className="w-full lg:w-1/2 px-6 py-10 sm:px-10 sm:py-12">
                     <div className="flex flex-col gap-3">
-                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">Hotel San Pedro</p>
+                        <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#42468C]">Hotel San Pedro</p>
                         <h2 className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
                             {mode === "login" ? "Bienvenido de nuevo" : "Comienza tu registro"}
                         </h2>
@@ -256,7 +271,7 @@ export default function AuthPage() {
                         </p>
                     </div>
 
-                    <div className="mt-10 rounded-[2rem] border border-slate-200 bg-slate-50 p-6 shadow-sm">
+                    <div className="mt-10 rounded-[2rem] border border-slate-200 bg-slate-50/60 p-6 shadow-sm">
                         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <div>
                                 <p className="text-sm font-semibold text-slate-900">{mode === "login" ? "Acceso seguro" : "Registro rápido"}</p>
@@ -268,7 +283,7 @@ export default function AuthPage() {
                                     setMode(mode === "login" ? "signup" : "login");
                                     setError("");
                                 }}
-                                className="inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-100"
+                                className="inline-flex rounded-full border border-[#B7AEF2] bg-[#B7AEF2]/15 px-4 py-2 text-sm font-semibold text-[#282B59] shadow-sm transition hover:bg-[#B7AEF2]/35 hover:border-[#777CD9]"
                             >
                                 {mode === "login" ? "Crear cuenta" : "Ingresar"}
                             </button>
@@ -441,7 +456,7 @@ export default function AuthPage() {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-medium text-slate-600 mb-2">Contraseña</label>
+                                <label className="block text-xs font-medium text-[#282B59] mb-2">Contraseña</label>
                                 <div className="relative">
                                     <ValidatedInput
                                         id="password"
@@ -459,14 +474,14 @@ export default function AuthPage() {
                                         error={formErrors.password}
                                         touched={touched.password || Boolean(formErrors.password)}
                                         placeholder="••••••••••••"
-                                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
+                                        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-12 text-sm text-slate-900 shadow-sm outline-none focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20"
                                         containerClassName=""
                                         required
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#42468C] transition"
                                     >
                                         {showPassword ? (
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -484,21 +499,22 @@ export default function AuthPage() {
                             </div>
 
                             {error && (
-                                <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                                <div className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm font-medium text-rose-700 shadow-sm">
                                     {error}
                                 </div>
                             )}
 
                             {success && (
-                                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm font-medium text-emerald-800 shadow-sm">
                                     {success}
                                 </div>
                             )}
 
+                            {/* Botón principal alineado a la paleta sky/cyan */}
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full rounded-2xl bg-slate-900 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                                className="w-full rounded-2xl bg-gradient-to-r from-[#42468C] to-[#777CD9] py-3.5 text-sm font-semibold text-white shadow-md shadow-[#42468C]/25 transition hover:from-[#282B59] hover:to-[#42468C] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
                             >
                                 {loading ? "Procesando…" : mode === "login" ? "Ingresar al Panel" : "Completar Registro"}
                             </button>
