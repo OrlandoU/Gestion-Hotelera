@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { fetchAPI } from "./http-base";
+
 
 // URL base de la API - usa variable de entorno o localhost como fallback
 export const API_BASE_URL = "http://127.0.0.1:8000";
@@ -95,7 +97,7 @@ interface UseReporteState<T> {
     loading: boolean;
     error: Error | null;
 }
-
+/*
 interface FetchOptions extends RequestInit {
     params?: Record<string, string | number | boolean | null | undefined>;
 }
@@ -139,7 +141,7 @@ async function fetchAPI<T = unknown>(
         throw error;
     }
 }
-
+*/
 // ============================================
 // FUNCIONES DE RECURSOS ACTUALIZADAS (API)
 // ============================================
@@ -205,6 +207,15 @@ export async function registrarPago(reserva_id: number, metodo: string, monto: n
         params: {
             metodo: metodo,
             monto: monto.toString()
+        }
+    });
+}
+
+export async function modificarReserva(reserva_id: number, es_entrada: boolean): Promise<{ message: string }> {
+    return fetchAPI<{ message: string }>(`/reservas/${reserva_id}`, {
+        method: 'PUT',
+        params: {
+            es_entrada: es_entrada.toString()
         }
     });
 }

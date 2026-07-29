@@ -24,6 +24,12 @@ class ReservaRepository(BaseRepository):
         query = "EXEC sp_mostrar_habitacion_disponible %s, %s, %s"
         return self._execute_query(query, (fecha_entrada, fecha_salida, tipo))
     
+    def modificar_estado(self, reserva_id: int, es_entrada: bool):
+        """
+        Modifica el estado de una reserva (entrada/salida).
+        """
+        query = "EXEC sp_procesar_reserva %s, %s"
+        return self._execute_query(query, (reserva_id, es_entrada), is_write=True)
 
     def obtener_por_id(self, reserva_id: int):
         """
