@@ -22,10 +22,14 @@ const guestSchema = z.object({
     nombres: z.string().trim().min(2, "Ingresa al menos 2 letras para los nombres."),
     apellidos: z.string().trim().min(2, "Ingresa al menos 2 letras para los apellidos."),
     email: z.string().trim().email("Ingresa un correo electrónico válido."),
-    telefono: z.string().trim().refine((value) => value.replace(/\D/g, "").length >= 8, {
-        message: "El teléfono debe tener al menos 8 dígitos.",
-    }),
-    dni: z.string().trim().min(13, "Ingresa un documento válido."),
+    telefono: z.string().trim()
+        .regex(/^\d+$/, "El teléfono solo debe contener números.")
+        .refine((value) => value.length >= 8, {
+            message: "El teléfono debe tener al menos 8 dígitos.",
+        }),
+    dni: z.string().trim()
+        .regex(/^\d+$/, "El DNI solo debe contener números.")
+        .min(13, "El documento debe de tener un formato válido (13 dígitos)."),
 });
 
 type GuestFormValues = z.infer<typeof guestSchema>;
@@ -43,6 +47,8 @@ type ValidatedInputProps = {
     inputClassName?: string;
     containerClassName?: string;
     autoComplete?: string;
+    inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+    pattern?: string;
 };
 
 function ValidatedInput({
@@ -58,6 +64,8 @@ function ValidatedInput({
     inputClassName = "",
     containerClassName = "",
     autoComplete,
+    inputMode,
+    pattern,
 }: ValidatedInputProps) {
     const hasSuccess = Boolean(isTouched && isDirty && !error);
     const inputBaseClasses = "w-full h-11 bg-slate-50 border rounded-lg px-4 text-slate-800 placeholder-slate-400 outline-none transition-all duration-200 focus:outline-none";
@@ -80,6 +88,8 @@ function ValidatedInput({
                     name={name}
                     placeholder={placeholder}
                     type={type}
+                    inputMode={inputMode}
+                    pattern={pattern}
                     aria-invalid={Boolean(error)}
                     aria-describedby={error ? `${name}-error` : undefined}
                 />
@@ -769,6 +779,8 @@ export default function CrearReservacion() {
                                         isDirty={Boolean(dirtyFields.telefono)}
                                         isTouched={Boolean(touchedFields.telefono)}
                                         autoComplete="tel"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                     />
                                     <ValidatedInput
                                         label="Documento de Identidad (DNI)"
@@ -781,6 +793,8 @@ export default function CrearReservacion() {
                                         isTouched={Boolean(touchedFields.dni)}
                                         autoComplete="off"
                                         containerClassName="md:col-span-2"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                     />
                                 </div>
 
