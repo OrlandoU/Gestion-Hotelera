@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import MantenimientoModal from "@/components/MantenimientoModal" // Ajusta la ruta a tu modal
-import { Mantenimiento } from "@/functions/mantenimientos"
+import { Ticket } from "@/functions/tickets"
 
 export default function NewSolicitud() {
     const [openModal, setOpenModal] = useState(false);
 
-    const handleSave = (data: Mantenimiento) => {
+    const handleSave = (data: Ticket) => {
         console.log("Nueva solicitud guardada:", data);
         // Aquí puedes refrescar la tabla o hacer revalidate de tus datos
     };

@@ -24,6 +24,7 @@ class TicketRepository(BaseRepository):
         """
         Crea un ticket
         """
+        print(ticket)
         query = "EXEC sp_crear_ticket %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
         params = (
             ticket.espacio_id,

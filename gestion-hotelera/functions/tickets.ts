@@ -5,7 +5,7 @@ import { fetchAPI } from "./http-base";
 export interface Ticket {
     numero_ticket?: string;
     espacio_id: number;
-    reserva_id: number | null;
+    reserva_id?: number | null;
     usuario_id: number;
     responsable_id: number | null;
     nombre_responsable: string | null;
@@ -13,8 +13,8 @@ export interface Ticket {
     titulo: string | null;
     descripcion: string | null;
     estado: string | null;
-    fecha_creacion: string | null;
-    fecha_limite: string | null;
+    fecha_creacion?: string | null;
+    fecha_limite?: string | null;
     [key: string]: unknown;
 }
 
@@ -90,4 +90,12 @@ export function useTickets(numero_ticket?: string | null, fecha_creacion?: strin
     }, [refetch]);
 
     return { ...state, refetch };
+}
+
+
+export async function crearTicket(datos: Ticket): Promise<{ message: string }> {
+    return fetchAPI<{ message: string }>('/tickets', {
+        method: 'POST',
+        body: JSON.stringify(datos)
+    });
 }

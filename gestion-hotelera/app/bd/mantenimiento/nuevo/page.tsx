@@ -8,21 +8,29 @@ import PageHeader from "@/components/pageheader";
 import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
 import { getHabitaciones, Habitacion } from "@/functions/espacios";
 import { useUsuarios } from "@/functions/usuarios";
-import { crearMantenimiento, Mantenimiento } from "@/functions/mantenimientos";
+import { crearTicket, Ticket } from "@/functions/tickets";
 import { toast } from "sonner";
+
+type TicketForm = Ticket & {
+    tipo?: string | null;
+    prioridad?: string | null;
+    fecha_inicio?: string | null;
+    fecha_limite?: string | null;
+};
 
 export default function NuevoMantenimientoPage() {
     const router = useRouter();
     const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
-    const [formData, setFormData] = useState<Mantenimiento>({
+    const [formData, setFormData] = useState<TicketForm>({
         usuario_id: 1,
         responsable_id: null,
         nombre_responsable: null,
         telefono_responsable: null,
+        titulo: null,
         tipo: "",
         descripcion: "",
         fecha_inicio: null,
-        fecha_final: null,
+        fecha_limite: null,
         prioridad: "",
         estado: "",
         espacio_id: 34,
@@ -58,9 +66,11 @@ export default function NuevoMantenimientoPage() {
 
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = event.target;
-        const normalizedValue = name === "espacio_id" || name === "responsable_id"
-            ? (value ? Number(value) : null)
-            : value;
+        const normalizedValue = name === "espacio_id"
+            ? Number(value)
+            : name === "responsable_id"
+                ? (value ? Number(value) : null)
+                : value;
 
         setFormData((prev) => ({ ...prev, [name]: normalizedValue }));
         setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -81,6 +91,13 @@ export default function NuevoMantenimientoPage() {
         const nextErrors: Record<string, string> = { ...errors };
 
         switch (field) {
+            case "titulo":
+                if (!formData.titulo?.trim()) {
+                    nextErrors.titulo = "Ingresa un título para el ticket.";
+                } else {
+                    delete nextErrors.titulo;
+                }
+                break;
             case "tipo":
                 if (!formData.tipo) {
                     nextErrors.tipo = "Selecciona un tipo de mantenimiento.";
@@ -149,6 +166,7 @@ export default function NuevoMantenimientoPage() {
     const validateForm = () => {
         const nextErrors: Record<string, string> = {};
 
+        if (!formData.titulo?.trim()) nextErrors.titulo = "Ingresa un título para el ticket.";
         if (!formData.tipo) nextErrors.tipo = "Selecciona un tipo de mantenimiento.";
         if (!formData.prioridad) nextErrors.prioridad = "Selecciona una prioridad.";
         if (!formData.estado) nextErrors.estado = "Selecciona un estado inicial.";
@@ -180,7 +198,7 @@ export default function NuevoMantenimientoPage() {
                 telefono_responsable: esInterno ? null : formData.telefono_responsable?.trim() || null,
             };
 
-            await crearMantenimiento(datosAEnviar);
+            await crearTicket(datosAEnviar);
             toast.success("Ticket de mantenimiento creado correctamente.");
             router.push("/bd/mantenimiento");
         } catch (error) {
@@ -299,6 +317,22 @@ export default function NuevoMantenimientoPage() {
                                     </>
                                 )}
 
+                                <ValidatedInput
+                                    label="Título"
+                                    value={formData.titulo ?? ""}
+                                    onChange={(value) => {
+                                        setFormData((prev) => ({ ...prev, titulo: value }));
+                                        setErrors((prev) => ({ ...prev, titulo: "" }));
+                                    }}
+                                    onBlur={() => {
+                                        setTouched((prev) => ({ ...prev, titulo: true }));
+                                        validateField("titulo");
+                                    }}
+                                    onFocus={() => setTouched((prev) => ({ ...prev, titulo: true }))}
+                                    error={errors.titulo}
+                                    touched={touched.titulo || Boolean(errors.titulo)}
+                                    placeholder="Ej. Fuga de agua en habitación"
+                                />
                                 <ValidatedSelect
                                     label="Tipo de mantenimiento"
                                     value={formData.tipo ?? ""}
@@ -343,6 +377,24 @@ export default function NuevoMantenimientoPage() {
                                         { label: "Urgente", value: "Urgente" },
                                     ]}
                                 />
+                                <ValidatedInput
+                                    label="Fecha de inicio"
+                                    type="date"
+                                    value={formData.fecha_inicio ?? ""}
+                                    onChange={(value) => {
+                                        setFormData((prev) => ({ ...prev, fecha_inicio: value }));
+                                    }}
+                                    className="w-full"
+                                />
+                                <ValidatedInput
+                                    label="Fecha límite"
+                                    type="date"
+                                    value={formData.fecha_limite ?? ""}
+                                    onChange={(value) => {
+                                        setFormData((prev) => ({ ...prev, fecha_limite: value }));
+                                    }}
+                                    className="w-full"
+                                />
                                 <ValidatedSelect
                                     label="Estado inicial"
                                     value={formData.estado ?? ""}
@@ -368,8 +420,8 @@ export default function NuevoMantenimientoPage() {
                                     label="Espacio o habitación"
                                     value={formData.espacio_id ? String(formData.espacio_id) : ""}
                                     onChange={(value) => {
-                                        const normalizedValue = value ? Number(value) : null;
-                                        setFormData((prev) => ({ ...prev, espacio_id: normalizedValue as number | undefined }));
+                                        const normalizedValue = value ? Number(value) : 0;
+                                        setFormData((prev) => ({ ...prev, espacio_id: normalizedValue }));
                                         setErrors((prev) => ({ ...prev, espacio_id: "" }));
                                     }}
                                     onBlur={() => {

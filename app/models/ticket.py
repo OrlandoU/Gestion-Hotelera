@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 class TicketSchema(BaseModel):
@@ -11,9 +12,9 @@ class TicketSchema(BaseModel):
     titulo: str
     descripcion: str
     estado: str = 'Pendiente'
-    fecha_creacion: datetime = None
-    fecha_limite: datetime = None
-    
+    fecha_creacion: Optional[str] = None
+    fecha_limite: Optional[str] = None
+
 class ComentarioSchema(BaseModel):
     usuario_id: int
     numero_ticket: str

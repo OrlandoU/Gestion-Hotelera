@@ -2,14 +2,22 @@
 import React, { useState, useEffect } from "react";
 import { getHabitaciones, Habitacion } from "@/functions/espacios";
 import { useUsuarios } from "@/functions/usuarios"
-import { crearMantenimiento, Mantenimiento } from "@/functions/mantenimientos"
+import { crearTicket, Ticket } from "@/functions/tickets"
 import Modal from "./Modal"; // Importa la base de arriba
 import Button from "@/components/ui/button";
+
+type TicketForm = Ticket & {
+    tipo: string;
+    prioridad: string;
+    fecha_inicio: string | null;
+    fecha_final: string | null;
+    fecha_limite: string | null;
+};
 
 interface FormModalProps {
     open: boolean;
     onClose: () => void;
-    onSave?: (data: Mantenimiento) => void;
+    onSave?: (data: Ticket) => void;
 }
 
 const fieldClassName = (hasError: boolean) =>
@@ -20,15 +28,17 @@ const fieldClassName = (hasError: boolean) =>
 
 export default function MantenimientoModal({ open, onClose, onSave }: FormModalProps) {
     const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
-    const [mantenimiento, setMantenimiento] = useState<Mantenimiento>({
+    const [ticket, setTicket] = useState<TicketForm>({
         usuario_id: 1,
         responsable_id: null,
         nombre_responsable: null,
         telefono_responsable: null,
+        titulo: null,
         tipo: "",
         descripcion: "",
         fecha_inicio: null,
         fecha_final: null,
+        fecha_limite: null,
         prioridad: "",
         estado: "",
         espacio_id: 34,
@@ -58,7 +68,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
 
     const handleTipoResponsableChange = (isInternal: boolean) => {
         setEsInterno(isInternal);
-        setMantenimiento((prev) => ({
+        setTicket((prev) => ({
             ...prev,
             responsable_id: isInternal ? prev.responsable_id : null,
             nombre_responsable: !isInternal ? prev.nombre_responsable : null,
@@ -70,11 +80,13 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
-        const normalizedValue = name === "espacio_id" || name === "responsable_id"
-            ? (value ? Number(value) : null)
-            : value;
+        const normalizedValue = name === "espacio_id"
+            ? Number(value)
+            : name === "responsable_id"
+                ? (value ? Number(value) : null)
+                : value;
 
-        setMantenimiento((prev) => ({
+        setTicket((prev) => ({
             ...prev,
             [name]: normalizedValue,
         }));
@@ -85,36 +97,43 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
         const nextErrors: Record<string, string> = { ...errors };
 
         switch (field) {
+            case "titulo":
+                if (!ticket.titulo?.trim()) {
+                    nextErrors.titulo = "Ingresa un título para el ticket.";
+                } else {
+                    delete nextErrors.titulo;
+                }
+                break;
             case "tipo":
-                if (!mantenimiento.tipo) {
+                if (!ticket.tipo) {
                     nextErrors.tipo = "Selecciona un tipo de mantenimiento.";
                 } else {
                     delete nextErrors.tipo;
                 }
                 break;
             case "prioridad":
-                if (!mantenimiento.prioridad) {
+                if (!ticket.prioridad) {
                     nextErrors.prioridad = "Selecciona una prioridad.";
                 } else {
                     delete nextErrors.prioridad;
                 }
                 break;
             case "estado":
-                if (!mantenimiento.estado) {
+                if (!ticket.estado) {
                     nextErrors.estado = "Selecciona un estado inicial.";
                 } else {
                     delete nextErrors.estado;
                 }
                 break;
             case "espacio_id":
-                if (!mantenimiento.espacio_id) {
+                if (!ticket.espacio_id) {
                     nextErrors.espacio_id = "Selecciona un espacio.";
                 } else {
                     delete nextErrors.espacio_id;
                 }
                 break;
             case "descripcion":
-                if (!mantenimiento.descripcion || !mantenimiento.descripcion.trim()) {
+                if (!ticket.descripcion || !ticket.descripcion.trim()) {
                     nextErrors.descripcion = "Describe el trabajo a realizar.";
                 } else {
                     delete nextErrors.descripcion;
@@ -122,7 +141,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                 break;
             case "responsable_id":
                 if (esInterno) {
-                    if (!mantenimiento.responsable_id) {
+                    if (!ticket.responsable_id) {
                         nextErrors.responsable_id = "Selecciona un empleado responsable.";
                     } else {
                         delete nextErrors.responsable_id;
@@ -131,7 +150,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                 break;
             case "nombre_responsable":
                 if (!esInterno) {
-                    if (!mantenimiento.nombre_responsable?.trim()) {
+                    if (!ticket.nombre_responsable?.trim()) {
                         nextErrors.nombre_responsable = "Ingresa el nombre del responsable externo.";
                     } else {
                         delete nextErrors.nombre_responsable;
@@ -140,7 +159,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                 break;
             case "telefono_responsable":
                 if (!esInterno) {
-                    if (!mantenimiento.telefono_responsable?.trim()) {
+                    if (!ticket.telefono_responsable?.trim()) {
                         nextErrors.telefono_responsable = "Ingresa un teléfono válido.";
                     } else {
                         delete nextErrors.telefono_responsable;
@@ -158,17 +177,18 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
     const validateForm = () => {
         const nextErrors: Record<string, string> = {};
 
-        if (!mantenimiento.tipo) nextErrors.tipo = "Selecciona un tipo de mantenimiento.";
-        if (!mantenimiento.prioridad) nextErrors.prioridad = "Selecciona una prioridad.";
-        if (!mantenimiento.estado) nextErrors.estado = "Selecciona un estado inicial.";
-        if (!mantenimiento.espacio_id) nextErrors.espacio_id = "Selecciona un espacio.";
-        if (!mantenimiento.descripcion || !mantenimiento.descripcion.trim()) nextErrors.descripcion = "Describe el trabajo a realizar.";
+        if (!ticket.titulo?.trim()) nextErrors.titulo = "Ingresa un título para el ticket.";
+        if (!ticket.tipo) nextErrors.tipo = "Selecciona un tipo de mantenimiento.";
+        if (!ticket.prioridad) nextErrors.prioridad = "Selecciona una prioridad.";
+        if (!ticket.estado) nextErrors.estado = "Selecciona un estado inicial.";
+        if (!ticket.espacio_id) nextErrors.espacio_id = "Selecciona un espacio.";
+        if (!ticket.descripcion || !ticket.descripcion.trim()) nextErrors.descripcion = "Describe el trabajo a realizar.";
 
         if (esInterno) {
-            if (!mantenimiento.responsable_id) nextErrors.responsable_id = "Selecciona un empleado responsable.";
+            if (!ticket.responsable_id) nextErrors.responsable_id = "Selecciona un empleado responsable.";
         } else {
-            if (!mantenimiento.nombre_responsable?.trim()) nextErrors.nombre_responsable = "Ingresa el nombre del responsable externo.";
-            if (!mantenimiento.telefono_responsable?.trim()) nextErrors.telefono_responsable = "Ingresa un teléfono válido.";
+            if (!ticket.nombre_responsable?.trim()) nextErrors.nombre_responsable = "Ingresa el nombre del responsable externo.";
+            if (!ticket.telefono_responsable?.trim()) nextErrors.telefono_responsable = "Ingresa un teléfono válido.";
         }
 
         setErrors(nextErrors);
@@ -180,22 +200,22 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
         if (!validateForm()) return;
 
         const datosAEnviar = {
-            ...mantenimiento,
-            responsable_id: mantenimiento.responsable_id ? Number(mantenimiento.responsable_id) : null,
-            nombre_responsable: esInterno ? null : mantenimiento.nombre_responsable?.trim() || null,
-            telefono_responsable: esInterno ? null : mantenimiento.telefono_responsable?.trim() || null,
+            ...ticket,
+            responsable_id: ticket.responsable_id ? Number(ticket.responsable_id) : null,
+            nombre_responsable: esInterno ? null : ticket.nombre_responsable?.trim() || null,
+            telefono_responsable: esInterno ? null : ticket.telefono_responsable?.trim() || null,
         };
 
-        await crearMantenimiento(datosAEnviar);
-        onSave?.(datosAEnviar as Mantenimiento);
+        await crearTicket(datosAEnviar);
+        onSave?.(datosAEnviar as Ticket);
         onClose();
     };
 
     return (
-        <Modal open={open} onClose={onClose} title="Nuevo Mantenimiento">
+        <Modal open={open} onClose={onClose} title="Nuevo ticket de mantenimiento">
             <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
-                    <p className="text-sm font-medium text-slate-700">Define el tipo de mantenimiento, el responsable y los datos del espacio.</p>
+                    <p className="text-sm font-medium text-slate-700">Define el ticket de mantenimiento, el responsable y los datos del espacio.</p>
                 </div>
 
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
@@ -232,7 +252,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                             <label className="mb-2 block text-sm font-semibold text-slate-700">Empleado responsable</label>
                             <select
                                 name="responsable_id"
-                                value={mantenimiento.responsable_id ?? ""}
+                                value={ticket.responsable_id ?? ""}
                                 onChange={handleChange}
                                 onBlur={() => validateField("responsable_id")}
                                 required={esInterno}
@@ -254,7 +274,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                 <input
                                     type="text"
                                     name="nombre_responsable"
-                                    value={mantenimiento.nombre_responsable ?? ""}
+                                    value={ticket.nombre_responsable ?? ""}
                                     onChange={handleChange}
                                     onBlur={() => validateField("nombre_responsable")}
                                     placeholder="Ej. Juan Pérez"
@@ -269,7 +289,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                                 <input
                                     type="tel"
                                     name="telefono_responsable"
-                                    value={mantenimiento.telefono_responsable ?? ""}
+                                    value={ticket.telefono_responsable ?? ""}
                                     onChange={handleChange}
                                     onBlur={() => validateField("telefono_responsable")}
                                     placeholder="Ej. +504 9999-9999"
@@ -285,7 +305,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <label className="mb-2 block text-sm font-semibold text-slate-700">Número de espacio</label>
                         <select
                             name="espacio_id"
-                            value={mantenimiento.espacio_id ?? ""}
+                            value={ticket.espacio_id ?? ""}
                             onChange={handleChange}
                             onBlur={() => validateField("espacio_id")}
                             required
@@ -301,11 +321,25 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         {errors.espacio_id ? <p className="mt-1 text-xs text-red-500">{errors.espacio_id}</p> : null}
                     </div>
 
+                    <div className="sm:col-span-2">
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Título</label>
+                        <input
+                            type="text"
+                            name="titulo"
+                            value={ticket.titulo ?? ""}
+                            onChange={handleChange}
+                            onBlur={() => validateField("titulo")}
+                            placeholder="Ej. Fuga de agua en habitación"
+                            required
+                            className={fieldClassName(Boolean(errors.titulo))}
+                        />
+                        {errors.titulo ? <p className="mt-1 text-xs text-red-500">{errors.titulo}</p> : null}
+                    </div>
                     <div>
                         <label className="mb-2 block text-sm font-semibold text-slate-700">Tipo</label>
                         <select
                             name="tipo"
-                            value={mantenimiento.tipo}
+                            value={ticket.tipo}
                             onChange={handleChange}
                             onBlur={() => validateField("tipo")}
                             required
@@ -324,7 +358,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <label className="mb-2 block text-sm font-semibold text-slate-700">Prioridad</label>
                         <select
                             name="prioridad"
-                            value={mantenimiento.prioridad}
+                            value={ticket.prioridad}
                             onChange={handleChange}
                             onBlur={() => validateField("prioridad")}
                             required
@@ -344,18 +378,18 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <input
                             type="date"
                             name="fecha_inicio"
-                            value={mantenimiento.fecha_inicio || ""}
+                            value={ticket.fecha_inicio || ""}
                             onChange={handleChange}
                             className={fieldClassName(false)}
                         />
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-sm font-semibold text-slate-700">Fecha final</label>
+                        <label className="mb-2 block text-sm font-semibold text-slate-700">Fecha límite</label>
                         <input
                             type="date"
-                            name="fecha_final"
-                            value={mantenimiento.fecha_final || ""}
+                            name="fecha_limite"
+                            value={ticket.fecha_limite || ""}
                             onChange={handleChange}
                             className={fieldClassName(false)}
                         />
@@ -365,7 +399,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <label className="mb-2 block text-sm font-semibold text-slate-700">Estado</label>
                         <select
                             name="estado"
-                            value={mantenimiento.estado}
+                            value={ticket.estado ?? ""}
                             onChange={handleChange}
                             onBlur={() => validateField("estado")}
                             required
@@ -385,7 +419,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         <textarea
                             name="descripcion"
                             rows={4}
-                            value={mantenimiento.descripcion}
+                            value={ticket.descripcion ?? ""}
                             onChange={handleChange}
                             onBlur={() => validateField("descripcion")}
                             placeholder="Escribe los detalles del trabajo o la falla a reparar..."
@@ -400,7 +434,7 @@ export default function MantenimientoModal({ open, onClose, onSave }: FormModalP
                         Cancelar
                     </Button>
                     <Button type="submit" variant="primary">
-                        Guardar mantenimiento
+                        Guardar ticket
                     </Button>
                 </div>
             </form>
