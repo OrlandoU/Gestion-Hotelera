@@ -280,7 +280,6 @@ export default function ClientesPage() {
                   error={formErrors.telefono}
                   touched={touched.telefono || Boolean(formErrors.telefono)}
                   placeholder="96751977"
-                  maxLength={8}
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20"
                   required
                 />
