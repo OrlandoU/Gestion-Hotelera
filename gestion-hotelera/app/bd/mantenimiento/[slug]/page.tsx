@@ -52,7 +52,7 @@ export default function TicketDetailPage() {
         };
 
         void loadData();
-    }, [slug]);
+    }, [slug, ticket?.ticket_id]);
 
     const validateComment = () => {
         const nextErrors: Record<string, string> = {};

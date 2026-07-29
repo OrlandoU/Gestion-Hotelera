@@ -108,7 +108,7 @@ function getGuestName(reserva: Reserva): string {
 }
 
 function getReservationStatus(reserva: Reserva): string {
-    return reserva.reserva_estado || reserva.estado || "Finalizada";
+    return String(reserva.reserva_estado || reserva.estado || "Finalizada");
 }
 
 function getStatusStyles(status?: string) {
@@ -244,7 +244,7 @@ export default function Page() {
 
             const guestName = getGuestName(reserva).toLowerCase();
             const reservationNumber = String(reserva.numero_reserva || reserva.reserva_id || "").toLowerCase();
-            const status = (reserva.reserva_estado || reserva.estado || "").toLowerCase();
+            const status = String(reserva.reserva_estado || reserva.estado || "").toLowerCase();
             const space = String(reserva.numero_espacio || "").toLowerCase();
             const matchesSearch = !normalizedSearch || guestName.includes(normalizedSearch) || reservationNumber.includes(normalizedSearch) || space.includes(normalizedSearch);
             const matchesStatus = !listStatusFilter || status === listStatusFilter.toLowerCase();
@@ -262,8 +262,8 @@ export default function Page() {
                 return getGuestName(reserva).toLowerCase();
             };
 
-            const left = valueFor(a);
-            const right = valueFor(b);
+            const left = String(valueFor(a));
+            const right = String(valueFor(b));
             return left.localeCompare(right, "es-HN", { numeric: true }) * order;
         });
     }, [listDate, listData, listSearch, listStatusFilter, listSortBy, listSortOrder]);

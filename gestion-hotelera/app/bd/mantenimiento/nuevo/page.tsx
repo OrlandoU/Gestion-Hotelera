@@ -58,12 +58,6 @@ export default function NuevoMantenimientoPage() {
     const { data } = useUsuarios();
     const empleados = data ?? [];
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = event.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
-        setErrors((prev) => ({ ...prev, [name]: "" }));
-    };
-
     const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const { name, value } = event.target;
         const normalizedValue = name === "espacio_id"

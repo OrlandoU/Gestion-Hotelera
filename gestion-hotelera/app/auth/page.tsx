@@ -197,7 +197,7 @@ export default function AuthPage() {
     return (
         <div className="min-h-screen bg-slate-100 py-10">
             <div className="mx-auto flex min-h-[calc(100vh-80px)] w-full max-w-7xl overflow-hidden rounded-[2rem] bg-white shadow-[0_30px_70px_rgba(15,23,42,0.14)]">
-                <aside className="hidden w-1/2 flex-col justify-between bg-gradient-to-br from-sky-700 via-cyan-600 to-cyan-500 px-12 py-14 text-white lg:flex">
+                <aside className="hidden w-1/2 flex-col justify-between bg-linear-to-br from-sky-700 via-cyan-600 to-cyan-500 px-12 py-14 text-white lg:flex">
                     <div>
                         <div className="inline-flex h-14 w-14 items-center justify-center rounded-3xl bg-white/15 mb-6">
                             <Image src={logo} alt="Hotel San Pedro logo" width={40} height={40} className="object-contain" />

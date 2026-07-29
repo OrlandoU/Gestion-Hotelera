@@ -4,6 +4,32 @@ import PageHeader from "@/components/pageheader";
 // removed ViewTransition import (not available in this React version)
 import { useState, useMemo } from "react";
 import { useConsumoAmenidadesMensual } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
+
+const NOMBRES_MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+
+function calcularRangoSemana(fechaStr: string) {
+  const [year, month, day] = fechaStr.split('-').map(Number);
+  const fin = new Date(year, month - 1, day);
+  const inicio = new Date(fin);
+  inicio.setDate(fin.getDate() - 6);
+  return { inicio, fin };
+}
+
+function formatearFechaCorta(fecha: Date) {
+  return `${String(fecha.getDate()).padStart(2, '0')} ${NOMBRES_MESES_CORTOS[fecha.getMonth()]}`;
+}
+
+function formatearFechaDDMMYYYY(fecha: Date) {
+  return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
+}
+
+function formatearRangoSemana(fechaStr: string, formato: 'corto' | 'largo' = 'largo') {
+  const { inicio, fin } = calcularRangoSemana(fechaStr);
+  if (formato === 'corto') {
+    return `${formatearFechaCorta(inicio)} - ${formatearFechaCorta(fin)}`;
+  }
+  return `${formatearFechaDDMMYYYY(inicio)} - ${formatearFechaDDMMYYYY(fin)}`;
+}
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis,
   CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -19,33 +45,6 @@ export default function Page() {
   const consumoData = useMemo(() => consumoApi || [], [consumoApi]);
 
   // Calcula el rango semanal (7 días) que termina en la fecha dada
-  const calcularRangoSemana = (fechaStr: string) => {
-    const [year, month, day] = fechaStr.split('-').map(Number);
-    const fin = new Date(year, month - 1, day);
-    const inicio = new Date(fin);
-    inicio.setDate(fin.getDate() - 6);
-    return { inicio, fin };
-  };
-
-  const NOMBRES_MESES_CORTOS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-
-  const formatearFechaCorta = (fecha: Date) => {
-    return `${String(fecha.getDate()).padStart(2, '0')} ${NOMBRES_MESES_CORTOS[fecha.getMonth()]}`;
-  };
-
-  const formatearFechaDDMMYYYY = (fecha: Date) => {
-    return `${String(fecha.getDate()).padStart(2, '0')}/${String(fecha.getMonth() + 1).padStart(2, '0')}/${fecha.getFullYear()}`;
-  };
-
-  // Devuelve el rango "dd/mm/yyyy - dd/mm/yyyy" (formato "largo", para la tabla)
-  // o "dd Mon - dd Mon" (formato "corto", para el gráfico/tooltip)
-  const formatearRangoSemana = (fechaStr: string, formato: 'corto' | 'largo' = 'largo') => {
-    const { inicio, fin } = calcularRangoSemana(fechaStr);
-    if (formato === 'corto') {
-      return `${formatearFechaCorta(inicio)} - ${formatearFechaCorta(fin)}`;
-    }
-    return `${formatearFechaDDMMYYYY(inicio)} - ${formatearFechaDDMMYYYY(fin)}`;
-  };
 
   const formatearMes = (value: string) => {
     if (!value) return "Mes seleccionado";

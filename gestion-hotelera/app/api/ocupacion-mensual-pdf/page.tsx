@@ -2,7 +2,7 @@
 import PageHeader from "@/components/pageheader";
 import { useOcupacionMensual } from "@/functions/reportes-api";
 import { Suspense } from "react";
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
 import Image from "next/image";
@@ -27,7 +27,6 @@ function OcupacionMensualContent() {
     const fechaFiltro = searchParams.get("fecha") || mesActualStr;
     const fechaCompleta = `${fechaFiltro}-01`;
 
-    const elementosPorPagina = 8;
     const { data: ocupacionApi, loading, error } = useOcupacionMensual(fechaCompleta);
 
     const ocupacionData = useMemo(() => ocupacionApi || [], [ocupacionApi]);
@@ -89,8 +88,6 @@ function OcupacionMensualContent() {
             aporte: d.porcentaje,
         }));
     }, [ocupacionData]);
-
-    const totalPaginas = Math.max(1, Math.ceil(ocupacionData.length / elementosPorPagina));
 
     if (error && !loading) {
         return (

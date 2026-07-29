@@ -175,6 +175,7 @@ export default function CrearReservacion() {
         },
     });
 
+    // eslint-disable-next-line react-hooks/incompatible-library
     const guestValues = watch();
 
     const [formData, setFormData] = useState({
@@ -846,7 +847,7 @@ export default function CrearReservacion() {
                     </div>
 
                     {/* Sidebar del Resumen (Tipo Ticket/Recibo) */}
-                    <aside className="w-full lg:w-[380px] shrink-0">
+                    <aside className="w-full lg:w-95 shrink-0">
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-lg sticky top-24 overflow-hidden">
                             <div className="bg-slate-900 p-5 text-white">
                                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -862,7 +863,7 @@ export default function CrearReservacion() {
                                         <p className="text-xs text-slate-400 font-bold uppercase mb-1">Check-in</p>
                                         <p className="text-sm font-bold text-slate-900">{formData.fecha_entrada || "--/--/----"}</p>
                                     </div>
-                                    <div className="w-[1px] h-8 bg-slate-200 mx-2"></div>
+                                    <div className="w-px h-8 bg-slate-200 mx-2"></div>
                                     <div className="text-center flex-1">
                                         <p className="text-xs text-slate-400 font-bold uppercase mb-1">Check-out</p>
                                         <p className="text-sm font-bold text-slate-900">{formData.fecha_salida || "--/--/----"}</p>
@@ -925,7 +926,7 @@ export default function CrearReservacion() {
                             </div>
 
                             {/* Borde inferior decorativo estilo ticket */}
-                            <div className="h-3 w-full bg-[radial-gradient(circle,transparent_4px,#fff_5px)] bg-[length:12px_12px] -mt-1 relative z-10 drop-shadow-[0_2px_2px_rgba(0,0,0,0.05)]"></div>
+                            <div className="h-3 w-full bg-[radial-gradient(circle,transparent_4px,#fff_5px)] bg-size[12px_12px] -mt-1 relative z-10 drop-shadow-[0_2px_2px_rgba(0,0,0,0.05)]"></div>
                         </div>
                     </aside>
                 </div>

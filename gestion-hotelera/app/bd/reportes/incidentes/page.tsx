@@ -225,7 +225,7 @@ export default function Page() {
               </div>
               <button
                 onClick={() => setIncidenteSeleccionado(null)}
-                className="flex-shrink-0 w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                className="shrink-0 w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-slate-500">close</span>
               </button>
