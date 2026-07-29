@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, type ChangeEvent } from "react";
-import { useForm, type UseFormRegister } from "react-hook-form";
+import { Resolver, useForm, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
@@ -162,8 +162,7 @@ export default function CrearReservacion() {
         watch,
         formState: { errors, touchedFields, dirtyFields },
     } = useForm<GuestFormValues>({
-        // @ts-expect-error - resolver typing mismatch between installed zod and @hookform/resolvers
-        resolver: zodResolver(guestSchema),
+        resolver: zodResolver(guestSchema) as unknown as Resolver<GuestFormValues>,
         mode: "onTouched",
         reValidateMode: "onChange",
         defaultValues: {
