@@ -169,6 +169,7 @@ export default function TicketDetailPage() {
             ) : (
                 <div className="mt-6 space-y-6">
                     <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+                        {/* ENCABEZADO CON BOTÓN DE ACCIÓN RÁPIDA */}
                         <div className="bg-linear-to-r from-slate-950 via-slate-900 to-slate-800 px-6 py-6 text-white">
                             <div className="flex flex-wrap items-start justify-between gap-4">
                                 <div className="space-y-3">
@@ -185,6 +186,7 @@ export default function TicketDetailPage() {
                                         <p className="mt-2 text-sm text-slate-300">Seguimiento del caso y registro de actualizaciones para el equipo.</p>
                                     </div>
                                 </div>
+
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${estadoClasses}`}>
                                         {estadoLabel}
@@ -192,10 +194,20 @@ export default function TicketDetailPage() {
                                     <span className={`inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold ${prioridadClasses}`}>
                                         {prioridadLabel}
                                     </span>
+
+                                    {/* BOTÓN EN CABECERA */}
+                                    <button
+                                        type="button"
+                                        className="inline-flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-1.5 text-sm font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ml-2"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                                        Finalizar Mantenimiento
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
+                        {/* CUERPO PRINCIPAL */}
                         <div className="grid gap-6 p-6 xl:grid-cols-[1.5fr_0.9fr]">
                             <div className="space-y-6">
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
@@ -229,7 +241,23 @@ export default function TicketDetailPage() {
                                 </div>
                             </div>
 
+                            {/* LATERAL / ASIDE */}
                             <aside className="space-y-4">
+                                {/* TARJETA DE ACCIONES DESTACADA */}
+                                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-5">
+                                    <h3 className="text-xs font-bold uppercase tracking-[0.24em] text-emerald-800">Acción de Mantenimiento</h3>
+                                    <p className="mt-1 text-xs text-emerald-700">Marca esta tarea como completada para habilitar de nuevo el espacio.</p>
+
+                                    <button
+                                        type="button"
+
+                                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 px-4 text-sm shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                                    >
+                                        <span className="material-symbols-outlined text-[20px]">task_alt</span>
+                                        Finalizar Mantenimiento
+                                    </button>
+                                </div>
+
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Resumen rápido</h3>
                                     <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -253,16 +281,6 @@ export default function TicketDetailPage() {
                                         </dl>
                                     </div>
                                 </div>
-
-                                {/* <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[18px] text-amber-700">tips_and_updates</span>
-                                        <h3 className="text-sm font-semibold text-amber-800">Recomendación</h3>
-                                    </div>
-                                    <p className="mt-3 text-sm leading-6 text-amber-800">
-                                        Mantén el seguimiento activo y prioriza la atención cuando el estado está pendiente o la prioridad es alta.
-                                    </p>
-                                </div> */}
                             </aside>
                         </div>
                     </section>

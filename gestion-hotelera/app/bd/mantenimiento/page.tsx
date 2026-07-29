@@ -1,11 +1,9 @@
 'use client'
-
-'use client'
-
 import { useMemo, useState, type ChangeEvent } from 'react'
 import PageHeader from '@/components/pageheader'
 import Link from 'next/link'
 import { useTickets, Ticket } from '@/functions/tickets'
+import { getCurrentUser } from '@/functions/auth'
 
 function formatDate(iso?: string | null) {
     if (!iso) return '—'
@@ -18,6 +16,7 @@ function formatDate(iso?: string | null) {
 }
 
 export default function MantenimientoPage() {
+    const user = getCurrentUser()
     const { data: tickets = [], loading } = useTickets()
     const [q, setQ] = useState('')
     const [filterStatus, setFilterStatus] = useState<'all' | 'Pendiente' | 'En Progreso' | 'Cerrado'>('all')
@@ -131,7 +130,7 @@ export default function MantenimientoPage() {
                                         <td className="px-3 py-3 align-top">
                                             <span className={`px-2 py-1 rounded text-xs font-medium ${t.prioridad === 'Alta' ? 'bg-red-50 text-red-700' : t.prioridad === 'Media' ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-700'}`}>{t.prioridad}</span>
                                         </td>
-                                        <td className="px-3 py-3 align-top">{t.responsable ?? t.usuario ?? '—'}</td>
+                                        <td className="px-3 py-3 align-top">{(t.responsable ?? t.usuario ?? '—') + (t.responsable_id === user?.usuario_id ? ' (Tú)' : '')}</td>
                                         <td className="px-3 py-3 align-top text-sm text-slate-600">{formatDate(t.fecha_creacion)}</td>
                                         <td className="px-3 py-3 align-top text-sm text-slate-600">{formatDate(t.fecha_limite)}</td>
                                         <td className="px-3 py-3 align-top">
