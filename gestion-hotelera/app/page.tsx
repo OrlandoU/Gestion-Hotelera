@@ -305,9 +305,6 @@ export default function HomePage() {
             <a href="/auth" className="bg-white text-[#0f172a] px-6 py-4 rounded-xl border border-white transition-all duration-300 hover:bg-[#0f172a] hover:text-white text-xs sm:text-sm font-semibold">
               Ingresar
             </a>
-            <button onClick={() => { setIsActive(true); refetch(); }} className="bg-white text-[#0f172a] px-8 py-4 ml-2 hover:bg-[#0f172a] hover:text-white border border-white transition-all duration-300 rounded-xl shadow-md">
-              Reservar
-            </button>
           </nav>
         </div>
       </header>
