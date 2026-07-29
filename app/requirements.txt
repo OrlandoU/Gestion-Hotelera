@@ -7,3 +7,4 @@ mssql_python
 pymssql
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt>=4.1.0
