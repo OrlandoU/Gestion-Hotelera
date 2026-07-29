@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/pageheader";
 import Link from "next/link";
-import { ViewTransition, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { getHabitaciones, Habitacion } from "@/functions/espacios";
 
 function getStatusBadge(status: string) {
@@ -36,7 +36,7 @@ export default function Page() {
   const maintenanceRooms = habitaciones.filter((room) => room.estado_habitacion === "Mantenimiento").length;
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       <PageHeader
         name="Habitaciones"
         subtitle="Controla el estado de cada habitación y revisa su historial de reservaciones"
@@ -121,6 +121,6 @@ export default function Page() {
           </table>
         </div>
       </section>
-    </ViewTransition>
+    </>
   );
 }

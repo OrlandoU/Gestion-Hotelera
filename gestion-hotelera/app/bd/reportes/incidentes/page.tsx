@@ -1,9 +1,9 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
-import { ViewTransition } from "react";
 import { useState, useMemo } from "react";
 import { useIncidentes } from "@/functions/reportes-api";
+// removed ViewTransition import (not available in this React version)
 
 interface Incidente {
   incidente_id: number;
@@ -43,7 +43,7 @@ export default function Page() {
     return [...resultado].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
   }, [incidentesData, busqueda]);
 
-// Estilo semántico según palabras clave del tipo de incidente
+  // Estilo semántico según palabras clave del tipo de incidente
   const getEstiloTipo = (tipo: string) => {
     const t = tipo?.toLowerCase() || "";
     if (t.includes("electric") || t.includes("apagon") || t.includes("apagón")) {
@@ -77,7 +77,7 @@ export default function Page() {
 
   if (error && !loading) {
     return (
-      <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+      <>
         <PageHeader
           name="Reporte de incidentes anuales"
           subtitle="Registro de incidentes y eventos fuera de lo común"
@@ -96,12 +96,12 @@ export default function Page() {
             </button>
           </div>
         </div>
-      </ViewTransition>
+      </>
     );
   }
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader
@@ -203,7 +203,6 @@ export default function Page() {
           })}
         </div>
       )}
-
       {/* Modal de detalle */}
       {incidenteSeleccionado && (
         <div
@@ -261,6 +260,6 @@ export default function Page() {
           </div>
         </div>
       )}
-    </ViewTransition>
+    </>
   );
 }

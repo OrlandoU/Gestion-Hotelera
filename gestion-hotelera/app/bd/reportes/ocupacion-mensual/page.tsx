@@ -1,7 +1,7 @@
 'use client';
 import PageHeader from "@/components/pageheader";
 import { useOcupacionMensual } from "@/functions/reportes-api";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import { useState, useMemo } from "react";
 import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export default function Page() {
   // };
 
   const handleFechaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    
+
     const nuevaFecha = e.target.value;
     setFechaSeleccionada(nuevaFecha);
     refetch(nuevaFecha + "-01");
@@ -49,7 +49,7 @@ export default function Page() {
 
   const stats = useMemo(() => {
     if (ocupacionData.length === 0) return null;
-    
+
     const totalHabitaciones = 25;
     const diasDelMes = new Date(new Date(fechaSeleccionada).getFullYear(), new Date(fechaSeleccionada).getMonth() + 2, 0).getDate();
     const diasDelMesReales = new Date(new Date(fechaSeleccionada).getFullYear(), new Date(fechaSeleccionada).getMonth() + 2, 0).getDate();
@@ -134,7 +134,7 @@ export default function Page() {
   // Renderizar error
   if (error && !loading) {
     return (
-      <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+      <>
         <PageHeader
           name="Estadística de ocupación mensual"
           subtitle="Análisis sintetizado de ocupación por mes"
@@ -153,12 +153,12 @@ export default function Page() {
             </button>
           </div>
         </div>
-      </ViewTransition>
+      </>
     );
   }
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <PageHeader
@@ -416,7 +416,7 @@ export default function Page() {
               <thead>
                 <tr className="border-b border-slate-300 bg-[#f7f9fb]">
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Habitación</th>
-                      <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Descripción de la habitación</th>
+                  <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Descripción de la habitación</th>
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Veces reservada</th>
                   <th className="px-6 py-3 text-left text-[12px] font-bold text-[#515f74] uppercase tracking-wider">Participación del mes</th>
                 </tr>
@@ -487,6 +487,6 @@ export default function Page() {
           </div>
         </div>
       </section>
-    </ViewTransition>
+    </>
   );
 }

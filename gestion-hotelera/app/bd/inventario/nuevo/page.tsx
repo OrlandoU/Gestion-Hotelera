@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import PageHeader from "@/components/pageheader";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import Link from "next/link";
 import { toast } from "sonner";
 import { getProveedores, Proveedor } from "@/functions/proveedores";
@@ -10,10 +10,10 @@ import { getProductos, Producto, Compra, registrarCompra, DetalleCompra } from "
 import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
 
 export default function NuevoActivoPage() {
-    const [proveedores, setProveedores] = useState<Proveedor>([]);
+    const [proveedores, setProveedores] = useState<Proveedor[]>([]);
     const [proveedorSeleccionado, setProveedorSeleccionado] = useState<number>();
     const [factura, setFactura] = useState<string>('');
-    const [productos, setProductos] = useState<Producto>([]);
+    const [productos, setProductos] = useState<Producto[]>([]);
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -48,13 +48,20 @@ export default function NuevoActivoPage() {
     const [fechaEntrada, setFechaEntrada] = useState(today);
 
     // Estado para manejar la tabla de productos comprados
-    const [entradas, setEntradas] = useState<Producto[]>([
+    type EntradaRow = {
+        id: string;
+        producto_id: number;
+        cantidad: number;
+        costo_unitario: number;
+    };
+
+    const [entradas, setEntradas] = useState<EntradaRow[]>([
         { id: "1", producto_id: 0, cantidad: 25, costo_unitario: 8.50 },
     ]);
 
     // Agregar nueva fila vacía
     const agregarFila = () => {
-        const nuevaFila: Producto = {
+        const nuevaFila: EntradaRow = {
             id: crypto.randomUUID(),
             producto_id: 0,
             cantidad: 1,
@@ -71,10 +78,10 @@ export default function NuevoActivoPage() {
     };
 
     // Actualizar valores reactivos de la tabla
-    const actualizarValor = (id: string, campo: keyof Producto, valor: string | number | boolean | null) => {
+    const actualizarValor = (id: string, campo: keyof EntradaRow, valor: string | number | boolean | null) => {
         setEntradas(entradas.map(item => {
             if (item.id === id) {
-                return { ...item, [campo]: valor };
+                return { ...item, [campo]: valor } as EntradaRow;
             }
             return item;
         }));
@@ -230,7 +237,7 @@ export default function NuevoActivoPage() {
             };
 
             // 3. Enviamos a la API
-            const respuesta = await registrarCompra(nuevaCompra);
+            await registrarCompra(nuevaCompra);
 
             toast.success(`Compra guardada con éxito!`);
 
@@ -244,7 +251,7 @@ export default function NuevoActivoPage() {
     }
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <>
             <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
                 <Link className="hover:text-sky-600 font-medium transition-colors" href="/bd/inventario" transitionTypes={["nav-back"]}>Inventario</Link>
                 <span className="material-symbols-outlined text-[18px]">chevron_right</span>
@@ -296,7 +303,7 @@ export default function NuevoActivoPage() {
                             className="w-1/3 px-3 py-2 bg-slate-50 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-950 rounded-lg text-sm transition-colors"
                             containerClassName="w-1/3"
                             placeholder="-- Seleccione un proveedor --"
-                            options={proveedores.map((p: Proveedor) => ({ label: p.nombre, value: String(p.proveedor_id) }))}
+                            options={proveedores.map((p: Proveedor) => ({ label: p.nombre ?? "", value: String(p.proveedor_id) }))}
                         />
                         <ValidatedInput
                             label=""
@@ -338,7 +345,7 @@ export default function NuevoActivoPage() {
                                             <td className="py-3 px-6">
                                                 <select
                                                     value={item.producto_id}
-                                                    onChange={(e) => {
+                                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                                         actualizarValor(item.id, "producto_id", Number(e.target.value));
                                                         setFormErrors((prev) => ({ ...prev, [`producto_${item.id}`]: "" }));
                                                     }}
@@ -359,7 +366,7 @@ export default function NuevoActivoPage() {
                                                     type="number"
                                                     min="1"
                                                     value={item.cantidad}
-                                                    onChange={(e) => {
+                                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                         actualizarValor(item.id, "cantidad", parseInt(e.target.value) || 0);
                                                         setFormErrors((prev) => ({ ...prev, [`cantidad_${item.id}`]: "" }));
                                                     }}
@@ -376,7 +383,7 @@ export default function NuevoActivoPage() {
                                                         step="0.01"
                                                         min="0"
                                                         value={item.costo_unitario}
-                                                        onChange={(e) => {
+                                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                                             actualizarValor(item.id, "costo_unitario", parseFloat(e.target.value) || 0);
                                                             setFormErrors((prev) => ({ ...prev, [`costo_${item.id}`]: "" }));
                                                         }}
@@ -393,7 +400,7 @@ export default function NuevoActivoPage() {
                                                 <button
                                                     type="button"
                                                     disabled={entradas.length === 1}
-                                                    onClick={() => eliminarFila(item.id)}
+                                                    onClick={() => eliminarFila(String(item.id))}
                                                     className="text-red-500 hover:text-red-700 disabled:opacity-30 p-1 rounded-md hover:bg-red-50 transition-colors"
                                                 >
                                                     <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -476,6 +483,6 @@ export default function NuevoActivoPage() {
                     </div>
                 </div>
             </div>
-        </ViewTransition>
+        </>
     );
 }

@@ -82,11 +82,13 @@ export default function TicketDetailPage() {
                 contenido: commentText.trim(),
                 fecha_creacion: new Date().toISOString(),
             });
-            setComentarios((prev) => [...prev, {...created,
+            setComentarios((prev) => [...prev, {
+                ...created,
                 ticket_id: ticket?.ticket_id?.toString() || "",
                 usuario_id: user?.usuario_id || 0,
                 contenido: commentText.trim(),
-                fecha_creacion: new Date().toISOString(), usuario: user?.nombre || "Usuario"}]);
+                fecha_creacion: new Date().toISOString(), usuario: user?.nombre || "Usuario"
+            }]);
             toast.success("Comentario agregado correctamente.");
             setCommentText("");
             setFormErrors({});
@@ -230,27 +232,29 @@ export default function TicketDetailPage() {
                             <aside className="space-y-4">
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                                     <h3 className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500">Resumen rápido</h3>
-                                    <div className="mt-4 space-y-3 text-sm text-slate-600">
-                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
-                                            <span>Reserva asociada</span>
-                                            <span className="font-semibold text-slate-900">{ticket.reserva_id ?? "—"}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
-                                            <span>Usuario</span>
-                                            <span className="font-semibold text-slate-900">{usuarioLabel}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
-                                            <span>Responsable</span>
-                                            <span className="font-semibold text-slate-900">{responsableLabel}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between rounded-lg bg-white px-3 py-2 shadow-sm">
-                                            <span>Rol</span>
-                                            <span className="font-semibold text-slate-900">{rolLabel}</span>
-                                        </div>
+                                    <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                        <dl className="grid gap-4 text-sm text-slate-700">
+                                            <div className="grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                                                <dt className="text-xs uppercase tracking-[0.24em] text-slate-500">Reserva asociada</dt>
+                                                <dd className="font-semibold text-slate-900">{ticket.reserva_id ?? '—'}</dd>
+                                            </div>
+                                            <div className="grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                                                <dt className="text-xs uppercase tracking-[0.24em] text-slate-500">Usuario</dt>
+                                                <dd className="font-semibold text-slate-900">{usuarioLabel}</dd>
+                                            </div>
+                                            <div className="grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                                                <dt className="text-xs uppercase tracking-[0.24em] text-slate-500">Responsable</dt>
+                                                <dd className="font-semibold text-slate-900">{responsableLabel}</dd>
+                                            </div>
+                                            <div className="grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-3 sm:grid-cols-[1fr_auto] sm:items-center">
+                                                <dt className="text-xs uppercase tracking-[0.24em] text-slate-500">Rol</dt>
+                                                <dd className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">{rolLabel}</dd>
+                                            </div>
+                                        </dl>
                                     </div>
                                 </div>
 
-                                <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                                {/* <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
                                     <div className="flex items-center gap-2">
                                         <span className="material-symbols-outlined text-[18px] text-amber-700">tips_and_updates</span>
                                         <h3 className="text-sm font-semibold text-amber-800">Recomendación</h3>
@@ -258,7 +262,7 @@ export default function TicketDetailPage() {
                                     <p className="mt-3 text-sm leading-6 text-amber-800">
                                         Mantén el seguimiento activo y prioriza la atención cuando el estado está pendiente o la prioridad es alta.
                                     </p>
-                                </div>
+                                </div> */}
                             </aside>
                         </div>
                     </section>

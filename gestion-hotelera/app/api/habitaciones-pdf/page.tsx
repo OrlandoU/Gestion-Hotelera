@@ -1,6 +1,6 @@
 'use client';
 import PageHeader from "@/components/pageheader";
-import { Suspense, ViewTransition } from "react";
+import { Suspense } from "react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useEstadoHabitaciones } from "@/functions/reportes-api";
@@ -116,7 +116,7 @@ function EstadoHabitacionesPdfContent() {
 
     if (error && !loading) {
         return (
-            <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+            <>
                 <PageHeader
                     name="Listado del estado de las habitaciones"
                     subtitle="Visualización y gestión del inventario de espacios disponibles"
@@ -128,12 +128,12 @@ function EstadoHabitacionesPdfContent() {
                         <p className="text-red-700 mb-4">{error.message}</p>
                     </div>
                 </div>
-            </ViewTransition>
+            </>
         );
     }
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <>
             {/* Encabezado tipo membrete */}
             <div className="rounded-[24px] border border-slate-300 bg-white p-6" style={{ breakInside: 'avoid' }}>
                 <div className="flex flex-wrap items-center justify-between gap-6 pb-5 border-b border-slate-300">
@@ -192,7 +192,7 @@ function EstadoHabitacionesPdfContent() {
                 </div>
             </div>
 
-            
+
 
             {/* Tabla de habitaciones */}
             <section className="bg-[#ffffff] border border-slate-300 rounded-xl overflow-hidden">
@@ -280,6 +280,6 @@ function EstadoHabitacionesPdfContent() {
                     <p className="text-[12px] text-[#515f74] mt-2">Del filtrado</p>
                 </div>
             </section>
-        </ViewTransition>
+        </>
     );
 }

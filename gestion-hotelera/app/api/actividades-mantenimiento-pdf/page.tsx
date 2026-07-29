@@ -1,7 +1,7 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
-import { Suspense, ViewTransition } from "react";
+import { Suspense } from "react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useActividadesMantenimiento } from "@/functions/reportes-api";
@@ -101,7 +101,7 @@ function ActividadesMantenimientoPdfContent() {
 
     if (error && !loading) {
         return (
-            <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+            <>
                 <PageHeader
                     name="Reporte de actividades de mantenimiento/limpieza diarias"
                     subtitle="Auditoría interna de saneamiento, uso de insumos y gestión de espacios"
@@ -113,12 +113,12 @@ function ActividadesMantenimientoPdfContent() {
                         <p className="text-red-700 mb-4">{error.message}</p>
                     </div>
                 </div>
-            </ViewTransition>
+            </>
         );
     }
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <>
             {/* Encabezado tipo membrete */}
             <div className="rounded-[24px] border border-slate-300 bg-white p-6" style={{ breakInside: 'avoid' }}>
                 <div className="flex flex-wrap items-center justify-between gap-6 pb-5 border-b border-slate-300">
@@ -250,9 +250,9 @@ function ActividadesMantenimientoPdfContent() {
                         </table>
                     </div>
                 )}
-             
+
             </section>
-               {/* Resumen KPI */}
+            {/* Resumen KPI */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ breakInside: 'avoid' }}>
                 <div className="bg-[#ffffff] border border-slate-300 rounded-xl p-5">
                     <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Órdenes Ejecutadas</p>
@@ -272,6 +272,6 @@ function ActividadesMantenimientoPdfContent() {
                     <p className="text-[12px] text-[#515f74] mt-2">Encargados distintos</p>
                 </div>
             </section>
-        </ViewTransition>
+        </>
     );
 }

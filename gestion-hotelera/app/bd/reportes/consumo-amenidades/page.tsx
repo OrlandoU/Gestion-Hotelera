@@ -1,7 +1,7 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import { useState, useMemo } from "react";
 import { useConsumoAmenidadesMensual } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
 import {
@@ -135,7 +135,7 @@ export default function Page() {
 
   if (error && !loading) {
     return (
-      <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+      <>
         <PageHeader
           name="Resumen de consumo mensual de insumos y amenidades"
           subtitle="Monitoreo de stock gastado e insumos distribuidos por fecha"
@@ -154,12 +154,12 @@ export default function Page() {
             </button>
           </div>
         </div>
-      </ViewTransition>
+      </>
     );
   }
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       {/* Encabezado Principal y Selector de Mes */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -181,7 +181,7 @@ export default function Page() {
             />
           </div>
           <button
-            onClick={refetch}
+            onClick={() => refetch()}
             className="mt-5 p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-700"
             title="Recargar datos"
           >
@@ -429,6 +429,6 @@ export default function Page() {
           </div>
         )}
       </section>
-    </ViewTransition>
+    </>
   );
 }

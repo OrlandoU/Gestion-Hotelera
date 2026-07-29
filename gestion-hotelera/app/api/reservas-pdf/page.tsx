@@ -1,7 +1,7 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
-import { Suspense, ViewTransition } from "react";
+import { Suspense } from "react";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useReservacionesDiarias } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
@@ -147,7 +147,7 @@ function ReservasPdfContent() {
     // Renderizado defensivo en caso de error crítico de la API
     if (error && !loading) {
         return (
-            <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+            <>
                 <PageHeader
                     name="Reporte diario de reservaciones creadas"
                     subtitle="Listado de reservaciones registradas en la fecha seleccionada"
@@ -159,12 +159,12 @@ function ReservasPdfContent() {
                         <p className="text-red-700 mb-4">{error.message}</p>
                     </div>
                 </div>
-            </ViewTransition>
+            </>
         );
     }
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <>
             <div className="rounded-[24px] border border-slate-300 bg-white p-6">
                 {/* Encabezado tipo membrete */}
                 <div className="flex flex-wrap items-center justify-between gap-6 pb-5 border-b border-slate-300">
@@ -442,6 +442,6 @@ function ReservasPdfContent() {
           </h2>
         </div>
       </section> */}
-        </ViewTransition>
+        </>
     );
 }

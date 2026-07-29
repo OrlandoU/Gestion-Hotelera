@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import Link from "next/link";
 import PageHeader from "@/components/pageheader";
 import Modal from "@/components/Modal";
@@ -81,10 +81,9 @@ export default function ClientesPage() {
 
   const totalClients = huespedes?.length ?? 0;
   const inHouseCount = huespedes?.filter((c) => (c.estancias ?? 0) > 0).length ?? 0;
-  const totalSpent = huespedes?.reduce((sum, c) => sum + (c.total_gastado ?? 0), 0);
-  const avgStays = totalClients
-    ? (huespedes?.reduce((sum, c) => sum + (c.estancias ?? 0), 0) / totalClients).toFixed(1)
-    : "0";
+  const totalSpent = huespedes?.reduce((sum, c) => sum + (c.total_gastado ?? 0), 0) ?? 0;
+  const totalEstancias = huespedes?.reduce((sum, c) => sum + (c.estancias ?? 0), 0) ?? 0;
+  const avgStays = totalClients ? (totalEstancias / totalClients).toFixed(1) : "0";
 
   const validateGuestForm = () => {
     const nextErrors: Record<string, string> = {};
@@ -196,7 +195,7 @@ export default function ClientesPage() {
   };
 
   return (
-    <ViewTransition enter={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
+    <>
       <PageHeader
         name="Clientes"
         subtitle="Perfiles de huéspedes, historial y preferencias"
@@ -466,6 +465,6 @@ export default function ClientesPage() {
           </div>
         </div>
       </div>
-    </ViewTransition>
+    </>
   );
 }

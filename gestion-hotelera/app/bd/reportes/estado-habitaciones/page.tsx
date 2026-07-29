@@ -1,7 +1,7 @@
 'use client';
 import PageHeader from "@/components/pageheader";
 import TablePagination from "@/components/TablePagination";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import { useState, useMemo } from "react";
 import { useEstadoHabitaciones } from "@/functions/reportes-api";
 import { exportToExcel } from "@/functions/excel-utils";
@@ -149,7 +149,7 @@ export default function Page() {
   // Renderizar error
   if (error && !loading) {
     return (
-      <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+      <>
         <PageHeader
           name="Listado del estado de las habitaciones"
           subtitle="Visualización y gestión del inventario de espacios disponibles"
@@ -168,12 +168,12 @@ export default function Page() {
             </button>
           </div>
         </div>
-      </ViewTransition>
+      </>
     );
   }
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader
@@ -360,7 +360,7 @@ export default function Page() {
                         <td className="px-6 py-4">
                           <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${getColorTipo(habitacion.tipo || "")}`}>
                             {habitacion.tipo == "Estandar" ? "Estándar" : habitacion.tipo == "Doble-Estandar" ? "Doble Estándar" : habitacion.tipo || "Sin tipo"}
-                            
+
                           </span>
                         </td>
                         <td className="px-6 py-4">
@@ -512,6 +512,6 @@ export default function Page() {
       </section> */}
       <Toaster richColors expand />
 
-    </ViewTransition>
+    </>
   );
 }

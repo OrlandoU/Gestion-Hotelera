@@ -27,7 +27,7 @@ export default function PagoReservaPage({ params }: Props) {
     const [tipoPago, setTipoPago] = useState<"parcial" | "completo">("parcial");
     const [metodoPago, setMetodoPago] = useState("Efectivo");
     const [monto, setMonto] = useState<number>(0);
-    const [fecha] = useState(() => new Date().toISOString().split("T")[0]);
+    const [fecha, setFecha] = useState<string>(() => new Date().toISOString().split("T")[0]);
     const [saldoPendiente, setSaldoPendiente] = useState<number>(0);
 
     // Carga inicial de la reserva

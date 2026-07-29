@@ -52,7 +52,7 @@ export async function getTickets(numero_ticket?: string | null, fecha_creacion?:
     });
 }
 
-export async function getComentarios(ticket_id?: int | null, fecha_creacion?: string | null, usuario_id?: number | null): Promise<Comentario[]> {
+export async function getComentarios(ticket_id?: number | null, fecha_creacion?: string | null, usuario_id?: number | null): Promise<Comentario[]> {
     return fetchAPI<Comentario[]>(`/tickets/comentarios`, {
         method: 'GET',
         params: {

@@ -1,7 +1,7 @@
 'use client';
 import PageHeader from "@/components/pageheader";
 import { useOcupacionMensual } from "@/functions/reportes-api";
-import { Suspense, ViewTransition } from "react";
+import { Suspense } from "react";
 import { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts';
@@ -94,7 +94,7 @@ function OcupacionMensualContent() {
 
     if (error && !loading) {
         return (
-            <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+            <>
                 <PageHeader
                     name="Estadística de ocupación mensual"
                     subtitle="Análisis sintetizado de ocupación por mes"
@@ -106,12 +106,12 @@ function OcupacionMensualContent() {
                         <p className="text-red-700 mb-4">{error.message}</p>
                     </div>
                 </div>
-            </ViewTransition>
+            </>
         );
     }
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <>
             {/* Encabezado tipo membrete */}
             <div className="rounded-[24px] border border-slate-300 bg-white p-6" style={{ breakInside: 'avoid' }}>
                 <div className="flex flex-wrap items-center justify-between gap-6 pb-5 border-b border-slate-300">
@@ -423,6 +423,6 @@ function OcupacionMensualContent() {
                     </div>
                 </div>
             </section>
-        </ViewTransition>
+        </>
     );
 }

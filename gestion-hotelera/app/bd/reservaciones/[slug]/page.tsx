@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { Reserva, useReserva } from "@/functions/reservas";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import Link from "next/link";
 import React from "react";
 import { formatLempiras } from "@/lib/utils";
@@ -166,7 +166,7 @@ export default function ReservationPage() {
 
     if (loadingReserva) {
         return (
-            <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+            <>
                 <div className="space-y-6">
                     <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                         <div className="h-4 w-32 rounded bg-slate-200" />
@@ -199,7 +199,7 @@ export default function ReservationPage() {
                         </div>
                     </div>
                 </div>
-            </ViewTransition>
+            </>
         );
     }
 
@@ -228,7 +228,7 @@ export default function ReservationPage() {
     const currentStatus = STATUS_CONFIG[status ?? "Pending"] || { label: status ?? "Pendiente", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" };
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <>
             <div className="mb-2">
                 <div className="flex items-center gap-1 text-slate-500 text-xs mb-2">
                     <Link className="hover:text-slate-900 transition-colors" href="/bd/reservaciones" transitionTypes={["nav-back"]}>Reservaciones</Link>
@@ -466,6 +466,6 @@ export default function ReservationPage() {
                     </div>
                 </div>
             </div>
-        </ViewTransition>
+        </>
     );
 }

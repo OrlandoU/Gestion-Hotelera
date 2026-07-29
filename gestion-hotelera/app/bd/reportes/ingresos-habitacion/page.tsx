@@ -1,7 +1,7 @@
 'use client';
 
 import PageHeader from "@/components/pageheader";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import { useState, useMemo } from "react";
 import { useIngresosTipoHabitacion } from "@/functions/reportes-api";
 import { PieChart, Pie, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -90,7 +90,7 @@ export default function Page() {
 
   if (error && !loading) {
     return (
-      <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+      <>
         <PageHeader
           name="Ingresos mensuales por tipo de habitación"
           subtitle="Análisis de rentabilidad, distribución monetaria y tasas de ocupación"
@@ -106,12 +106,12 @@ export default function Page() {
             </button>
           </div>
         </div>
-      </ViewTransition>
+      </>
     );
   }
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       {/* Encabezado Principal y Controles de Periodo */}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -339,6 +339,6 @@ export default function Page() {
           </div>
         </div>
       </section>
-    </ViewTransition>
+    </>
   );
 }

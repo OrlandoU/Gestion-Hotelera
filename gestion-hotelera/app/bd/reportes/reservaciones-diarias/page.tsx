@@ -2,7 +2,7 @@
 
 import PageHeader from "@/components/pageheader";
 import TablePagination from "@/components/TablePagination";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import { useState, useMemo } from "react";
 import { useReservacionesDiarias } from "@/functions/reportes-api"; // Ajustado según tu alias de funciones
 import { exportToExcel } from "@/functions/excel-utils";
@@ -191,7 +191,7 @@ export default function Page() {
   // Renderizado defensivo en caso de error crítico de la API
   if (error && !loading) {
     return (
-      <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+      <>
         <PageHeader
           name="Reporte diario de reservaciones creadas"
           subtitle="Listado de reservaciones registradas en la fecha seleccionada"
@@ -210,12 +210,12 @@ export default function Page() {
             </button>
           </div>
         </div>
-      </ViewTransition>
+      </>
     );
   }
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       {/* Encabezado y Acción Global */}
       <div className="flex justify-between items-start gap-4">
         <div>
@@ -566,6 +566,6 @@ export default function Page() {
       </section> */}
       <Toaster richColors expand />
 
-    </ViewTransition>
+    </>
   );
 }

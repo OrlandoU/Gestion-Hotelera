@@ -1,21 +1,11 @@
 "use client"
 import PageHeader from "@/components/pageheader";
 import NewFactura from "@/components/NewFactura";
-import { ViewTransition } from "react"
+// removed ViewTransition import (not available in this React version)
 
 export default function Page() {
     return (
-        <ViewTransition onEnter={() => console.log("animati")} enter={{
-            'nav-forward': 'nav-forward',
-            'nav-back': 'nav-back',
-            default: 'none',
-        }}
-            exit={{
-                'nav-forward': 'nav-forward',
-                'nav-back': 'nav-back',
-                default: 'none',
-            }}
-            default="none">
+        <>
             <PageHeader name="Facturación" subtitle="Gestión de facturación" buttons={<NewFactura />} />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-[#ffffff] border border-slate-300 card-shadow  rounded-xl p-6 shadow-level-1 duration-300 flex flex-col justify-between group hover:-translate-y-1 transition-transform">
@@ -226,7 +216,7 @@ export default function Page() {
                     </table>
                 </div>
             </div>
-        </ViewTransition>
+        </>
     )
 }
 

@@ -108,11 +108,11 @@ export default function ClientDetailPage() {
   const fullName = getFullName(client);
   const guestEmail = client.email ?? "—";
   const guestPhone = client.telefono ?? "—";
-  const guestTotalSpent = client.total_pagado ?? 0;
+  const guestTotalSpent = Number(client.total_pagado ?? 0);
   const guestTotalStays = client.estancias ?? 0;
-  const guestLoyaltyTier = client.loyaltyTier ?? getLoyaltyTier(client);
-  const guestNotes = client.notes ?? [];
-  const guestLastVisit = client.lastVisit ?? "—";
+  const guestLoyaltyTier = String(client.loyaltyTier ?? getLoyaltyTier(client));
+  const guestNotes = Array.isArray(client.notes) ? client.notes : [];
+  const guestLastVisit = String(client.lastVisit ?? "—");
   const initials = fullName
     .split(" ")
     .map((part) => part[0])

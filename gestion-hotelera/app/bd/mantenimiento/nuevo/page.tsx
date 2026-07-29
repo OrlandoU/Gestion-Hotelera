@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import Link from "next/link";
 import PageHeader from "@/components/pageheader";
 import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
@@ -211,7 +211,7 @@ export default function NuevoMantenimientoPage() {
     };
 
     return (
-        <ViewTransition enter={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
+        <>
             <div className=" flex w-full flex-col">
                 <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
                     <Link className="hover:text-sky-600 font-medium transition-colors" href="/bd/mantenimiento" transitionTypes={["nav-back"]}>Mantenimiento</Link>
@@ -497,6 +497,6 @@ export default function NuevoMantenimientoPage() {
                 </div>
             </div>
 
-        </ViewTransition>
+        </>
     );
 }

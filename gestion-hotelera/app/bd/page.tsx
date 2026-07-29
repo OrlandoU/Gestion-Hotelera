@@ -1,6 +1,6 @@
 "use client";
 
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PageHeader from "@/components/pageheader";
@@ -362,7 +362,7 @@ export default function Page() {
     };
 
     return (
-        <ViewTransition enter={{ "nav-forward": "nav-forward", "nav-back": "nav-back", default: "none" }}>
+        <>
             <div className="space-y-6">
                 <PageHeader name="Panel" subtitle="Visión general de operaciones" buttons={<NewReservation />} />
 
@@ -766,6 +766,6 @@ export default function Page() {
                     </div>
                 </form>
             </Modal>
-        </ViewTransition>
+        </>
     );
 }

@@ -1,14 +1,15 @@
 import { fetchAPI } from './http-base';
 
 export interface Producto {
+    id?: string; // local UI id for temporary rows
     producto_id?: number;
-    //proveedor_id?: number;
+    proveedor_id?: number;
     nombre?: string;
     cantidad?: number;
     categoria?: string;
     costo_unitario?: number;
     unidad?: string;
-    [key: string]: any;
+    estado_activo?: boolean;
 }
 
 export interface DetalleCompra {

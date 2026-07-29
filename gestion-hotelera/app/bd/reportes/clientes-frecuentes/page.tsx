@@ -1,7 +1,7 @@
 'use client';
 import PageHeader from "@/components/pageheader";
 import TablePagination from "@/components/TablePagination";
-import { ViewTransition } from "react";
+// removed ViewTransition import (not available in this React version)
 import { useState, useMemo } from "react";
 import { useClientesFrecuentes } from "@/functions/reportes-api";
 import { exportToExcel } from "@/functions/excel-utils";
@@ -114,7 +114,7 @@ export default function Page() {
   // Renderizar error
   if (error && !loading) {
     return (
-      <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+      <>
         <PageHeader
           name="Clientes Frecuentes"
           subtitle="Análisis de huéspedes recurrentes y patrones de visita"
@@ -133,12 +133,12 @@ export default function Page() {
             </button>
           </div>
         </div>
-      </ViewTransition>
+      </>
     );
   }
 
   return (
-    <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+    <>
       <div className="flex justify-between items-start gap-4">
         <div>
           <PageHeader
@@ -519,6 +519,6 @@ export default function Page() {
         </div>
       </section> */}
       <Toaster richColors expand />
-    </ViewTransition>
+    </>
   );
 }

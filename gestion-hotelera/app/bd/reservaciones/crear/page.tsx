@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type ChangeEvent, ViewTransition } from "react";
+import { useState, useEffect, type ChangeEvent } from "react";
 import { useForm, type UseFormRegister } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -162,6 +162,7 @@ export default function CrearReservacion() {
         watch,
         formState: { errors, touchedFields, dirtyFields },
     } = useForm<GuestFormValues>({
+        // @ts-expect-error - resolver typing mismatch between installed zod and @hookform/resolvers
         resolver: zodResolver(guestSchema),
         mode: "onTouched",
         reValidateMode: "onChange",
@@ -409,7 +410,7 @@ export default function CrearReservacion() {
     };
 
     return (
-        <ViewTransition enter={{ 'nav-forward': 'nav-forward', 'nav-back': 'nav-back', default: 'none' }}>
+        <>
             <div className="pb-12">
                 <div className="flex items-center gap-2 text-slate-500 text-sm mb-4">
                     <Link className="hover:text-sky-600 font-medium transition-colors" href="/bd/reservaciones" transitionTypes={["nav-back"]}>Reservaciones</Link>
@@ -929,6 +930,6 @@ export default function CrearReservacion() {
                     </aside>
                 </div>
             </div>
-        </ViewTransition>
+        </>
     );
 }
