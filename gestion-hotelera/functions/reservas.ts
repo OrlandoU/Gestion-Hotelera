@@ -79,6 +79,7 @@ export interface Reserva {
     cantidad_huespedes?: number;
     metodos_garantia?: string;
     metodo_garantia?: string;
+    identificacion?: string;
     [key: string]: unknown;
 }
 
