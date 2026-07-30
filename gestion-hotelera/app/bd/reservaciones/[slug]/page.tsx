@@ -84,7 +84,12 @@ export default function ReservationPage() {
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
     const numericId = id ? Number(id) : null;
 
-    const { data: rawReserva, loading: loadingReserva, error: errorReserva } = useReserva(numericId);
+    const {
+        data: rawReserva,
+        loading: loadingReserva,
+        error: errorReserva,
+        refetch: refetchReserva // 1. Extrae el refetch del hook
+    } = useReserva(numericId!);
     const { data: pagosApi } = usePagos(null, null, rawReserva?.reserva_id);
     const pagosData = pagosApi ?? [];
 
@@ -97,6 +102,7 @@ export default function ReservationPage() {
         try {
             await modificarReserva(rawReserva.reserva_id, true);
             toast.success("Reserva checkeada exitosamente");
+            await refetchReserva(); // Recarga los datos de la reserva
         } catch {
             toast.error("Error al checkear la reserva");
         }
@@ -111,6 +117,7 @@ export default function ReservationPage() {
         try {
             await modificarReserva(rawReserva.reserva_id, false);
             toast.success("Reserva finalizada exitosamente");
+            await refetchReserva(); // Recarga los datos de la reserva
         } catch (error) {
             const message = error instanceof Error ? error.message : "Error al procesar la reserva";
             toast.error(message || "Error al procesar la reserva");

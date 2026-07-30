@@ -84,7 +84,8 @@ export default function Page() {
 
     const habitacionesData = useMemo(() => habitacionesApi || [], [habitacionesApi]);
     const ocupacionData = useMemo(() => ocupacionApi || [], [ocupacionApi]);
-    const { data: ingresosApi, loading, error, refetch } = useIngresosTipoHabitacion(new Date().toISOString());
+    const fechaHoy = new Date().toISOString().split('T')[0];
+    const { data: ingresosApi, loading, error, refetch } = useIngresosTipoHabitacion(fechaHoy);
     const ticketsData = useMemo(() => ticketsApi || [], [ticketsApi]);
     const reservasData = useMemo(() => reservasHoy || [], [reservasHoy]);
 

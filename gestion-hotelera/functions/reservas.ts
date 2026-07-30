@@ -151,51 +151,39 @@ async function fetchAPI<T = unknown>(
  * Antes: /reservas/obtener-reserva/?reserva_id=${id}
  * Ahora: /reservas/{reserva_id} (Path Parameter estándar REST)
  */
+
 export async function getReserva(reserva_id: number): Promise<Reserva> {
     return fetchAPI<Reserva>(`/reservas/${reserva_id}`, { method: 'GET' });
 }
 
-export function useReserva(reserva_id: number | null | undefined) {
-    const [data, setData] = useState<Reserva | null>(null);
-    const [loading, setLoading] = useState(Boolean(reserva_id));
-    const [error, setError] = useState<Error | null>(null);
+export function useReserva(id?: number) {
+    const [state, setState] = useState<UseReporteState<Reserva>>({
+        data: null,
+        loading: true,
+        error: null,
+    });
+
+    const refetch = useCallback(async () => {
+        setState(prev => ({ ...prev, loading: true, error: null }));
+        try {
+            const data = await getReserva(id!);
+            setState({ data, loading: false, error: null });
+        } catch (error) {
+            setState({ data: null, loading: false, error: error as Error });
+        }
+    }, [id]);
 
     useEffect(() => {
-        let cancelled = false;
-
-        if (!reserva_id) {
-            return () => {
-                cancelled = true;
-            };
+        if (id) {
+            void refetch();
         }
+    }, [refetch, id]);
 
-        const fetchReserva = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const data = await getReserva(reserva_id);
-                if (!cancelled) {
-                    setData(data);
-                }
-            } catch (error) {
-                if (!cancelled) {
-                    setError(error as Error);
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        void fetchReserva();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [reserva_id]);
-
-    return { data, loading, error };
+    // Retorna el estado y añade explícitamente el tipo de refetch
+    return {
+        ...state,
+        refetch,
+    } as const; // O tiparlo con el tipo de la función refetch si lo prefieres
 }
 
 /**
