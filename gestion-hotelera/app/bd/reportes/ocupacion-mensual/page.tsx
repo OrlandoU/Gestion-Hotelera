@@ -381,7 +381,7 @@ export default function Page() {
         )}
       </section>
 
-      {/* Tabla de datos */}
+      {/* Tabla de datos
       <section className="bg-[#ffffff] border border-slate-300 card-shadow rounded-xl shadow-level-1 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-300 bg-[#f7f9fb]">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -474,7 +474,8 @@ export default function Page() {
             </div>
           </div>
         )}
-      </section>
+      </section> */}
+      
 
       {/* Información de cálculo */}
       <section className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-6">
