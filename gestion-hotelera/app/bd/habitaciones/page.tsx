@@ -6,17 +6,27 @@ import { useState, useEffect } from "react";
 import { getHabitaciones, Habitacion } from "@/functions/espacios";
 
 function getStatusBadge(status: string) {
-  switch (status) {
-    case "Available":
-      return "bg-emerald-100 text-emerald-800 border-emerald-300";
-    case "Occupied":
-      return "bg-blue-100 text-blue-800 border-blue-300";
-    case "Dirty":
-      return "bg-amber-100 text-amber-800 border-amber-300";
-    case "Maintenance":
-      return "bg-rose-100 text-rose-800 border-rose-300";
+  const normalizedStatus = status
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  switch (normalizedStatus) {
+    case "disponible":
+    case "available":
+      return "bg-purple-100 text-purple-800";
+    case "ocupado":
+    case "occupied":
+      return "bg-sky-100 text-sky-800";
+    case "mantenimiento":
+    case "maintenance":
+      return "bg-blue-100 text-blue-800";
+    case "sucio":
+    case "dirty":
+      return "bg-indigo-100 text-indigo-800";
     default:
-      return "bg-slate-100 text-slate-800 border-slate-300";
+      return "bg-slate-100 text-slate-800 ";
   }
 }
 
