@@ -79,4 +79,5 @@ async def login(credentials: UsuarioLoginSchema, repo: UsuarioRepository = Depen
         "usuario_id": user["usuario_id"],
         "nombre": const_nombre or user["email"],
         "email": user["email"],
+        "rol": user["rol"]
     }

@@ -35,6 +35,7 @@ async function fetchAuth<T>(endpoint: string, body: unknown) {
 
 export async function login(email: string, password: string) {
     const result = await fetchAuth<AuthResponse>("/auth/login", { email, password });
+    console.log(result)
     if (typeof window !== "undefined") {
         localStorage.setItem("hotel_token", result.access_token);
         localStorage.setItem("hotel_user", JSON.stringify({
@@ -59,6 +60,7 @@ interface SignupPayload {
 
 export async function signup(payload: SignupPayload) {
     const result = await fetchAuth<AuthResponse>("/auth/signup", payload);
+
     if (typeof window !== "undefined") {
         localStorage.setItem("hotel_token", result.access_token);
         localStorage.setItem("hotel_user", JSON.stringify({

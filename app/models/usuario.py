@@ -26,6 +26,7 @@ class UsuarioCreateSchema(BaseModel):
     email: EmailStr
     telefono: str
     password: str
+    rol:str
 
 
 class UsuarioLoginSchema(BaseModel):
