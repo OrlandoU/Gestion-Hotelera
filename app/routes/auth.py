@@ -14,6 +14,7 @@ class AuthResponseSchema(BaseModel):
     usuario_id: int
     nombre: str
     email: EmailStr
+    rol: str
 
 
 def get_usuario_repo(db = Depends(get_db)):
@@ -79,5 +80,5 @@ async def login(credentials: UsuarioLoginSchema, repo: UsuarioRepository = Depen
         "usuario_id": user["usuario_id"],
         "nombre": const_nombre or user["email"],
         "email": user["email"],
-        "rol": user["rol"]
+        "rol": user.get("rol")
     }

@@ -7,6 +7,7 @@ import { ValidatedInput } from "@/components/ui/validated-field";
 import Button from "@/components/ui/button";
 import { useUsuarios, crearUsuario, updateUsuario, Usuario } from "@/functions/usuarios";
 import { toast } from "sonner";
+import { getCurrentUser } from "@/functions/auth";
 
 // ─── TIPOS DE DATOS ─────────────────────────────────────────
 export type UserStatus = "Disponible" | "Ocupado";
@@ -217,6 +218,7 @@ export default function UsuariosPage() {
             </div>
         );
     }
+    console.log(getCurrentUser())
 
     return (
         <>
