@@ -14,7 +14,7 @@ class UsuarioRepository(BaseRepository):
         return self._execute_query(query, (usuario_id,), fetch_one=True)
     
     def crear(self, usuario: UsuarioSchema):
-        hashed_password = get_password_hash(usuario.password)
+        hashed_password = get_password_hash(usuario.password_hash)
         query = "EXEC crear_usuario %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
         params = (
         usuario.primer_nombre,     # 1
