@@ -19,17 +19,17 @@ const STATUS_CONFIG = {
     },
     Reservada: {
         label: "Reservada",
-        badgeBg: "bg-blue-100",
-        badgeText: "text-blue-800",
-        border: "border-blue-300",
-        dotBg: "bg-blue-500",
+        badgeBg: "bg-purple-100",
+        badgeText: "text-purple-800",
+        border: "border-purple-300",
+        dotBg: "bg-purple-500",
     },
     Hospedado: {
         label: "Hospedado",
-        badgeBg: "bg-emerald-100",
-        badgeText: "text-emerald-800",
-        border: "border-emerald-300",
-        dotBg: "bg-emerald-500",
+        badgeBg: "bg-indigo-100",
+        badgeText: "text-indigo-800",
+        border: "border-indigo-300",
+        dotBg: "bg-indigo-500",
     },
     Finalizada: {
         label: "Finalizada",
@@ -116,9 +116,9 @@ function getStatusStyles(status?: string) {
         case "Pendiente":
             return { bg: "bg-amber-100", border: "border-amber-500", dot: "bg-amber-500" };
         case "Reservada":
-            return { bg: "bg-blue-100", border: "border-blue-500", dot: "bg-blue-500" };
+            return { bg: "bg-indigo-100", border: "border-indigo-500", dot: "bg-indigo-500" };
         case "Hospedado":
-            return { bg: "bg-emerald-100", border: "border-emerald-500", dot: "bg-emerald-500" };
+            return { bg: "bg-purple-100", border: "border-purple-500", dot: "bg-purple-500" };
         default:
             return { bg: "bg-slate-100", border: "border-slate-300 card-shadow", dot: "bg-slate-400" };
     }
@@ -370,15 +370,15 @@ export default function Page() {
 
                         <div className="flex items-center gap-4 text-xs text-slate-600">
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                                 <span>Pendiente</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                                 <span>Confirmada</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                                 <span>En estancia</span>
                             </div>
                             <div className="flex items-center gap-1.5">
@@ -464,7 +464,7 @@ export default function Page() {
                                     {dates.map((date) => {
                                         const weekday = date.toLocaleString("es-HN", { weekday: "short" });
                                         const daynum = date.getDate();
-                                        const isMid = date.getDay() === 3;
+                                        const isMid = date.getDay() === 4;
                                         const weekend = date.getDay() === 0 || date.getDay() === 6;
                                         return (
                                             <div key={date.toISOString()} className={`p-2 text-center border-r border-slate-300 card-shadow ${isMid ? "bg-blue-50/50" : weekend ? "bg-slate-100/50" : ""}`} style={{ minWidth: dayWidth }}>
@@ -484,7 +484,7 @@ export default function Page() {
                                                 <div className="text-sm font-semibold text-slate-800">{room.name}</div>
                                                 <div className="text-xs text-slate-400">{room.type}</div>
                                             </div>
-                                            <span className={`w-2 h-2 rounded-full ${room.statusColor}`}></span>
+                                            {/*<span className={`w-2 h-2 rounded-full ${room.statusColor}`}></span>*/}
                                         </div>
 
                                         {dates.map((_, index) => (

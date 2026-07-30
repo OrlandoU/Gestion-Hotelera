@@ -66,7 +66,7 @@ export async function createComentario(comentario: {
     ticket_id: string;
     usuario_id: number;
     contenido: string;
-    fecha_creacion?: string;
+    fecha_creacion?: string | null;
 }): Promise<Comentario> {
     return fetchAPI<Comentario>(`/tickets/comentarios`, {
         method: 'POST',

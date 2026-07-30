@@ -55,10 +55,25 @@ export default function ClientesPage() {
 
   const getLoyaltyTier = (client: Huesped) => {
     const amount = Number(client.total_gastado ?? 0);
-    if (amount > 10000) return "Platinum";
-    if (amount > 5000) return "Gold";
-    if (amount > 1000) return "Silver";
-    return "Bronze";
+    if (amount > 10000) return "Platino";
+    if (amount > 5000) return "Oro";
+    if (amount > 1000) return "Plata";
+    return "Bronce";
+  };
+
+  const getTierColor = (tier: string) => {
+    switch (tier.toLowerCase()) {
+      case "platino":
+        return "bg-purple-200 text-purple-800";
+      case "oro":
+        return "bg-indigo-200 text-indigo-800";
+      case "plata":
+        return "bg-slate-200 text-slate-800";
+      case "bronce":
+        return "bg-amber-200 text-amber-800";
+      default:
+        return "bg-gray-200";
+    }
   };
 
   const filtered = useMemo(() => {
@@ -441,8 +456,7 @@ export default function ClientesPage() {
                         <div className="text-xs">{client.telefono}</div>
                       </td>
                       <td className="py-3.5 px-6">
-                        <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                          <span className="material-symbols-outlined text-[14px]">star</span>
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full px-4 text-xs font-semibold ${getTierColor(getLoyaltyTier(client))} `}>
                           {getLoyaltyTier(client)}
                         </span>
                       </td>

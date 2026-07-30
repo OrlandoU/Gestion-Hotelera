@@ -69,8 +69,8 @@ export default function MantenimientoPage() {
                 </div>
                 <div className="bg-white rounded-xl border border-slate-300 p-5 shadow-sm b-1" >
                     <div className="text-xs text-slate-500 uppercase font-semibold">Alta prioridad</div>
-                    <div className="text-2xl font-bold mt-2 text-red-600">{altas}</div>
-                    <div className="text-sm text-red-500 mt-1">Atender urgente</div>
+                    <div className="text-2xl font-bold mt-2 text-indigo-600">{altas}</div>
+                    <div className="text-sm text-indigo-500 mt-1">Atender urgente</div>
                 </div>
             </div>
 
@@ -128,13 +128,13 @@ export default function MantenimientoPage() {
                                         </td>
                                         <td className="px-3 py-3 align-top">{t.numero_espacio}</td>
                                         <td className="px-3 py-3 align-top">
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${t.prioridad === 'Alta' ? 'bg-red-50 text-red-700' : t.prioridad === 'Media' ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-700'}`}>{t.prioridad}</span>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${t.prioridad === 'Alta' ? 'bg-indigo-200 text-indigo-800' : t.prioridad === 'Media' ? 'bg-amber-50 text-amber-800' : 'bg-purple-200 text-purple-800'}`}>{t.prioridad}</span>
                                         </td>
                                         <td className="px-3 py-3 align-top">{(t.responsable ?? t.usuario ?? '—') + (t.responsable_id === user?.usuario_id ? ' (Tú)' : '')}</td>
                                         <td className="px-3 py-3 align-top text-sm text-slate-600">{formatDate(t.fecha_creacion)}</td>
                                         <td className="px-3 py-3 align-top text-sm text-slate-600">{formatDate(t.fecha_limite)}</td>
                                         <td className="px-3 py-3 align-top">
-                                            <span className={`px-2 py-1 rounded text-xs font-medium ${t.estado === 'Pendiente' ? 'bg-amber-50 text-amber-700' : t.estado === 'Cerrado' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-700'}`}>{t.estado}</span>
+                                            <span className={`px-2 py-1 rounded text-xs font-medium ${t.estado === 'Pendiente' ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-700'}`}>{t.estado}</span>
                                         </td>
                                     </tr>
                                 ))

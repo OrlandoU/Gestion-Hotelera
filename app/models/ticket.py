@@ -22,7 +22,7 @@ class ComentarioSchema(BaseModel):
     usuario_id: int
     ticket_id: int
     contenido: str
-    fecha_creacion: datetime = None
+    fecha_creacion: Optional[datetime] = None
 
 class TicketUpdate(BaseModel):
     estado: str

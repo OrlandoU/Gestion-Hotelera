@@ -7,10 +7,10 @@ import { getHuesped, Huesped } from "@/functions/huesped";
 import { getReservas, Reserva } from "@/functions/reservas";
 
 const STATUS_CONFIG: Record<string, { label: string; badge: string; dot: string }> = {
-  Pending: { label: "Pendiente", badge: "bg-amber-100 text-amber-800 border-amber-300", dot: "bg-amber-500" },
-  Confirmed: { label: "Confirmada", badge: "bg-blue-100 text-blue-800 border-blue-300", dot: "bg-blue-500" },
-  InHouse: { label: "En estancia", badge: "bg-emerald-100 text-emerald-800 border-emerald-300", dot: "bg-emerald-500" },
-  Completed: { label: "Finalizada", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" },
+  Pendiente: { label: "Pendiente", badge: "bg-amber-100 text-amber-800 border-amber-300", dot: "bg-amber-500" },
+  Reservada: { label: "Confirmada", badge: "bg-purple-100 text-purple-800 border-purple-300", dot: "bg-purple-500" },
+  Hospedado: { label: "En estancia", badge: "bg-indigo-100 text-indigo-800 border-indigo-300", dot: "bg-indigo-500" },
+  Finalizada: { label: "Finalizada", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" },
 };
 
 export default function ClientDetailPage() {
@@ -150,7 +150,6 @@ export default function ClientDetailPage() {
                 {initials}
               </div>
               <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold bg-amber-50 text-amber-800 border-amber-200">
-                <span className="material-symbols-outlined text-[16px]">star</span>
                 Nivel {guestLoyaltyTier}
               </span>
               <span className="text-sm text-slate-600 flex items-center gap-1.5">
@@ -247,11 +246,14 @@ export default function ClientDetailPage() {
                       const checkOut = formatDate(reservation.fecha_salida);
                       const totalAmount = reservation.total_pagar ?? reservation.monto_pagado ?? 0;
                       const reservationStatus = reservation.reserva_estado ?? reservation.status ?? "Pendiente";
+
                       const cfg = STATUS_CONFIG[reservationStatus] || {
-                        label: reservationStatus,
-                        badge: "bg-slate-100 text-slate-700 border-slate-200",
-                        dot: "bg-slate-400",
+                        Pendiente: { label: "Pendiente", badge: "bg-amber-100 text-amber-800 border-amber-300", dot: "bg-amber-500" },
+                        Reservada: { label: "Confirmada", badge: "bg-purple-100 text-purple-800 border-purple-300", dot: "bg-purple-500" },
+                        Hospedado: { label: "En estancia", badge: "bg-indigo-100 text-indigo-800 border-indigo-300", dot: "bg-indigo-500" },
+                        Finalizada: { label: "Finalizada", badge: "bg-slate-100 text-slate-800 border-slate-300", dot: "bg-slate-400" },
                       };
+
                       return (
                         <tr key={reservationId || `${roomName}-${checkIn}`} className="hover:bg-slate-50/80 transition-colors">
                           <td className="px-5 py-4 font-medium text-slate-900">{roomName}</td>

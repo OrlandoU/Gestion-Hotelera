@@ -11,6 +11,7 @@ import MantenimientoModal from "@/components/MantenimientoModal";
 import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
 import { useMemo, useState } from "react";
 import { createHuesped } from "@/functions/huesped";
+import { useIngresosTipoHabitacion } from "@/functions/reportes-api";
 import {
     useReservacionesDiarias,
     useEstadoHabitaciones,
@@ -27,10 +28,10 @@ const formatCurrency = (value: number) => formatLempiras(value);
 const getRoomStateClasses = (estado?: string) => {
     if (!estado) return "border-t-4 border-slate-300 bg-[#f7f9fb]";
     const lower = estado.toLowerCase();
-    if (lower.includes("ocupada") || lower.includes("ocupado")) return "border-t-4 border-slate-400 bg-[#f7f9fb]";
-    if (lower.includes("mantenimiento")) return "border-t-4 border-sky-500 bg-[#f7f9fb]";
-    if (lower.includes("limpieza") || lower.includes("sucio")) return "border-t-4 border-purple-400 bg-[#f7f9fb]";
-    if (lower.includes("disponible") || lower.includes("libre")) return "border-t-4 border-[#008cc7] bg-[#f7f9fb]";
+    if (lower.includes("ocupada") || lower.includes("ocupado")) return "border-t-4 border-[#808080] bg-[#f7f9fb]";
+    if (lower.includes("mantenimiento")) return "border-t-4 border-indigo-500 bg-[#f7f9fb]";
+    if (lower.includes("limpieza") || lower.includes("sucio")) return "border-t-4 border-purple-500 bg-[#f7f9fb]";
+    if (lower.includes("disponible") || lower.includes("libre")) return "border-t-4 border-sky-500 bg-[#f7f9fb]";
     return "border-t-4 border-slate-300 bg-[#f7f9fb]";
 };
 
@@ -83,6 +84,7 @@ export default function Page() {
 
     const habitacionesData = useMemo(() => habitacionesApi || [], [habitacionesApi]);
     const ocupacionData = useMemo(() => ocupacionApi || [], [ocupacionApi]);
+    const { data: ingresosApi, loading, error, refetch } = useIngresosTipoHabitacion(new Date().toISOString());
     const ticketsData = useMemo(() => ticketsApi || [], [ticketsApi]);
     const reservasData = useMemo(() => reservasHoy || [], [reservasHoy]);
 
@@ -90,13 +92,16 @@ export default function Page() {
     const ocupadas = habitacionesData.filter((habitacion) =>
         habitacion.estado?.toLowerCase().includes("ocup")
     ).length;
+    const ingresosData = useMemo(() => ingresosApi || [], [ingresosApi]);
     const ocupacionPercent = totalHabitaciones > 0 ? Math.round((ocupadas / totalHabitaciones) * 100) : 0;
 
-    const ingresosMes = ocupacionData.reduce((sum, item) => sum + (item.ingresos || 0), 0);
+    const ingresosMes = ingresosData.reduce((sum, item) => sum + (item.ingresos_totales || 0), 0);
     const ticketsAbiertos = ticketsData.filter((ticket) => {
         const estado = String(ticket.estado ?? "").trim().toLowerCase();
         return estado !== "completado" && estado !== "cerrado" && estado !== "resuelto";
     }).length;
+
+    console.log(ingresosMes);
     const tareasPendientes = ticketsData.filter((ticket) => {
         const estado = String(ticket.estado ?? "").trim().toLowerCase();
         const prioridad = String(ticket.prioridad ?? "").trim().toLowerCase();
@@ -212,7 +217,7 @@ export default function Page() {
                     value: `${Math.max(totalHabitaciones - ocupadas, 0)}`,
                     subtitle: loadingHabitaciones ? "Cargando disponibilidad..." : "Disponibles para asignar",
                     icon: "meeting_room",
-                    iconClass: "bg-sky-50 text-sky-700",
+                    iconClass: "bg-sky-50 text-[#87CEEB]",
                     textClass: "text-sky-700",
                 },
                 {
@@ -829,10 +834,10 @@ export default function Page() {
                                 <p className="text-sm text-slate-500">Resumen de los primeros espacios cargados desde la API</p>
                             </div>
                             <div className="grid grid-cols-4 gap-2 text-[12px] text-slate-600">
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-purple-400"></span>Libre {statusTotals.limpia}</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-slate-400"></span>Ocupada {statusTotals.ocupada}</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-sky-500"></span>Mantenimiento {statusTotals.mantenimiento}</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-purple-400"></span>Limpieza {statusTotals.sucio}</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-sky-500"></span>Libre: {statusTotals.limpia}</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#808080]"></span>Ocupada: {statusTotals.ocupada}</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-indigo-500"></span>Mantenimiento: {statusTotals.mantenimiento}</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-purple-500"></span>Limpieza: {statusTotals.sucio}</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-6 md:grid-cols-10 gap-2">
