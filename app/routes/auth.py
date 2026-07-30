@@ -28,6 +28,9 @@ async def signup(user: UsuarioCreateSchema, repo: UsuarioRepository = Depends(ge
     existing_user = repo.obtener_por_email(user.email)
     if existing_user:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El correo electrónico ya está registrado.")
+    existing_user = repo.obtener_por_telefono(user.telefono)
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El telefono ya esta asociado a un usuario")
 
     hashed_password = get_password_hash(user.password)
     usuario_id = repo.crear(user, hashed_password)
