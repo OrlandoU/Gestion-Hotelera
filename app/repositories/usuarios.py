@@ -1,6 +1,7 @@
 from datetime import date
 from app.repositories.base import BaseRepository
 from app.models import UsuarioSchema
+from app.utils.security import get_password_hash
 
 
 class UsuarioRepository(BaseRepository):
@@ -13,6 +14,7 @@ class UsuarioRepository(BaseRepository):
         return self._execute_query(query, (usuario_id,), fetch_one=True)
     
     def crear(self, usuario: UsuarioSchema):
+        hashed_password = get_password_hash(usuario.password)
         query = "EXEC crear_usuario %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
         params = (
         usuario.primer_nombre,     # 1
@@ -23,7 +25,7 @@ class UsuarioRepository(BaseRepository):
         usuario.telefono,          # 6
         usuario.email,             # 7
         usuario.rol,               # 8
-        usuario.password_hash,     # 9
+        hashed_password,     # 9
         usuario.fecha_contrato,    # 10
     )
         return self._execute_query(query, params, is_write=True)

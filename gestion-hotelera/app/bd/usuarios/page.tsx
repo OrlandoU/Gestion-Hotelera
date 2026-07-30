@@ -229,7 +229,7 @@ export default function UsuariosPage() {
                     <button
                         type="button"
                         onClick={() => setIsCreateOpen(true)}
-                        className="hover:cursor-pointer hover:-translate-y-0.5 flex items-center justify-center gap-2 bg-[#282B59] hover:bg-[#42468C] text-white py-3.5 px-6 rounded-[2.5rem] text-[14px] leading-4 font-semibold tracking-wider transition-all active:scale-95 shadow-md hover:shadow-lg"
+                        className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 rounded-[2.5rem] bg-[#000000] px-6 py-4 text-[14px] font-semibold leading-4 tracking-wider text-[#ffffff] shadow-lg transition-transform active:scale-95"
                     >
                         <span className="material-symbols-outlined text-[18px]">person_add</span> Nuevo Usuario
                     </button>

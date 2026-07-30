@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from app.database import get_db
-from app.models.usuario import UsuarioCreateSchema, UsuarioLoginSchema, UsuarioOutSchema
+from app.models.usuario import UsuarioCreateSchema, UsuarioLoginSchema
 from app.repositories.usuario import UsuarioRepository
 from app.utils.security import create_access_token, get_password_hash, verify_password
 

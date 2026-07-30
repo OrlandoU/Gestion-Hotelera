@@ -508,8 +508,8 @@ export default function Page() {
                         <h3 className="text-xl font-semibold text-slate-950 mb-6">Ocupación mensual</h3>
                         <div className="flex-1 flex items-end gap-2 mt-4 pt-4 border-t border-slate-300">
                             {occupancyChart.length > 0 ? (
-                                occupancyChart.map((item) => (
-                                    <div key={item.label} className="flex-1 flex flex-col items-center gap-2">
+                                occupancyChart.map((item, index) => (
+                                    <div key={index} className="flex-1 flex flex-col items-center gap-2">
                                         <div className="w-full rounded-t-sm bg-[#bec6e0] hover:bg-[#131b2e] transition-colors cursor-pointer" style={{ height: `${item.value}%` }}>
                                             <div className="h-full w-full"></div>
                                         </div>
