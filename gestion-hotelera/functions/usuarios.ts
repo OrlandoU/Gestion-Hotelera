@@ -10,6 +10,7 @@ export interface Usuario {
     email?: string;
     telefono?: string;
     rol?: string;
+    estado?: string;
     [key: string]: any;
 }
 
@@ -22,7 +23,6 @@ interface UseReporteState<T> {
 export async function getUsuarios(): Promise<Usuario[]> {
     return fetchAPI<Usuario[]>(`/usuarios`, { method: 'GET' });
 }
-
 
 export function useUsuarios() {
     const [state, setState] = useState<UseReporteState<Usuario[]>>({
@@ -46,4 +46,18 @@ export function useUsuarios() {
     }, [refetch]);
 
     return { ...state, refetch };
+}
+
+export function crearUsuario(usuario: Usuario) {
+    return fetchAPI<Usuario>(`/usuarios`, {
+        method: 'POST',
+        body: JSON.stringify(usuario)
+    });
+}
+
+export function updateUsuario(usuario_id: number, usuario: Usuario) {
+    return fetchAPI<Usuario>(`/usuarios/${usuario_id}`, {
+        method: 'PUT',
+        body: JSON.stringify(usuario)
+    });
 }

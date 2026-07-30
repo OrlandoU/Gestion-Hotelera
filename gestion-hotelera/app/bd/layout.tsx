@@ -47,6 +47,7 @@ export default function DashboardLayout({
     { name: "Clientes", href: "/bd/clientes", icon: "group", subtitle: "Perfiles de huéspedes, historial y preferencias" },
     { name: "Inventario", href: "/bd/inventario", icon: "inventory_2", subtitle: "Gestión de inventario" },
     { name: "Mantenimiento", href: "/bd/mantenimiento", icon: "build", subtitle: "Gestión de mantenimiento" },
+    { name: "Usuarios", href: "/bd/usuarios", icon: "person", subtitle: "Gestión de usuarios" },
     { name: "Reportes", href: "/bd/reportes", icon: "bar_chart", subtitle: "Análisis y reportes de desempeño", isDropdown: true },
   ];
 

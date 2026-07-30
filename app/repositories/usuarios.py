@@ -13,34 +13,28 @@ class UsuarioRepository(BaseRepository):
         return self._execute_query(query, (usuario_id,), fetch_one=True)
     
     def crear(self, usuario: UsuarioSchema):
-        query = "EXEC sp_crear_usuario %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+        query = "EXEC crear_usuario %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
         params = (
-            usuario.primer_nombre,
-            usuario.segundo_nombre,
-            usuario.primer_apellido,
-            usuario.segundo_apellido,
-            usuario.fecha_nacimiento,
-            usuario.telefono,
-            usuario.email,
-            usuario.rol,
-            usuario.password_hash,
-            usuario.fecha_contrato,
-        )
+        usuario.primer_nombre,     # 1
+        usuario.segundo_nombre,    # 2
+        usuario.primer_apellido,   # 3
+        usuario.segundo_apellido,  # 4
+        usuario.fecha_nacimiento,  # 5
+        usuario.telefono,          # 6
+        usuario.email,             # 7
+        usuario.rol,               # 8
+        usuario.password_hash,     # 9
+        usuario.fecha_contrato,    # 10
+    )
         return self._execute_query(query, params, is_write=True)
     
     def actualizar(self, usuario_id: int, usuario: UsuarioSchema):
-        query = "EXEC sp_actualizar_usuario %s, %s, %s, %s, %s, %s, %s, %s, %s, %s"
+        query = "EXEC sp_actualizar_usuario %s, %s, %s, %s"
         params = (
             usuario_id,
-            usuario.primer_nombre,
-            usuario.segundo_nombre,
-            usuario.primer_apellido,
-            usuario.segundo_apellido,
-            usuario.fecha_nacimiento,
             usuario.telefono,
             usuario.email,
-            usuario.rol,
-            usuario.fecha_contrato,
+            usuario.rol
         )
         return self._execute_query(query, params, is_write=True)
     
