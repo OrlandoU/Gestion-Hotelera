@@ -6,12 +6,14 @@ interface AuthResponse {
     usuario_id: number;
     nombre: string;
     email: string;
+    rol: "Administrador" | "Mantenimiento"  | "Limpieza" | "Recepcionista"
 }
 
 export interface LoggedUser {
     usuario_id: number;
     nombre: string;
     email: string;
+    rol: "Administrador" | "Mantenimiento"  | "Limpieza" | "Recepcionista"
 }
 
 async function fetchAuth<T>(endpoint: string, body: unknown) {
@@ -42,6 +44,7 @@ export async function login(email: string, password: string) {
             usuario_id: result.usuario_id,
             nombre: result.nombre,
             email: result.email,
+            rol: result.rol
         }));
     }
     return result;

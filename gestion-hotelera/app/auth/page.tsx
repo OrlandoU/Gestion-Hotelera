@@ -277,16 +277,7 @@ export default function AuthPage() {
                                 <p className="text-sm font-semibold text-slate-900">{mode === "login" ? "Acceso seguro" : "Registro rápido"}</p>
                                 <p className="text-xs text-slate-500">{mode === "login" ? "Introduce tus credenciales para iniciar sesión." : "Completa los datos para crear tu cuenta."}</p>
                             </div>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setMode(mode === "login" ? "signup" : "login");
-                                    setError("");
-                                }}
-                                className="inline-flex rounded-full border border-[#B7AEF2] bg-[#B7AEF2]/15 px-4 py-2 text-sm font-semibold text-[#282B59] shadow-sm transition hover:bg-[#B7AEF2]/35 hover:border-[#777CD9]"
-                            >
-                                {mode === "login" ? "Crear cuenta" : "Ingresar"}
-                            </button>
+                            
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-5">

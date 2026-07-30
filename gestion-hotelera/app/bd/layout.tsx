@@ -6,7 +6,7 @@ import Image from "next/image";
 import logo from "@/public/logo.png";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getAccessToken, logout } from "@/functions/auth";
+import { getAccessToken, getCurrentUser, logout } from "@/functions/auth";
 import Link from "next/link";
 
 export default function DashboardLayout({
@@ -19,6 +19,7 @@ export default function DashboardLayout({
   const [reportesOpen, setReportesOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false); // Estado para controlar el colapso
   const [authChecked, setAuthChecked] = useState(false);
+  const user = getCurrentUser()
 
   useEffect(() => {
     const token = getAccessToken();
@@ -39,6 +40,13 @@ export default function DashboardLayout({
     { name: "Consumo de Amenidades", href: "/bd/reportes/consumo-amenidades", icon: "bar_chart_4_bars" },
     { name: "Incidentes", href: "/bd/reportes/incidentes", icon: "error" }
   ];
+
+  const linksPerRole = {
+    "Administrador": ["Panel", "Habitaciones", "Reservaciones", "Clientes", "Inventario", "Mantenimiento", "Usuarios", "Reportes"],
+    "Recepcionista": ["Panel", "Habitaciones", "Reservaciones", "Clientes"],
+    "Mantenimiento": ["Panel", "Habitaciones", "Mantenimiento"],
+    "Limpieza": ["Panel", "Habitaciones", "Mantenimiento"],
+  }
 
   const navLinks = [
     { name: "Panel", href: "/bd", icon: "dashboard", subtitle: "Visión general de operaciones" },
@@ -105,7 +113,7 @@ export default function DashboardLayout({
 
         {/* ENLACES DE NAVEGACIÓN */}
         <nav className="flex-1 flex flex-col gap-1 text-[#515f74] overflow-x-auto">
-          {navLinks.map((link) => (
+          {user && navLinks.filter(el=>linksPerRole[user!.rol].includes(el.name)).map((link) => (
             <div key={link.href}>
               {link.isDropdown ? (
                 <div>
