@@ -58,7 +58,7 @@ class UsuarioRepository(BaseRepository):
         return 0
 
     def obtener_por_email(self, email: str) -> Optional[dict]:
-        query = "SELECT TOP 1 usuario_id, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, fecha_nacimiento, telefono, email, password_hash FROM dbo.usuarios WHERE email = %s"
+        query = "SELECT TOP 1 usuario_id, primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, fecha_nacimiento, telefono, email, password_hash, rol FROM dbo.usuarios WHERE email = %s"
         return self._execute_query(query, (email,), fetch_one=True)
 
     def obtener_por_telefono(self, telefono: str) -> Optional[dict]:
