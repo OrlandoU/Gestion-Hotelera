@@ -4,7 +4,7 @@ from sqlalchemy import text
 from app.database import get_db
 from datetime import date
 from app.repositories.ticket import TicketRepository
-from app.models import TicketSchema, ComentarioSchema
+from app.models import TicketSchema, ComentarioSchema, TicketUpdate
 
 def get_ticket_repo(db = Depends(get_db)):
     return TicketRepository(db)
@@ -56,6 +56,14 @@ async def crear_comentario(
     repo: TicketRepository = Depends(get_ticket_repo)
 ):
     return repo.crear_comentario(comentario)
+
+@router.put("/{ticket_id}")
+async def actualizar_ticket(
+    ticket_id: int = Path(..., description="ID del ticket"),
+    datos: TicketUpdate = None,
+    repo: TicketRepository = Depends(get_ticket_repo)
+):
+    return repo.actualizar(ticket_id, datos.estado)
 
 @router.post("")
 async def crear_ticket(

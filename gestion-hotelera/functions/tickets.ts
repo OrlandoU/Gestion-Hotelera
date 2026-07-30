@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchAPI } from "./http-base";
 
-
 export interface Ticket {
     ticket_id?: number | null;
     numero_ticket?: string;
@@ -105,5 +104,13 @@ export async function crearTicket(datos: Ticket): Promise<{ message: string }> {
     return fetchAPI<{ message: string }>('/tickets', {
         method: 'POST',
         body: JSON.stringify(datos)
+    });
+}
+
+export async function actualizarTicket(datos: Ticket): Promise<{ message: string }> {
+    console.log('Datos enviados: al endpoint PUT/tickets/ID', datos);
+    return fetchAPI<{ message: string }>(`/tickets/${datos.ticket_id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ ticket_id: datos.ticket_id, estado: datos.estado })
     });
 }

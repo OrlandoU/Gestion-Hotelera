@@ -16,9 +16,13 @@ class TicketSchema(BaseModel):
     fecha_limite: Optional[str] = None
     tipo: Optional[str] = None
     prioridad: Optional[str] = None
+    ticket_id: Optional[int] = None
 
 class ComentarioSchema(BaseModel):
     usuario_id: int
     ticket_id: int
     contenido: str
     fecha_creacion: datetime = None
+
+class TicketUpdate(BaseModel):
+    estado: str

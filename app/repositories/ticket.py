@@ -43,6 +43,17 @@ class TicketRepository(BaseRepository):
         )
         return self._execute_query(query, params, is_write=True)
 
+    def actualizar(self, ticket_id: int, estado: str):
+        """
+        Actualiza un ticket
+        """
+        query = "EXEC sp_modificar_ticket %s, %s"
+        params = (
+            ticket_id,
+            estado
+        )
+        return self._execute_query(query, params, is_write=True)
+
     def listar_comentarios(self, ticket_id: int, fecha_creacion: date, usuario_id: int):
         """
         Lista los comentarios de un ticket
