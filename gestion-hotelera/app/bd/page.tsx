@@ -28,9 +28,9 @@ const getRoomStateClasses = (estado?: string) => {
     if (!estado) return "border-t-4 border-slate-300 bg-[#f7f9fb]";
     const lower = estado.toLowerCase();
     if (lower.includes("ocupada") || lower.includes("ocupado")) return "border-t-4 border-slate-400 bg-[#f7f9fb]";
-    if (lower.includes("mantenimiento")) return "border-t-4 border-rose-500 bg-[#f7f9fb]";
-    if (lower.includes("limpieza") || lower.includes("sucio")) return "border-t-4 border-amber-500 bg-[#f7f9fb]";
-    if (lower.includes("disponible") || lower.includes("libre")) return "border-t-4 border-emerald-500 bg-[#f7f9fb]";
+    if (lower.includes("mantenimiento")) return "border-t-4 border-sky-500 bg-[#f7f9fb]";
+    if (lower.includes("limpieza") || lower.includes("sucio")) return "border-t-4 border-purple-400 bg-[#f7f9fb]";
+    if (lower.includes("disponible") || lower.includes("libre")) return "border-t-4 border-[#008cc7] bg-[#f7f9fb]";
     return "border-t-4 border-slate-300 bg-[#f7f9fb]";
 };
 
@@ -154,8 +154,8 @@ export default function Page() {
                 value: `${ocupacionPercent}%`,
                 subtitle: loadingHabitaciones ? "Cargando datos de habitación..." : `${ocupadas}/${totalHabitaciones} habitaciones ocupadas`,
                 icon: "hotel",
-                iconClass: "bg-emerald-50 text-emerald-700",
-                textClass: "text-emerald-700",
+                iconClass: "bg-sky-50 text-sky-700",
+                textClass: "text-sky-700",
             },
             {
                 key: "ingresos",
@@ -163,8 +163,8 @@ export default function Page() {
                 value: formatCurrency(ingresosMes),
                 subtitle: loadingOcupacion ? "Cargando ocupación..." : "Basado en datos reales de ocupación mensual",
                 icon: "payments",
-                iconClass: "bg-blue-50 text-slate-900",
-                textClass: "text-slate-600",
+                iconClass: "bg-indigo-50 text-indigo-700",
+                textClass: "text-indigo-700",
             },
             {
                 key: "mantenimiento",
@@ -172,8 +172,8 @@ export default function Page() {
                 value: `${tareasPendientes}`,
                 subtitle: loadingTickets ? "Cargando tickets..." : `${mantenimientoAlta} de alta prioridad`,
                 icon: "build",
-                iconClass: "bg-rose-50 text-rose-700",
-                textClass: "text-rose-700",
+                iconClass: "bg-purple-50 text-purple-700",
+                textClass: "text-purple-700",
             },
             {
                 key: "tickets",
@@ -181,8 +181,8 @@ export default function Page() {
                 value: `${ticketsAbiertos}`,
                 subtitle: loadingTickets ? "Cargando tickets..." : `${mantenimientoAlta} de alta prioridad`,
                 icon: "build",
-                iconClass: "bg-slate-100 text-slate-900",
-                textClass: "text-slate-600",
+                iconClass: "bg-slate-100 text-slate-700",
+                textClass: "text-slate-700",
             },
         ];
 
@@ -194,8 +194,8 @@ export default function Page() {
                     value: `${reservasData.length}`,
                     subtitle: loadingHabitaciones ? "Cargando reservas..." : `${reservasData.length} reservas registradas para hoy`,
                     icon: "event_available",
-                    iconClass: "bg-blue-50 text-blue-700",
-                    textClass: "text-blue-700",
+                    iconClass: "bg-sky-50 text-sky-700",
+                    textClass: "text-sky-700",
                 },
                 {
                     key: "ocupacion",
@@ -203,8 +203,8 @@ export default function Page() {
                     value: `${ocupadas}`,
                     subtitle: loadingHabitaciones ? "Cargando estado de habitaciones..." : `${ocupadas} ocupadas ahora mismo`,
                     icon: "bed",
-                    iconClass: "bg-emerald-50 text-emerald-700",
-                    textClass: "text-emerald-700",
+                    iconClass: "bg-indigo-50 text-indigo-700",
+                    textClass: "text-indigo-700",
                 },
                 {
                     key: "disponibles",
@@ -212,8 +212,8 @@ export default function Page() {
                     value: `${Math.max(totalHabitaciones - ocupadas, 0)}`,
                     subtitle: loadingHabitaciones ? "Cargando disponibilidad..." : "Disponibles para asignar",
                     icon: "meeting_room",
-                    iconClass: "bg-slate-100 text-slate-900",
-                    textClass: "text-slate-600",
+                    iconClass: "bg-sky-50 text-sky-700",
+                    textClass: "text-sky-700",
                 },
                 {
                     key: "ingresos",
@@ -221,8 +221,8 @@ export default function Page() {
                     value: formatCurrency(ingresosMes),
                     subtitle: loadingOcupacion ? "Cargando ocupación..." : "Seguimiento rápido del rendimiento",
                     icon: "payments",
-                    iconClass: "bg-violet-50 text-violet-700",
-                    textClass: "text-violet-700",
+                    iconClass: "bg-purple-50 text-purple-700",
+                    textClass: "text-purple-700",
                 },
             ];
         }
@@ -235,8 +235,8 @@ export default function Page() {
                     value: `${tareasPendientes}`,
                     subtitle: loadingTickets ? "Cargando tickets..." : `${mantenimientoAlta} de alta prioridad`,
                     icon: "build",
-                    iconClass: "bg-rose-50 text-rose-700",
-                    textClass: "text-rose-700",
+                    iconClass: "bg-purple-50 text-purple-700",
+                    textClass: "text-purple-700",
                 },
                 {
                     key: "habitaciones",
@@ -244,8 +244,8 @@ export default function Page() {
                     value: `${statusTotals.mantenimiento}`,
                     subtitle: loadingHabitaciones ? "Cargando indicadores..." : "Áreas afectadas por mantenimiento",
                     icon: "engineering",
-                    iconClass: "bg-amber-50 text-amber-700",
-                    textClass: "text-amber-700",
+                    iconClass: "bg-sky-50 text-sky-700",
+                    textClass: "text-sky-700",
                 },
                 {
                     key: "ocupacion",
@@ -253,8 +253,8 @@ export default function Page() {
                     value: `${ocupacionPercent}%`,
                     subtitle: loadingHabitaciones ? "Cargando datos..." : `${ocupadas}/${totalHabitaciones} ocupadas`,
                     icon: "hotel",
-                    iconClass: "bg-emerald-50 text-emerald-700",
-                    textClass: "text-emerald-700",
+                    iconClass: "bg-indigo-50 text-indigo-700",
+                    textClass: "text-indigo-700",
                 },
                 {
                     key: "tickets",
@@ -262,8 +262,8 @@ export default function Page() {
                     value: `${ticketsAbiertos}`,
                     subtitle: loadingTickets ? "Cargando tickets..." : `${mantenimientoAlta} de alta prioridad`,
                     icon: "build",
-                    iconClass: "bg-slate-100 text-slate-900",
-                    textClass: "text-slate-600",
+                    iconClass: "bg-slate-100 text-slate-700",
+                    textClass: "text-slate-700",
                 },
             ];
         }
@@ -276,8 +276,8 @@ export default function Page() {
                     value: `${statusTotals.sucio}`,
                     subtitle: loadingHabitaciones ? "Cargando estado de limpieza..." : "Pendientes de limpieza",
                     icon: "cleaning_services",
-                    iconClass: "bg-amber-50 text-amber-700",
-                    textClass: "text-amber-700",
+                    iconClass: "bg-purple-50 text-purple-700",
+                    textClass: "text-purple-700",
                 },
                 {
                     key: "limpias",
@@ -285,8 +285,8 @@ export default function Page() {
                     value: `${statusTotals.limpia}`,
                     subtitle: loadingHabitaciones ? "Cargando estado..." : "Listas para uso",
                     icon: "task_alt",
-                    iconClass: "bg-emerald-50 text-emerald-700",
-                    textClass: "text-emerald-700",
+                    iconClass: "bg-sky-50 text-sky-700",
+                    textClass: "text-sky-700",
                 },
                 {
                     key: "ocupadas",
@@ -294,8 +294,8 @@ export default function Page() {
                     value: `${statusTotals.ocupada}`,
                     subtitle: loadingHabitaciones ? "Cargando ocupación..." : "Requieren seguimiento",
                     icon: "bed",
-                    iconClass: "bg-slate-100 text-slate-900",
-                    textClass: "text-slate-600",
+                    iconClass: "bg-indigo-50 text-indigo-700",
+                    textClass: "text-indigo-700",
                 },
                 {
                     key: "mantenimiento",
@@ -303,8 +303,8 @@ export default function Page() {
                     value: `${statusTotals.mantenimiento}`,
                     subtitle: loadingHabitaciones ? "Cargando tablero..." : "No disponibles por limpieza",
                     icon: "build",
-                    iconClass: "bg-rose-50 text-rose-700",
-                    textClass: "text-rose-700",
+                    iconClass: "bg-slate-100 text-slate-700",
+                    textClass: "text-slate-700",
                 },
             ];
         }
@@ -521,6 +521,24 @@ export default function Page() {
                 label: "Nueva reserva",
                 icon: "event",
                 onClick: () => router.push("/bd/reservaciones/crear"),
+            },
+            {
+                key: "verReservas",
+                label: "Ver reservaciones",
+                icon: "event_available",
+                onClick: () => router.push("/bd/reservaciones"),
+            },
+            {
+                key: "verUsuarios",
+                label: "Ver usuarios",
+                icon: "group",
+                onClick: () => router.push("/bd/usuarios"),
+            },
+            {
+                key: "verMantenimientos",
+                label: "Ver mantenimientos",
+                icon: "engineering",
+                onClick: () => router.push("/bd/mantenimiento"),
             },
             {
                 key: "activo",
@@ -811,10 +829,10 @@ export default function Page() {
                                 <p className="text-sm text-slate-500">Resumen de los primeros espacios cargados desde la API</p>
                             </div>
                             <div className="grid grid-cols-4 gap-2 text-[12px] text-slate-600">
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>Limpia {statusTotals.limpia}</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-purple-400"></span>Libre {statusTotals.limpia}</span>
                                 <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-slate-400"></span>Ocupada {statusTotals.ocupada}</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-amber-500"></span>Sucio {statusTotals.sucio}</span>
-                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-rose-500"></span>Mantenimiento {statusTotals.mantenimiento}</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-sky-500"></span>Mantenimiento {statusTotals.mantenimiento}</span>
+                                <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-purple-400"></span>Limpieza {statusTotals.sucio}</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-6 md:grid-cols-10 gap-2">
