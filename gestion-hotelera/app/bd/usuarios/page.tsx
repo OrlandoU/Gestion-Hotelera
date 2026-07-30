@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 // ─── TIPOS DE DATOS ─────────────────────────────────────────
 export type UserStatus = "Disponible" | "Ocupado";
-export type UserRole = "Administrador" | "Recepcionista" | "Gerente" | "Mantenimiento" | "Limpieza";
+export type UserRole = "Administrador" | "Recepcionista" | "Mantenimiento" | "Limpieza";
 
 export default function UsuariosPage() {
     const { data: usuarios, loading, error, refetch } = useUsuarios();
@@ -57,7 +57,6 @@ export default function UsuariosPage() {
     const getRoleBadge = (rol: UserRole) => {
         const styles: Record<UserRole, string> = {
             Administrador: "bg-[#282B59] text-white border-[#282B59]",
-            Gerente: "bg-[#42468C] text-white border-[#42468C]",
             Recepcionista: "bg-[#B7AEF2]/30 text-[#282B59] border-[#777CD9]",
             Mantenimiento: "bg-slate-100 text-slate-700 border-slate-200",
             Limpieza: "bg-slate-100 text-slate-700 border-slate-200"
@@ -74,40 +73,44 @@ export default function UsuariosPage() {
             Disponible: { label: "Disponible", dot: "bg-emerald-500", bg: "bg-emerald-50 text-emerald-800 border-emerald-200" },
             Ocupado: { label: "Ocupado", dot: "bg-slate-400", bg: "bg-slate-50 text-slate-600 border-slate-200" }
         };
-        const conf = styles[estado];
+        const conf = styles[estado] || styles.Disponible;
         return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${conf?.bg}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${conf?.dot}`} />
-                {conf?.label}
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border ${conf.bg}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${conf.dot}`} />
+                {conf.label}
             </span>
         );
     };
 
-
-    // Coloca esto dentro de tu componente UsuariosPage
     useEffect(() => {
         if (editingUser) {
             setEditForm({
-                rol: editingUser.rol,
+                rol: editingUser.rol as UserRole,
                 email: editingUser.email || (editingUser as any).correo || "",
-                estado: editingUser.estado,
+                estado: editingUser.estado as UserStatus,
             });
         }
     }, [editingUser]);
 
     // ─── FILTROS Y MÉTRICAS ────────────────────────────────────
 
-    /*const filteredUsers = useMemo(() => {
+    const filteredUsers = useMemo(() => {
+        if (!usuarios) return [];
         return usuarios.filter((u) => {
             const q = query.toLowerCase().trim();
             const fullName = getFullName(u).toLowerCase();
-            const matchesQuery = !q || fullName.includes(q) || u.email.toLowerCase().includes(q) || u.usuario_id.toString().includes(q);
+            const email = (u.email || "").toLowerCase();
+            const id = u.usuario_id?.toString() || "";
+
+            const matchesQuery = !q || fullName.includes(q) || email.includes(q) || id.includes(q);
             const matchesRole = roleFilter === "todos" || u.rol === roleFilter;
             return matchesQuery && matchesRole;
         });
     }, [usuarios, query, roleFilter]);
 
-    const activeUsersCount = usuarios.filter((u) => u.estado === "activo").length;*/
+    const activeUsersCount = useMemo(() => {
+        return usuarios?.filter((u) => u.estado === "Disponible").length || 0;
+    }, [usuarios]);
 
     // ─── ACCIONES ──────────────────────────────────────────────
 
@@ -116,14 +119,14 @@ export default function UsuariosPage() {
         const newUser: Usuario = {
             usuario_id: Date.now(),
             ...createForm,
-            estado: "activo",
+            estado: "Disponible",
         };
 
         setIsSubmitting(true);
 
         try {
             await crearUsuario(newUser);
-            await refetch(); // Actualiza la lista
+            await refetch();
             toast.success("Usuario creado exitosamente");
             setIsCreateOpen(false);
             setCreateForm({
@@ -160,16 +163,10 @@ export default function UsuariosPage() {
         };
 
         try {
-            console.log("Datos a enviar para actualizar el usuario:", payload);
-
-            // 1. Enviamos la actualización a la API
             await updateUsuario(editingUser.usuario_id!, payload);
-
-            // 2. Re-obtenemos la lista de usuarios actualizada mediante el hook
             await refetch();
-
             toast.success("Usuario actualizado correctamente");
-            setEditingUser(null); // Cerrar el modal
+            setEditingUser(null);
         } catch (error) {
             console.error("Error al actualizar el usuario:", error);
             toast.error("Ocurrió un error al actualizar la información del usuario.");
@@ -178,17 +175,26 @@ export default function UsuariosPage() {
         }
     };
 
-    const handleDeleteConfirm = () => {
+    const handleDeleteConfirm = async () => {
         if (!deletingUser) return;
-        //setUsuarios((prev) => prev.filter((u) => u.usuario_id !== deletingUser.usuario_id));
-        setDeletingUser(null);
+        setIsSubmitting(true);
+        try {
+            // Ejemplo de llamado de eliminación si existe en tus funciones:
+            // await eliminarUsuario(deletingUser.usuario_id!);
+            await refetch();
+            toast.success("Usuario eliminado correctamente");
+            setDeletingUser(null);
+        } catch (error) {
+            toast.error("Error al eliminar el usuario.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // 1. Estado de Carga Global
     if (loading) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] gap-3">
-                {/* Spinner animado con la paleta oficial (#282B59 y #777CD9) */}
                 <div className="w-10 h-10 border-4 border-[#777CD9]/20 border-t-[#282B59] rounded-full animate-spin" />
                 <p className="text-sm font-medium text-[#282B59]">Cargando directorio de usuarios...</p>
             </div>
@@ -218,7 +224,6 @@ export default function UsuariosPage() {
                 name="Gestión de Usuarios"
                 subtitle="Administra credenciales, roles, datos personales y accesos del personal"
                 buttons={
-                    /* Botón Principal con color #282B59 y hover #42468C */
                     <button
                         type="button"
                         onClick={() => setIsCreateOpen(true)}
@@ -230,7 +235,7 @@ export default function UsuariosPage() {
             />
 
             <div className="flex-1 flex flex-col gap-6 w-full">
-                {/* TARJETAS DE MÉTRICAS CON COLORIMETRÍA OFICIAL */}
+                {/* TARJETAS DE MÉTRICAS */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between h-32">
                         <div className="flex justify-between items-start">
@@ -240,20 +245,20 @@ export default function UsuariosPage() {
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold text-[#282B59]">{usuarios?.length}</span>
+                            <span className="text-2xl font-bold text-[#282B59]">{usuarios?.length || 0}</span>
                             <span className="text-xs text-slate-400">Registrados</span>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between h-32">
                         <div className="flex justify-between items-start">
-                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Usuarios Activos</span>
+                            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Usuarios Disponibles</span>
                             <div className="p-2 bg-[#777CD9]/15 text-[#42468C] rounded-lg border border-[#777CD9]/30">
                                 <span className="material-symbols-outlined">verified_user</span>
                             </div>
                         </div>
                         <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold text-[#282B59]">{0}</span>
+                            <span className="text-2xl font-bold text-[#282B59]">{activeUsersCount}</span>
                             <span className="text-xs text-[#42468C] font-semibold">Acceso habilitado</span>
                         </div>
                     </div>
@@ -267,7 +272,7 @@ export default function UsuariosPage() {
                         </div>
                         <div className="flex items-baseline gap-2">
                             <span className="text-2xl font-bold text-[#282B59]">
-                                {usuarios?.filter((u) => u.fecha_nacimiento?.startsWith("08") || u.fecha_nacimiento?.startsWith("11")).length}
+                                {usuarios?.filter((u) => u.fecha_nacimiento?.startsWith("08") || u.fecha_nacimiento?.startsWith("11")).length || 0}
                             </span>
                             <span className="text-xs text-slate-400">Notificaciones este mes</span>
                         </div>
@@ -289,9 +294,9 @@ export default function UsuariosPage() {
                             >
                                 <option value="todos">Todos los roles</option>
                                 <option value="Administrador">Administrador</option>
-                                <option value="Gerente">Gerente</option>
                                 <option value="Recepcionista">Recepcionista</option>
                                 <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Limpieza">Limpieza</option>
                             </select>
 
                             {/* Búsqueda general */}
@@ -315,18 +320,14 @@ export default function UsuariosPage() {
                                 <tr className="bg-[#282B59]/5 border-b border-slate-200">
                                     <th className="text-xs font-bold text-[#282B59] py-3 px-6">ID</th>
                                     <th className="text-xs font-bold text-[#282B59] py-3 px-6">Usuario / Nombre</th>
-                                    <th className="text-xs font-bold uppercase tracking-wider text-[#282B59] py-3 px-6 text-left">
-                                        <div className="flex items-center gap-1.5">
-                                            <span>Rol</span>
-                                        </div>
-                                    </th>
+                                    <th className="text-xs font-bold uppercase tracking-wider text-[#282B59] py-3 px-6 text-left">Rol</th>
                                     <th className="text-xs font-bold text-[#282B59] py-3 px-6">Contacto</th>
                                     <th className="text-xs font-bold text-[#282B59] py-3 px-6">Estado</th>
                                     <th className="text-xs font-bold text-[#282B59] py-3 px-6 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="text-slate-800 divide-y divide-slate-100">
-                                {usuarios?.map((u) => {
+                                {filteredUsers.map((u) => {
                                     const fullName = getFullName(u);
                                     return (
                                         <tr key={u.usuario_id} className="hover:bg-[#B7AEF2]/10 transition-colors">
@@ -337,12 +338,11 @@ export default function UsuariosPage() {
                                                 <div className="text-xs text-slate-400">Identificador único</div>
                                             </td>
 
-                                            <td className="py-3.5 px-2 whitespace-nowrap">
+                                            <td className="py-3.5 px-6 whitespace-nowrap">
                                                 {u?.rol ? (
                                                     getRoleBadge(u.rol as UserRole)
                                                 ) : (
                                                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-400 border border-slate-200">
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
                                                         Sin rol
                                                     </span>
                                                 )}
@@ -355,7 +355,6 @@ export default function UsuariosPage() {
 
                                             <td className="py-3.5 px-6">{getStatusBadge(u?.estado)}</td>
 
-                                            {/* ACCIONES (LADO DERECHO) */}
                                             <td className="py-3.5 px-6 text-right">
                                                 <div className="flex items-center justify-end gap-1">
                                                     <button
@@ -381,9 +380,9 @@ export default function UsuariosPage() {
                                     );
                                 })}
 
-                                {usuarios?.length === 0 && (
+                                {filteredUsers.length === 0 && (
                                     <tr>
-                                        <td colSpan={7} className="py-12 px-6 text-center text-sm text-slate-400">
+                                        <td colSpan={6} className="py-12 px-6 text-center text-sm text-slate-400">
                                             No se encontraron usuarios registrados que coincidan con la búsqueda.
                                         </td>
                                     </tr>
@@ -393,7 +392,7 @@ export default function UsuariosPage() {
                     </div>
 
                     <div className="p-4 border-t border-slate-200 bg-white flex justify-between items-center text-xs text-slate-500">
-                        <span>Mostrando {usuarios?.length} de {usuarios?.length} usuarios</span>
+                        <span>Mostrando {filteredUsers.length} de {usuarios?.length || 0} usuarios</span>
                     </div>
                 </div>
             </div>
@@ -414,11 +413,10 @@ export default function UsuariosPage() {
                             required
                         />
                         <ValidatedInput
-                            label="Segundo Nombre *"
+                            label="Segundo Nombre"
                             value={createForm.segundo_nombre}
                             onChange={(v) => setCreateForm((p) => ({ ...p, segundo_nombre: v }))}
                             placeholder="Ej. Alberto"
-                            required
                         />
                     </div>
 
@@ -431,11 +429,10 @@ export default function UsuariosPage() {
                             required
                         />
                         <ValidatedInput
-                            label="Segundo Apellido *"
+                            label="Segundo Apellido"
                             value={createForm.segundo_apellido}
                             onChange={(v) => setCreateForm((p) => ({ ...p, segundo_apellido: v }))}
                             placeholder="Ej. Gómez"
-                            required
                         />
                     </div>
 
@@ -460,7 +457,7 @@ export default function UsuariosPage() {
 
                     <div className="grid grid-cols-2 gap-3">
                         <ValidatedInput
-                            label="Correo Electrónico (@gmail.com) *"
+                            label="Correo Electrónico *"
                             type="email"
                             value={createForm.email}
                             onChange={(v) => setCreateForm((p) => ({ ...p, email: v }))}
@@ -476,8 +473,8 @@ export default function UsuariosPage() {
                             >
                                 <option value="Recepcionista">Recepcionista</option>
                                 <option value="Administrador">Administrador</option>
-                                <option value="Gerente">Gerente</option>
                                 <option value="Mantenimiento">Mantenimiento</option>
+                                <option value="Limpieza">Limpieza</option>
                             </select>
                         </div>
                     </div>
@@ -499,15 +496,16 @@ export default function UsuariosPage() {
                         </Button>
                         <button
                             type="submit"
-                            className="px-5 py-2.5 bg-[#282B59] hover:bg-[#42468C] text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
+                            disabled={isSubmitting}
+                            className="px-5 py-2.5 bg-[#282B59] hover:bg-[#42468C] disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm"
                         >
-                            Guardar Usuario
+                            {isSubmitting ? "Guardando..." : "Guardar Usuario"}
                         </button>
                     </div>
                 </form>
             </Modal>
 
-            {/* ─── MODAL 2: EDITAR ROL, EMAIL Y ESTADO ─────────────────── */}
+            {/* ─── MODAL 2: EDITAR USUARIO ─────────────────── */}
             <Modal open={Boolean(editingUser)} onClose={() => setEditingUser(null)} title="Modificar Usuario">
                 {editingUser && (
                     <form onSubmit={handleEditSubmit} className="space-y-4">
@@ -559,7 +557,6 @@ export default function UsuariosPage() {
                                 Cancelar
                             </Button>
 
-                            {/* Fix: Eliminado onClick={handleEditSubmit} del botón para evitar doble submit */}
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
@@ -593,9 +590,17 @@ export default function UsuariosPage() {
                             <button
                                 type="button"
                                 onClick={handleDeleteConfirm}
-                                className="px-4 py-2 text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors"
+                                disabled={isSubmitting}
+                                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-sm font-semibold rounded-xl transition-colors shadow-sm flex items-center gap-2"
                             >
-                                Sí, Eliminar
+                                {isSubmitting ? (
+                                    <>
+                                        <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                                        <span>Eliminando...</span>
+                                    </>
+                                ) : (
+                                    "Eliminar Usuario"
+                                )}
                             </button>
                         </div>
                     </div>
