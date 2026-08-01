@@ -12,6 +12,12 @@ router = APIRouter(prefix="/espacios", tags=["espacios"])
 # RUTAS DE ESPACIOS
 # ==========================================
 
+@router.get("", status_code=status.HTTP_200_OK)
+async def listar_espacios(
+    repo: EspacioRepository = Depends(get_espacio_repo)
+):
+    return repo.obtener_espacios()
+
 @router.get("/habitaciones", status_code=status.HTTP_200_OK)
 async def listar_habitaciones(
     disponibles_only: bool = Query(False, description="Filtra solo por habitaciones disponibles"),

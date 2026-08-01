@@ -16,6 +16,10 @@ export interface Habitacion {
     [key: string]: any;
 }
 
+export const getEspacios = async (): Promise<Habitacion[]> => {
+    return fetchAPI<Habitacion[]>("/espacios");
+}
+
 export const getHabitaciones = async (): Promise<Habitacion[]> => {
     return fetchAPI<Habitacion[]>("/espacios/habitaciones");
 }

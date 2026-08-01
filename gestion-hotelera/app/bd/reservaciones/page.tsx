@@ -183,8 +183,6 @@ export default function Page() {
         obtenerUsuario();
     }, []);
 
-    console.log(usuario);
-
     const [timelineStartDate, setTimelineStartDate] = useState<Date>(() => getStartOfWeek(new Date()));
     const [customRange, setCustomRange] = useState<{ start: string; end: string } | null>(null);
     const [showRangePicker, setShowRangePicker] = useState(false);

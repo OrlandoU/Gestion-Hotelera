@@ -75,6 +75,6 @@ class TicketRepository(BaseRepository):
             comentario.usuario_id,
             comentario.ticket_id,
             comentario.contenido,
-            comentario.fecha_creacion
+            None
         )
         return self._execute_query(query, params, is_write=True)

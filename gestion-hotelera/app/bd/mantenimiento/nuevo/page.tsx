@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PageHeader from "@/components/pageheader";
 import { ValidatedInput, ValidatedSelect } from "@/components/ui/validated-field";
-import { getHabitaciones, Habitacion } from "@/functions/espacios";
+import { getEspacios, Habitacion } from "@/functions/espacios";
 import { useUsuarios } from "@/functions/usuarios";
 import { crearTicket, Ticket } from "@/functions/tickets";
 import { toast } from "sonner";
@@ -43,7 +43,7 @@ export default function NuevoMantenimientoPage() {
     useEffect(() => {
         let isMounted = true;
         const cargarHabitaciones = async () => {
-            const datos = await getHabitaciones();
+            const datos = await getEspacios();
             if (isMounted) {
                 setHabitaciones(datos);
             }

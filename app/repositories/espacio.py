@@ -1,6 +1,9 @@
 from app.repositories.base import BaseRepository
 
 class EspacioRepository(BaseRepository):
+    def obtener_espacios(self):
+        return self._execute_query("SELECT * FROM espacios")
+
     def obtener_habitaciones(self, disponibles_only: bool = False):
         if disponibles_only:
             return self._execute_query("SELECT * FROM vw_reporte_habitaciones")
