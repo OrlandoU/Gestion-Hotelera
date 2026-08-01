@@ -6,6 +6,7 @@ from app.models import ReservaSchema
 from app.utils.security import get_current_user
 import pymssql
 from fastapi import HTTPException # o jsonify en Flask
+import re
 
 # Inyector de dependencia para el repositorio
 def get_reserva_repo(db = Depends(get_db)):
@@ -73,6 +74,7 @@ async def obtener_reserva(
         )
     return reserva
 
+
 @router.put("/{reserva_id}", status_code=status.HTTP_200_OK)
 async def modificar_estado(
     reserva_id: int = Path(..., description="ID de la reserva a modificar"),
@@ -82,28 +84,27 @@ async def modificar_estado(
     try:
         repo.modificar_estado(reserva_id, es_entrada)
         return {"message": "Estado modificado exitosamente"}
+    except Exception as e:
+        mensaje_bruto = str(e)
+        mensaje_limpio = "Ocurrió un error al procesar la solicitud."
 
-    except (pymssql.OperationalError, pymssql.DatabaseError, Exception) as e:
-        mensaje_bruto = ""
+        # Extraemos lo que esté entre b' y DB-Lib error (que es el mensaje del THROW 51000)
+        # Ejemplo: (51000, b'No es posible hacer check-out...DB-Lib error')
+        patron = r"b'(.*?)DB-Lib"
+        coincidencia = re.search(patron, mensaje_bruto)
 
-        # 1. Extraer el mensaje que viene en los argumentos de pymssql
-        if hasattr(e, 'args') and len(e.args) > 1:
-            mensaje_bruto = e.args[1]
-            if isinstance(mensaje_bruto, bytes):
-                mensaje_bruto = mensaje_bruto.decode('utf-8', errors='ignore')
+        if coincidencia:
+            mensaje_limpio = coincidencia.group(1).strip()
         else:
-            mensaje_bruto = str(e)
+            # Si no vino con DB-Lib, intentamos extraer todo lo que está dentro de b'...'
+            patron_respaldo = r"b'(.*?)'"
+            coincidencia_respaldo = re.search(patron_respaldo, mensaje_bruto)
+            if coincidencia_respaldo:
+                mensaje_limpio = coincidencia_respaldo.group(1).strip()
 
-        # 2. Cortar el texto sobrante de "DB-Lib error message..."
-        if "DB-Lib error message" in mensaje_bruto:
-            mensaje_limpio = mensaje_bruto.split("DB-Lib error message")[0]
-        else:
-            mensaje_limpio = mensaje_bruto
-
-        # 3. Quitar espacios sobrantes y devolver error 400
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=mensaje_limpio.strip()
+            detail=mensaje_limpio
         )
 
 @router.post("", status_code=status.HTTP_201_CREATED)

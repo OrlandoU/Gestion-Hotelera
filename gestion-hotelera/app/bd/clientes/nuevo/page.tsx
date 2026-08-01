@@ -102,7 +102,7 @@ export default function NuevoClientePage() {
             nextErrors.email = "El correo electrónico no puede superar 120 caracteres.";
         }
         if (!formData.dni.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(formData.dni.trim())) {
-            nextErrors.dni = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
+            nextErrors.dni = "El documento debe tener formato válido (13 dígitos).";
         }
 
         setFormErrors(nextErrors);
@@ -246,7 +246,7 @@ export default function NuevoClientePage() {
                                 onFocus={() => setTouched((prev) => ({ ...prev, dni: true }))}
                                 error={formErrors.dni}
                                 touched={touched.dni || Boolean(formErrors.dni)}
-                                placeholder="12345678"
+                                placeholder="0501200001234"
                                 required
                             />
 

@@ -109,7 +109,7 @@ export default function HomePage() {
       delete nextErrors.telefonoHuesped;
     }
     if (!dniHuesped.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(dniHuesped.trim())) {
-      nextErrors.dniHuesped = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
+      nextErrors.dniHuesped = "El documento debe tener formato válido (13 dígitos).";
     }
     if (!fechaIn) {
       nextErrors.fechaIn = "Selecciona la fecha de entrada.";

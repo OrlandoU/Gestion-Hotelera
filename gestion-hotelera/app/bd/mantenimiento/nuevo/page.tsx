@@ -407,7 +407,6 @@ export default function NuevoMantenimientoPage() {
                                     placeholder="Selecciona un estado"
                                     options={[
                                         { label: "Pendiente", value: "Pendiente" },
-                                        { label: "En progreso", value: "En progreso" },
                                         { label: "Completado", value: "Completado" },
                                     ]}
                                 />

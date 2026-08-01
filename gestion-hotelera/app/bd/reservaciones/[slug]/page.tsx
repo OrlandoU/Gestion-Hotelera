@@ -102,9 +102,15 @@ export default function ReservationPage() {
         try {
             await modificarReserva(rawReserva.reserva_id, true);
             toast.success("Reserva checkeada exitosamente");
-            await refetchReserva(); // Recarga los datos de la reserva
-        } catch {
-            toast.error("Error al checkear la reserva");
+            await refetchReserva();
+        } catch (error: any) {
+            // Apuntamos correctamente a la estructura de error de FastAPI/Axios
+            const mensajeLimpio =
+                error.response?.data?.detail ||
+                error.message ||
+                "Ocurrió un error al procesar la solicitud.";
+
+            toast.error(mensajeLimpio);
         }
     };
 
@@ -117,10 +123,15 @@ export default function ReservationPage() {
         try {
             await modificarReserva(rawReserva.reserva_id, false);
             toast.success("Reserva finalizada exitosamente");
-            await refetchReserva(); // Recarga los datos de la reserva
-        } catch (error) {
-            const message = error instanceof Error ? error.message : "Error al procesar la reserva";
-            toast.error(message || "Error al procesar la reserva");
+            await refetchReserva();
+        } catch (error: any) {
+            // Apuntamos correctamente a la estructura de error de FastAPI/Axios
+            const mensajeLimpio =
+                error.response?.data?.detail ||
+                error.message ||
+                "Ocurrió un error al procesar la solicitud.";
+
+            toast.error(mensajeLimpio);
         }
     };
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useReservas, type Reserva } from "@/functions/reservas";
+import { getCurrentUser, LoggedUser } from "@/functions/auth";
 import PageHeader from "@/components/pageheader";
 import NewReservation from "@/components/NewReservation";
 import Link from "next/link";
@@ -59,19 +60,38 @@ type TimelineReservation = {
     icon?: string;
 };
 
-const handleEnlace = (telefono: string, nombre_huesped: string, total_pagar: number): string => {
-    const total_depositar = (total_pagar * 0.5).toFixed(2);
-    const ahora = new Date();
-    const horaActual = ahora.getHours();
-    let saludo = "";
+const handleEnlace = (
+    telefono: string,
+    nombre_huesped: string,
+    total_pagar: number,
+    nombre: string
+): string => {
+    const total_depositar = (total_pagar * 0.3).toFixed(2);
+    const horaActual = new Date().getHours();
 
-    if (horaActual < 12) saludo = "buenos días";
-    else if (horaActual < 18) saludo = "buenas tardes";
-    else saludo = "buenas noches";
+    let saludo = "Buenos días";
+    let despedida = "feliz día";
 
-    const mensaje = `Hola ${nombre_huesped} ${saludo}. Soy el recepcionista de Hotel San Pedro. Para confirmar su reservación, por favor realice un depósito del 50% del saldo total (${total_depositar} Lempiras). Muchas gracias.`;
+    if (horaActual >= 12 && horaActual < 18) {
+        saludo = "Buenas tardes";
+        despedida = "feliz tarde";
+    } else if (horaActual >= 18) {
+        saludo = "Buenas noches";
+        despedida = "feliz noche";
+    }
 
-    return `https://wa.me/504${telefono}?text=${encodeURIComponent(mensaje)}`;
+    // El salto de línea dentro de los backticks se conserva automáticamente al codificar la URL
+    const mensaje = `¡Hola, ${nombre_huesped}! ${saludo}.
+Le saluda ${nombre}, recepcionista de Hotel San Pedro.
+
+Para confirmar su reservación, le solicitamos realizar un anticipo del 30% del total (L. ${total_depositar}).
+
+Quedo a la espera de su comprobante para finalizar el registro. ¡Muchas gracias y ${despedida}!`;
+
+    // Limpia el número de teléfono removiendo guiones o espacios antes de enviarlo
+    const telefonoLimpio = telefono.replace(/\D/g, "");
+
+    return `https://wa.me/504${telefonoLimpio}?text=${encodeURIComponent(mensaje)}`;
 };
 
 function getDatesInRange(start: Date, end: Date) {
@@ -152,6 +172,19 @@ function formatRangeLabel(start: Date, end: Date) {
 }
 
 export default function Page() {
+    // Crear una funcion que obtenga el usuario actual y sea async
+    const [usuario, setUsuario] = useState<LoggedUser>();
+
+    useEffect(() => {
+        const obtenerUsuario = async () => {
+            const user = await getCurrentUser();
+            setUsuario(user!);
+        };
+        obtenerUsuario();
+    }, []);
+
+    console.log(usuario);
+
     const [timelineStartDate, setTimelineStartDate] = useState<Date>(() => getStartOfWeek(new Date()));
     const [customRange, setCustomRange] = useState<{ start: string; end: string } | null>(null);
     const [showRangePicker, setShowRangePicker] = useState(false);
@@ -659,7 +692,7 @@ export default function Page() {
                                                     <Link href={`/bd/reservaciones/${reserva.reserva_id}`} className="text-sm text-[#008cc7] hover:underline mr-3">Ver</Link>
                                                     <Link href={`/bd/reservaciones/${reserva.reserva_id}/pagos`} className="text-sm text-slate-700 hover:underline">Pagos</Link>
                                                     <a
-                                                        href={handleEnlace(reserva.telefono_huesped || reserva.telefono || "", getGuestName(reserva), reserva.total_pagar || 0)}
+                                                        href={handleEnlace(reserva.telefono_huesped || reserva.telefono || "", getGuestName(reserva), reserva.total_pagar || 0, usuario!.nombre)}
                                                         target="whatsapp-chat"
                                                         className="inline-flex items-center justify-center p-2 text-slate-700 hover:text-green-600 transition-colors"
                                                         title="Enviar mensaje por WhatsApp"

@@ -597,7 +597,7 @@ export default function Page() {
                 break;
             case "dni":
                 if (!clienteForm.dni.trim() || !/^([0-9]{13}|[0-9]{4}-[0-9]{4}-[0-9]{5})$/.test(clienteForm.dni.trim())) {
-                    nextErrors.dni = "El documento debe tener formato válido (13 dígitos o 4-4-5).";
+                    nextErrors.dni = "El documento debe tener formato válido (13 dígitos).";
                 } else {
                     delete nextErrors.dni;
                 }
@@ -1016,7 +1016,7 @@ export default function Page() {
                             onFocus={() => setClienteTouched((prev) => ({ ...prev, email: true }))}
                             error={clienteErrors.email}
                             touched={clienteTouched.email || Boolean(clienteErrors.email)}
-                            placeholder="cliente@hotel.com"
+                            placeholder="cliente@gmail.com"
                             required
                         />
                     </div>
@@ -1034,7 +1034,7 @@ export default function Page() {
                         onFocus={() => setClienteTouched((prev) => ({ ...prev, dni: true }))}
                         error={clienteErrors.dni}
                         touched={clienteTouched.dni || Boolean(clienteErrors.dni)}
-                        placeholder="12345678"
+                        placeholder="0501200001234"
                         required
                     />
                     <div className="flex justify-end">
