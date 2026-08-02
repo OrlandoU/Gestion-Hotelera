@@ -484,7 +484,7 @@ export default function Page() {
             <div>
               <p className="text-[12px] font-semibold text-[#515f74] uppercase tracking-wider mb-2">Precio Promedio</p>
               <h4 className="text-[24px] font-bold text-[#000000]">
-                {habitacionesFiltradas.length > 0 ? Math.round(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / habitacionesFiltradas.length) : 0} Lps
+                L. {habitacionesFiltradas.length > 0 ? Math.round(habitacionesFiltradas.reduce((sum, h) => sum + (h.precio_unidad || 0), 0) / habitacionesFiltradas.length) : 0}
               </h4>
               <p className="text-[12px] text-[#515f74] mt-2">Del filtrado</p>
             </div>

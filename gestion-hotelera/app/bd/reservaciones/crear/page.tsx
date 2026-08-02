@@ -29,7 +29,7 @@ const guestSchema = z.object({
         }),
     dni: z.string().trim()
         .regex(/^\d+$/, "El DNI solo debe contener números.")
-        .min(13, "El documento debe de tener un formato válido (13 dígitos)."),
+        .length(13, "El documento debe de tener un formato válido (13 dígitos)."),
 });
 
 type GuestFormValues = z.infer<typeof guestSchema>;
@@ -183,6 +183,7 @@ export default function CrearReservacion() {
             dni: "",
         },
     });
+
 
     // eslint-disable-next-line react-hooks/incompatible-library
     const guestValues = watch();
@@ -793,7 +794,7 @@ export default function CrearReservacion() {
                                         isTouched={Boolean(touchedFields.dni)}
                                         autoComplete="off"
                                         containerClassName="md:col-span-2"
-                                        inputMode="numeric"
+                                        inputMode="text"
                                         pattern="[0-9]*"
                                     />
                                 </div>

@@ -474,7 +474,7 @@ export default function HomePage() {
                           onFocus={() => setTouched((prev) => ({ ...prev, dniHuesped: true }))}
                           error={formErrors.dniHuesped}
                           touched={touched.dniHuesped || Boolean(formErrors.dniHuesped)}
-                          placeholder="0501-2000-01234"
+                          placeholder="0501200001234"
                           className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
                           containerClassName=""
                           required
