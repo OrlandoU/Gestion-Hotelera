@@ -279,7 +279,7 @@ export default function Page() {
                   className="px-3 py-1.5 border border-slate-300 rounded-lg text-[13px] font-semibold text-[#191c1e] bg-white focus:outline-none focus:border-[#008cc7]"
                   disabled={loading}
                 >
-                  <option value="ingresos">Ordenar por Ingresos (Lps)</option>
+                  <option value="ingresos">Ordenar por Ingresos (L.)</option>
                   <option value="reservas">Ordenar por Reservas</option>
                   <option value="noches">Ordenar por Noches</option>
                 </select>

@@ -526,67 +526,6 @@ export default function HomePage() {
                         />
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Número de Huéspedes *</label>*/}
-                        <ValidatedInput
-                          label="Número de Huéspedes"
-                          type="number"
-                          value={String(numeroHuespedes)}
-                          onChange={(value) => setNumeroHuespedes(Number(value))}
-                          onBlur={() => setTouched((prev) => ({ ...prev, numeroHuespedes: true }))}
-                          onFocus={() => setTouched((prev) => ({ ...prev, numeroHuespedes: true }))}
-                          touched={touched.numeroHuespedes}
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
-                          containerClassName=""
-                          required
-                        />
-                      </div>
-                      <div>
-                        {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Hora Estimada de Llegada *</label>*/}
-                        <ValidatedInput
-                          label="Hora Estimada de Llegada"
-                          type="time"
-                          value={horaLlegada}
-                          onChange={(value) => setHoraLlegada(value)}
-                          onBlur={() => setTouched((prev) => ({ ...prev, horaLlegada: true }))}
-                          onFocus={() => setTouched((prev) => ({ ...prev, horaLlegada: true }))}
-                          touched={touched.horaLlegada}
-                          className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-sm text-slate-900 shadow-xs outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
-                          containerClassName=""
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr className="border-slate-100" />
-
-                  {/* Sección 3: Datos Adicionales */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#777CD9]/15 text-xs font-bold text-[#42468C]">3</span>
-                      <h3 className="text-xs font-bold uppercase tracking-widest text-[#282B59]">Preferencias Especiales</h3>
-                    </div>
-                    <div>
-                      {/*<label className="block text-[11px] font-semibold text-slate-600 mb-1.5">Preferencia de Cama</label>*/}
-                      <ValidatedSelect
-                        label="Preferencia de Cama"
-                        value={peticionesCama}
-                        onChange={(value) => setPeticionesCama(value)}
-                        onBlur={() => setTouched((prev) => ({ ...prev, peticionesCama: true }))}
-                        onFocus={() => setTouched((prev) => ({ ...prev, peticionesCama: true }))}
-                        touched={touched.peticionesCama}
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 p-3 text-sm text-slate-900 outline-none focus:bg-white focus:border-[#777CD9] focus:ring-2 focus:ring-[#777CD9]/20 transition-all"
-                        containerClassName=""
-                        options={[
-                          { label: "Sin preferencia", value: "Indiferente" },
-                          { label: "Una Cama Grande (Matrimonial/King)", value: "Una Cama Matrimonial / King" },
-                          { label: "Dos Camas Separadas", value: "Dos Camas Individuales" }
-                        ]}
-                      />
-                    </div>
                   </div>
 
                   <hr className="border-slate-100" />
@@ -594,7 +533,7 @@ export default function HomePage() {
                   {/* Sección 4: Categoría de Alojamiento */}
                   <div>
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#777CD9]/15 text-xs font-bold text-[#42468C]">4</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#777CD9]/15 text-xs font-bold text-[#42468C]">3</span>
                       <h3 className="text-xs font-bold uppercase tracking-widest text-[#282B59]">Categoría de Habitación</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

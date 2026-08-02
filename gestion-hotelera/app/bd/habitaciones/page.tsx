@@ -94,7 +94,6 @@ export default function Page() {
             </thead>
             <tbody className="bg-white divide-y divide-slate-100">
               {habitaciones.map((room) => {
-                console.log(room)
                 return (
                   <tr key={room.espacio_id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-semibold text-slate-900">{room.numero_espacio}</td>

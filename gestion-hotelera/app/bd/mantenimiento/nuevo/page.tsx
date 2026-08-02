@@ -21,6 +21,12 @@ type TicketForm = Ticket & {
 export default function NuevoMantenimientoPage() {
     const router = useRouter();
     const [habitaciones, setHabitaciones] = useState<Habitacion[]>([]);
+    const [listFechaStr, setListFechaStr] = useState<string>(() => {
+        const agora = new Date();
+        agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+        return agora.toISOString().split("T")[0];
+    });
+
     const [formData, setFormData] = useState<TicketForm>({
         usuario_id: 1,
         responsable_id: null,
@@ -48,6 +54,8 @@ export default function NuevoMantenimientoPage() {
                 setHabitaciones(datos);
             }
         };
+
+        setFormData(prev => ({ ...prev, fecha_inicio: listFechaStr, fecha_limite: listFechaStr }));
 
         void cargarHabitaciones();
         return () => {

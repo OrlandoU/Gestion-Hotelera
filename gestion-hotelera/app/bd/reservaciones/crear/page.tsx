@@ -257,6 +257,10 @@ export default function CrearReservacion() {
         return `${baseClasses} border-slate-200 focus:border-sky-500 focus:bg-white focus:ring-2 focus:ring-sky-500/20`;
     };
 
+    useEffect(() => {
+        setFormData(prev => ({ ...prev, fecha_entrada: today }));
+    }, [today]);
+
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));

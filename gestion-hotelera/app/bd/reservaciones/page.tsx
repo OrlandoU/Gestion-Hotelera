@@ -187,7 +187,11 @@ export default function Page() {
     const [customRange, setCustomRange] = useState<{ start: string; end: string } | null>(null);
     const [showRangePicker, setShowRangePicker] = useState(false);
     const [draftRange, setDraftRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
-    const [listFechaStr, setListFechaStr] = useState<string>("");
+    const [listFechaStr, setListFechaStr] = useState<string>(() => {
+        const agora = new Date();
+        agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
+        return agora.toISOString().split("T")[0];
+    });
     type ListSortKey = "fecha_entrada" | "fecha_salida" | "numero_espacio" | "nombre" | "reserva_estado";
 
     const [listSearch, setListSearch] = useState<string>("");

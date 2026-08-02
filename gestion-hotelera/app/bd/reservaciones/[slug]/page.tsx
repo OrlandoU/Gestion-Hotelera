@@ -387,7 +387,7 @@ export default function ReservationPage() {
                                     className="w-full min-h-11 bg-slate-950 text-white rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
                                 >
                                     <span className="material-symbols-outlined text-[20px]">login</span>
-                                    {status === 'Reservada' ? 'Procesar Check-in' : status === 'Hospedado' ? 'Procesar Check-out' : status === 'Finalizada' ? 'Finalizada' : 'Procesar Check-in (Deposito faltante)'}
+                                    {status === 'Reservada' ? 'Procesar Check-in' : status === 'Hospedado' ? 'Procesar Check-out' : status === 'Finalizada' ? 'Finalizada' : 'Procesar Check-in (Depósito faltante)'}
                                 </Button>
                             )}
                             <Link href={`/bd/reservaciones/${id}/pagos`} className="w-full min-h-11 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors">
