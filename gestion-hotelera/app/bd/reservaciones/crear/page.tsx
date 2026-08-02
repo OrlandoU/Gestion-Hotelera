@@ -321,6 +321,7 @@ export default function CrearReservacion() {
             setLoadingRooms(true);
             try {
                 const data = await getHabitacionesDisponibles(formData.fecha_entrada, formData.fecha_salida);
+                console.log(data)
                 setRooms(data);
             } catch (error) {
                 console.error("Error al buscar habitaciones disponibles:", error);

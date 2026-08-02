@@ -193,6 +193,9 @@ export async function getHabitacionesDisponibles(
         return f instanceof Date ? f.toISOString().split('T')[0] : String(f).split('T')[0];
     };
 
+    console.log(fechaEntrada, fechaSalida);
+    console.log(extraerSoloFecha(fechaEntrada), extraerSoloFecha(fechaSalida));
+
     return fetchAPI<EspacioHabitacion[]>('/reservas/habitaciones-disponibles', {
         method: 'GET',
         params: {

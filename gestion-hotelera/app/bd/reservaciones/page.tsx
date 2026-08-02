@@ -187,6 +187,7 @@ export default function Page() {
     const [customRange, setCustomRange] = useState<{ start: string; end: string } | null>(null);
     const [showRangePicker, setShowRangePicker] = useState(false);
     const [draftRange, setDraftRange] = useState<{ start: string; end: string }>({ start: "", end: "" });
+
     const [listFechaStr, setListFechaStr] = useState<string>(() => {
         const agora = new Date();
         agora.setMinutes(agora.getMinutes() - agora.getTimezoneOffset());
@@ -268,20 +269,83 @@ export default function Page() {
             return Boolean(start && end && end >= startDate && start <= endDate);
         });
     }, [timelineReservations, startDate, endDate]);
+    /*
+        const filteredListReservations = useMemo(() => {
+            const normalizedSearch = listSearch.trim().toLowerCase();
+    
+            const filtered = listData.filter((reserva) => {
+                const start = parseDateValue(reserva.fecha_entrada);
+                const end = parseDateValue(reserva.fecha_salida || reserva.fecha_entrada);
+                const matchesDate = listDate ? Boolean(start && end && listDate >= start && listDate <= end) : true;
+    
+                const guestName = getGuestName(reserva).toLowerCase();
+                const reservationNumber = String(reserva.numero_reserva || reserva.reserva_id || "").toLowerCase();
+                const status = String(reserva.reserva_estado || reserva.estado || "").toLowerCase();
+                const space = String(reserva.numero_espacio || "").toLowerCase();
+                const matchesSearch = !normalizedSearch || guestName.includes(normalizedSearch) || reservationNumber.includes(normalizedSearch) || space.includes(normalizedSearch);
+                const matchesStatus = !listStatusFilter || status === listStatusFilter.toLowerCase();
+    
+                return matchesDate && matchesSearch && matchesStatus;
+            });
+    
+            return filtered.slice().sort((a, b) => {
+                const order = listSortOrder === "asc" ? 1 : -1;
+                const valueFor = (reserva: Reserva) => {
+                    if (listSortBy === "fecha_entrada") return reserva.fecha_entrada || "";
+                    if (listSortBy === "fecha_salida") return reserva.fecha_salida || "";
+                    if (listSortBy === "numero_espacio") return reserva.numero_espacio || "";
+                    if (listSortBy === "reserva_estado") return reserva.reserva_estado || reserva.estado || "";
+                    return getGuestName(reserva).toLowerCase();
+                };
+    
+                const left = String(valueFor(a));
+                const right = String(valueFor(b));
+                return left.localeCompare(right, "es-HN", { numeric: true }) * order;
+            });
+        }, [listDate, listData, listSearch, listStatusFilter, listSortBy, listSortOrder]);
+    */
 
     const filteredListReservations = useMemo(() => {
         const normalizedSearch = listSearch.trim().toLowerCase();
 
+        // Helper para llevar una fecha al inicio del día (00:00:00.000)
+        const zeroTime = (d: Date | null) => {
+            if (!d) return null;
+            const copy = new Date(d);
+            copy.setHours(0, 0, 0, 0);
+            return copy;
+        };
+
+        // Helper para llevar una fecha al final del día (23:59:59.999)
+        const endOfDay = (d: Date | null) => {
+            if (!d) return null;
+            const copy = new Date(d);
+            copy.setHours(23, 59, 59, 999);
+            return copy;
+        };
+
+        const targetDate = listDate ? zeroTime(listDate) : null;
+
         const filtered = listData.filter((reserva) => {
-            const start = parseDateValue(reserva.fecha_entrada);
-            const end = parseDateValue(reserva.fecha_salida || reserva.fecha_entrada);
-            const matchesDate = listDate ? Boolean(start && end && listDate >= start && listDate <= end) : true;
+            // 1. Normalizamos las fechas eliminando el sesgo de la hora 12:00:00
+            const start = zeroTime(parseDateValue(reserva.fecha_entrada));
+            const end = endOfDay(parseDateValue(reserva.fecha_salida || reserva.fecha_entrada));
+
+            // 2. Comparamos los rangos ya normalizados
+            const matchesDate = targetDate
+                ? Boolean(start && end && targetDate >= start && targetDate <= end)
+                : true;
 
             const guestName = getGuestName(reserva).toLowerCase();
             const reservationNumber = String(reserva.numero_reserva || reserva.reserva_id || "").toLowerCase();
             const status = String(reserva.reserva_estado || reserva.estado || "").toLowerCase();
             const space = String(reserva.numero_espacio || "").toLowerCase();
-            const matchesSearch = !normalizedSearch || guestName.includes(normalizedSearch) || reservationNumber.includes(normalizedSearch) || space.includes(normalizedSearch);
+
+            const matchesSearch = !normalizedSearch ||
+                guestName.includes(normalizedSearch) ||
+                reservationNumber.includes(normalizedSearch) ||
+                space.includes(normalizedSearch);
+
             const matchesStatus = !listStatusFilter || status === listStatusFilter.toLowerCase();
 
             return matchesDate && matchesSearch && matchesStatus;
@@ -519,7 +583,6 @@ export default function Page() {
                                                 <div className="text-sm font-semibold text-slate-800">{room.name}</div>
                                                 <div className="text-xs text-slate-400">{room.type}</div>
                                             </div>
-                                            {/*<span className={`w-2 h-2 rounded-full ${room.statusColor}`}></span>*/}
                                         </div>
 
                                         {dates.map((_, index) => (
