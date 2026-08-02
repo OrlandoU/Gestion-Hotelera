@@ -537,6 +537,7 @@ export default function HomePage() {
                       <h3 className="text-xs font-bold uppercase tracking-widest text-[#282B59]">Categoría de Habitación</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <p></p>
                       {(Object.keys(TARIFAS) as TipoHabitacion[]).map((key) => {
                         const isSelected = tipoSeleccionado === key;
                         return (

@@ -15,16 +15,18 @@ function getStatusBadge(status: string) {
   switch (normalizedStatus) {
     case "disponible":
     case "available":
-      return "bg-purple-100 text-purple-800";
+      return "bg-sky-100 text-sky-800";
     case "ocupado":
     case "occupied":
-      return "bg-sky-100 text-sky-800";
+      return "bg-slate-200 text-gray-800";
     case "mantenimiento":
     case "maintenance":
-      return "bg-blue-100 text-blue-800";
+      return "bg-indigo-100 text-indigo-500";
+    case "Limpieza":
+      return "bg-purple-100 text-purple-800";
     case "sucio":
     case "dirty":
-      return "bg-indigo-100 text-indigo-800";
+      return "bg-indigo-100 text-indigo-500";
     default:
       return "bg-slate-100 text-slate-800 ";
   }
@@ -59,15 +61,15 @@ export default function Page() {
         </div>
         <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold mb-3">Ocupadas</p>
-          <p className="text-3xl font-bold text-blue-700">{occupiedRooms}</p>
+          <p className="text-3xl font-bold text-slate-500">{occupiedRooms}</p>
         </div>
         <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold mb-3">Disponibles</p>
-          <p className="text-3xl font-bold text-emerald-700">{availableRooms}</p>
+          <p className="text-3xl font-bold text-sky-500">{availableRooms}</p>
         </div>
         <div className="bg-white border border-slate-300 rounded-2xl p-6 shadow-sm">
           <p className="text-xs uppercase tracking-[0.2em] text-slate-500 font-semibold mb-3">Mantenimiento</p>
-          <p className="text-3xl font-bold text-rose-700">{maintenanceRooms}</p>
+          <p className="text-3xl font-bold text-indigo-800">{maintenanceRooms}</p>
         </div>
       </section>
 

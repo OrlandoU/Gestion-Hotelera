@@ -82,6 +82,7 @@ export default function CheckInReservaPage({ params }: Props) {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulación API
 
             setCheckInRealizado(true);
+
             toast.success("¡Check-in registrado con éxito! La habitación está oficialmente ocupada.");
         } catch (error) {
             console.error("Error al procesar Check-in:", error);

@@ -98,51 +98,8 @@ interface UseReporteState<T> {
     loading: boolean;
     error: Error | null;
 }
-/*
-interface FetchOptions extends RequestInit {
-    params?: Record<string, string | number | boolean | null | undefined>;
-}
 
-async function fetchAPI<T = unknown>(
-    endpoint: string,
-    options: FetchOptions = {}
-): Promise<T> {
-    const { params, ...fetchOptions } = options;
 
-    // Construir URL con parámetros de query
-    const url = new URL(`${API_BASE_URL}${endpoint}`);
-    if (params) {
-        Object.entries(params).forEach(([key, value]) => {
-            if (value !== null && value !== undefined) {
-                url.searchParams.append(key, String(value));
-            }
-        });
-    }
-
-    try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("hotel_token") : null;
-        console.log("Token de autenticación:", token); // Depuración: mostrar el token en la consola
-        const response = await fetch(url.toString(), {
-            ...fetchOptions,
-            headers: {
-                'Content-Type': 'application/json',
-                ...fetchOptions.headers,
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`API Error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        return data as T;
-    } catch (error) {
-        console.error(`Error fetching ${endpoint}:`, error);
-        throw error;
-    }
-}
-*/
 // ============================================
 // FUNCIONES DE RECURSOS ACTUALIZADAS (API)
 // ============================================
@@ -249,7 +206,11 @@ export async function getHabitacionesDisponibles(
  * Antes: /reservas/crear-reserva
  * Ahora: /reservas (El método POST a la raíz crea el elemento)
  */
+/*
 export async function crearReserva(datos: Reserva): Promise<{ message: string }> {
+    datos.fecha_entrada = datos.fecha_entrada + 'T12:00:00';
+    datos.fecha_salida = datos.fecha_salida + 'T11:00:00';
+
     return fetchAPI<{ message: string }>('/reservas', {
         method: 'POST',
         body: JSON.stringify(datos)
@@ -260,6 +221,28 @@ export async function crearReserva(datos: Reserva): Promise<{ message: string }>
         toast.error("Hubo un problema al procesar la reserva.");
         throw error;
     });
+}*/
+export async function crearReserva(datos: Reserva): Promise<{ message: string }> {
+    // 1. Creamos una copia (payload) para NO mutar el objeto original 'datos'
+    const payload: Reserva = {
+        ...datos,
+        fecha_entrada: datos.fecha_entrada?.includes('T') ? datos.fecha_entrada : `${datos.fecha_entrada}T12:00:00`,
+        fecha_salida: datos.fecha_salida?.includes('T') ? datos.fecha_salida : `${datos.fecha_salida}T11:00:00`,
+    };
+
+    try {
+        const response = await fetchAPI<{ message: string }>('/reservas', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        toast.success("Reservación creada exitosamente.");
+        return response;
+
+    } catch (error) {
+        toast.error("Hubo un problema al procesar la reserva.");
+        throw error;
+    }
 }
 
 // ============================================

@@ -80,11 +80,18 @@ export default function MantenimientoPage() {
                         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por ticket, título, descripción, habitación o responsable" className="w-full px-3 py-2 border rounded-md text-sm" />
                     </div>
                     <div className="flex items-center gap-2">
+                        <button onClick={() => setFilterStatus('all')} className="px-3 py-2 border rounded-md text-sm">
+                            Todos
+                        </button>
+                        <button onClick={() => setFilterStatus('Pendiente')} className="px-3 py-2 border rounded-md text-sm">
+                            Mis tareas
+                        </button>
                         <select value={filterStatus} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value as 'all' | 'Pendiente' | 'Completado')} className="px-3 py-2 border rounded-md text-sm">
                             <option value="all">Todos los estados</option>
                             <option value="Pendiente">Pendiente</option>
                             <option value="Completado">Completado</option>
                         </select>
+
                         <select value={filterPriority} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFilterPriority(e.target.value as 'all' | 'Urgente' | 'Alta' | 'Media' | 'Baja')} className="px-3 py-2 border rounded-md text-sm">
                             <option value="all">Todas las prioridades</option>
                             <option value="Urgente">Urgente</option>

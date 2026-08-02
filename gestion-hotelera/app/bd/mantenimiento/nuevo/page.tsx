@@ -277,7 +277,7 @@ export default function NuevoMantenimientoPage() {
                                             <option value="" disabled>Selecciona un empleado</option>
                                             {empleados?.map((empleado) => (
                                                 <option key={empleado.usuario_id} value={empleado.usuario_id}>
-                                                    {`${empleado.primer_nombre} ${empleado.primer_apellido}`}
+                                                    {`${empleado.primer_nombre} ${empleado.primer_apellido} (${empleado.rol})`}
                                                 </option>
                                             ))}
                                         </select>

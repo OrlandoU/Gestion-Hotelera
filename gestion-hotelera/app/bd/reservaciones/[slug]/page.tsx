@@ -102,7 +102,7 @@ export default function ReservationPage() {
         try {
             await modificarReserva(rawReserva.reserva_id, true);
             toast.success("Reserva checkeada exitosamente");
-            await refetchReserva();
+            window.location.href = '/bd/reservaciones';
         } catch (error: any) {
             // Apuntamos correctamente a la estructura de error de FastAPI/Axios
             const mensajeLimpio =
@@ -123,7 +123,7 @@ export default function ReservationPage() {
         try {
             await modificarReserva(rawReserva.reserva_id, false);
             toast.success("Reserva finalizada exitosamente");
-            await refetchReserva();
+            window.location.href = '/bd/reservaciones';
         } catch (error: any) {
             // Apuntamos correctamente a la estructura de error de FastAPI/Axios
             const mensajeLimpio =

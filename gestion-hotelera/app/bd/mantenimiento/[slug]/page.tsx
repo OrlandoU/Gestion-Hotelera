@@ -221,7 +221,10 @@ export default function TicketDetailPage() {
                                     {/* BOTÓN EN CABECERA */}
                                     <button
                                         type="button"
-                                        disabled={ticket?.estado === "Completado" || Number(user?.usuario_id) !== Number(ticket?.responsable_id)}
+                                        disabled={
+                                            ticket?.estado === "Completado" ||
+                                            (ticket?.responsable_id != null && Number(user?.usuario_id) !== Number(ticket?.responsable_id))
+                                        }
                                         onClick={handleUpdateTicket}
                                         className="inline-flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white px-4 py-1.5 text-sm font-semibold shadow-sm transition-all active:scale-95 cursor-pointer ml-2 disabled:bg-slate-300 disabled:hover:bg-slate-300 disabled:cursor-not-allowed disabled:active:scale-100 disabled:shadow-none"
                                     >
@@ -275,7 +278,10 @@ export default function TicketDetailPage() {
 
                                     <button
                                         type="button"
-                                        disabled={ticket?.estado === "Completado" || Number(user?.usuario_id) !== Number(ticket?.responsable_id)}
+                                        disabled={
+                                            ticket?.estado === "Completado" ||
+                                            (ticket?.responsable_id != null && Number(user?.usuario_id) !== Number(ticket?.responsable_id))
+                                        }
                                         onClick={handleUpdateTicket}
                                         className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold py-3 px-4 text-sm shadow-sm transition-all active:scale-[0.98] cursor-pointer disabled:bg-slate-300 disabled:hover:bg-slate-300 disabled:cursor-not-allowed disabled:active:scale-100 disabled:shadow-none"
                                     >

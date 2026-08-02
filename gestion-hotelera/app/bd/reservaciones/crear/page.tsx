@@ -259,6 +259,7 @@ export default function CrearReservacion() {
 
     useEffect(() => {
         setFormData(prev => ({ ...prev, fecha_entrada: today }));
+        console.log(today);
     }, [today]);
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
