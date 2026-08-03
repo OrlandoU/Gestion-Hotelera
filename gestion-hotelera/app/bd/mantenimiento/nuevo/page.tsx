@@ -38,8 +38,8 @@ export default function NuevoMantenimientoPage() {
         fecha_inicio: null,
         fecha_limite: null,
         prioridad: "",
-        estado: "",
-        espacio_id: 34,
+        estado: "Pendiente",
+        espacio_id: 0,
     });
     const [esInterno, setEsInterno] = useState(true);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -275,7 +275,7 @@ export default function NuevoMantenimientoPage() {
                                             required={esInterno}
                                         >
                                             <option value="" disabled>Selecciona un empleado</option>
-                                            {empleados?.map((empleado) => (
+                                            {empleados.filter((empleado) => empleado.rol === "Mantenimiento" || empleado.rol === "Limpieza")?.map((empleado) => (
                                                 <option key={empleado.usuario_id} value={empleado.usuario_id}>
                                                     {`${empleado.primer_nombre} ${empleado.primer_apellido} (${empleado.rol})`}
                                                 </option>

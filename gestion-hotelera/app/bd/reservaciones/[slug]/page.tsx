@@ -232,7 +232,8 @@ export default function ReservationPage() {
 
     const { bookingId, guest, status, createdAt, stay, room, party, internalNotes, payment, activity } = normalizeReserva(rawReserva);
     console.log("Normalized Reservation Data:", { bookingId, guest, status, createdAt, stay, room, party, internalNotes, payment, activity });
-    const createdLabel = createdAt ? new Date(createdAt).toLocaleDateString() : "";
+
+    const createdLabel = createdAt?.split("T")[0] ?? "-";
 
     const roomRate = payment?.breakdown?.roomRate ?? rawReserva?.precio_unidad ?? 0;
     const extras = payment?.breakdown?.extras ?? 0;
@@ -286,7 +287,8 @@ export default function ReservationPage() {
                             <div>
                                 <p className="text-xs text-slate-400 mb-1 font-medium">Nivel de fidelidad</p>
                                 <p className="text-slate-800 font-medium flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-amber-500 text-[18px]">workspace_premium</span> {guest?.loyalty?.tier ?? "—"}
+                                    <span className="material-symbols-outlined text-amber-500 text-[18px]">workspace_premium</span>
+                                    <p>{guest?.loyalty?.tier ?? "—"}</p>
                                 </p>
                             </div>
 
@@ -301,7 +303,7 @@ export default function ReservationPage() {
                         <div className="flex flex-col md:flex-row justify-between mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
                             <div className="flex-1 text-center md:text-left mb-3 md:mb-0">
                                 <p className="text-xs text-slate-400 uppercase tracking-wider mb-1 font-semibold">Check-in</p>
-                                <p className="text-xl font-bold text-slate-900">{stay?.checkIn ? new Date(stay.checkIn).toLocaleDateString() : "—"}</p>
+                                <p className="text-xl font-bold text-slate-900">{stay?.checkIn?.split("T")[0] ?? "-"}</p>
                                 <p className="text-xs text-slate-500 mt-0.5">{stay?.checkInTime}</p>
                             </div>
                             <div className="flex-1 flex flex-col items-center justify-center relative my-2 md:my-0">
@@ -313,12 +315,12 @@ export default function ReservationPage() {
                             </div>
                             <div className="flex-1 text-center md:text-right">
                                 <p className="text-xs text-slate-400 uppercase tracking-wider mb-1 font-semibold">Check-out</p>
-                                <p className="text-xl font-bold text-slate-900">{stay?.checkOut ? new Date(stay.checkOut).toLocaleDateString() : "—"}</p>
+                                <p className="text-xl font-bold text-slate-900">{stay?.checkOut?.split("T")[0] ?? "-"}</p>
                                 <p className="text-xs text-slate-500 mt-0.5">{stay?.checkOutTime}</p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-slate-50 p-3 rounded-xl flex items-center gap-3 border border-slate-100">
                                 <div className="w-10 h-10 rounded-full bg-slate-200/60 flex items-center justify-center text-slate-800">
                                     <span className="material-symbols-outlined">meeting_room</span>
@@ -335,15 +337,6 @@ export default function ReservationPage() {
                                 <div>
                                     <p className="text-xs text-slate-400 font-medium">Número de habitación</p>
                                     <p className="font-bold text-slate-800">{room?.number}</p>
-                                </div>
-                            </div>
-                            <div className="bg-slate-50 p-3 rounded-xl flex items-center gap-3 border border-slate-100">
-                                <div className="w-10 h-10 rounded-full bg-slate-200/60 flex items-center justify-center text-slate-800">
-                                    <span className="material-symbols-outlined">group</span>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-400 font-medium">Huéspedes</p>
-                                    <p className="font-bold text-slate-800">{party?.adults ?? 0} Adultos</p>
                                 </div>
                             </div>
                         </div>
@@ -400,9 +393,9 @@ export default function ReservationPage() {
                             >
                                 <span className="material-symbols-outlined text-[20px]">receipt_long</span> Generar factura
                             </button>
-                            <button className="w-full min-h-11 text-red-600 hover:bg-red-50 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors mt-4">
+                            {/*<button className="w-full min-h-11 text-red-600 hover:bg-red-50 rounded-lg font-bold flex items-center justify-center gap-2 transition-colors mt-4">
                                 <span className="material-symbols-outlined text-[20px]">cancel</span> Cancelar reserva
-                            </button>
+                            </button>*/}
                         </div>
                     </div>
 

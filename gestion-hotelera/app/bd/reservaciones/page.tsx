@@ -123,7 +123,7 @@ function formatDate(value: Date | string): string {
 }
 
 function getGuestName(reserva: Reserva): string {
-    const parts = [reserva.nombres, reserva.apellidos, reserva.nombre_huesped].filter(Boolean) as string[];
+    const parts = [reserva.huesped_nombre /*reserva.apellido_huesped*/].filter(Boolean) as string[];
     return parts.join(" ").trim() || "Huésped sin nombre";
 }
 
@@ -211,6 +211,9 @@ export default function Page() {
 
     const timelineData = useMemo(() => (timelineHook.data || []) as Reserva[], [timelineHook.data]);
     const listData = useMemo(() => (listHook.data || []) as Reserva[], [listHook.data]);
+
+    //console.log(timelineData);
+    console.log(listData);
 
     const hasCustomRange = Boolean(customRange?.start && customRange?.end && parseDateValue(customRange.start) && parseDateValue(customRange.end));
     const visibleStartDate = hasCustomRange ? parseDateValue(customRange!.start)! : timelineStartDate;
@@ -420,14 +423,14 @@ export default function Page() {
                             <button
                                 type="button"
                                 onClick={() => setView("timeline")}
-                                className={`px-3 py-1 text-sm rounded ${view === "timeline" ? "bg-white shadow" : "hover:bg-slate-100"}`}
+                                className={`px-3 py-1 text-sm rounded cursor-pointer ${view === "timeline" ? "bg-white shadow" : "hover:bg-slate-100"}`}
                             >
                                 Cronograma
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setView("list")}
-                                className={`px-3 py-1 text-sm rounded ${view === "list" ? "bg-white shadow" : "hover:bg-slate-100"}`}
+                                className={`px-3 py-1 text-sm rounded cursor-pointer ${view === "list" ? "bg-white shadow" : "hover:bg-slate-100"}`}
                             >
                                 Lista
                             </button>
@@ -541,7 +544,7 @@ export default function Page() {
                                                 setDraftRange({ start: "", end: "" });
                                                 setShowRangePicker(false);
                                             }}
-                                            className="px-4 py-2 rounded-md border border-red-300 text-red-700 hover:bg-red-50"
+                                            className="px-4 py-2 rounded-md cursor-pointer border border-red-300 text-red-700 hover:bg-red-50"
                                         >Limpiar rango</button>
                                     )}
                                 </div>
@@ -563,7 +566,7 @@ export default function Page() {
                                     {dates.map((date) => {
                                         const weekday = date.toLocaleString("es-HN", { weekday: "short" });
                                         const daynum = date.getDate();
-                                        const isMid = date.getDay() === 4;
+                                        const isMid = date.getDay() === 1;
                                         const weekend = date.getDay() === 0 || date.getDay() === 6;
                                         return (
                                             <div key={date.toISOString()} className={`p-2 text-center border-r border-slate-300 card-shadow ${isMid ? "bg-blue-50/50" : weekend ? "bg-slate-100/50" : ""}`} style={{ minWidth: dayWidth }}>
@@ -636,7 +639,7 @@ export default function Page() {
                             <label className="flex flex-col w-full sm:w-auto text-slate-700 text-sm">
                                 Filtrar por fecha
                                 <input
-                                    className="mt-2 p-2 border border-slate-300 rounded-md"
+                                    className="mt-2 p-2 border cursor-pointer border-slate-300 rounded-md"
                                     type="date"
                                     value={listFechaStr}
                                     onChange={(e) => setListFechaStr(e.target.value)}
@@ -645,7 +648,7 @@ export default function Page() {
                             <button
                                 type="button"
                                 onClick={() => setListFechaStr("")}
-                                className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-100"
+                                className="px-4 py-2 rounded-md border cursor-pointer border-slate-300 text-slate-700 hover:bg-slate-100"
                             >
                                 Limpiar
                             </button>
@@ -744,8 +747,8 @@ export default function Page() {
                                                     <div className="text-xs text-slate-400">Reserva {reserva.numero_reserva || reserva.reserva_id}</div>
                                                 </td>
                                                 <td className="px-4 py-3 align-middle text-slate-700">{reserva.numero_espacio || "—"}</td>
-                                                <td className="px-4 py-3 align-middle text-slate-600">{reserva.fecha_entrada || "—"}</td>
-                                                <td className="px-4 py-3 align-middle text-slate-600">{reserva.fecha_salida || "—"}</td>
+                                                <td className="px-4 py-3 align-middle text-slate-600">{"12 PM " + reserva.fecha_entrada?.split("T")[0] || "—"}</td>
+                                                <td className="px-4 py-3 align-middle text-slate-600">{"11 AM " + reserva.fecha_salida?.split("T")[0] || "—"}</td>
                                                 <td className="px-4 py-3 align-middle text-slate-600">{nights}</td>
                                                 <td className="px-4 py-3 align-middle">
                                                     <span className={`inline-flex items-center gap-2 px-2 py-1 rounded text-xs font-medium border ${currentStatus.badgeBg} ${currentStatus.badgeText} ${currentStatus.border}`}>

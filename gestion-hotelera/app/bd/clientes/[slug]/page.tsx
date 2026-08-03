@@ -28,11 +28,26 @@ export default function ClientDetailPage() {
   };
 
   const getLoyaltyTier = (client: Huesped) => {
-    const amount = Number(client.total_gastado ?? 0);
-    if (amount > 10000) return "Platinum";
-    if (amount > 5000) return "Gold";
-    if (amount > 1000) return "Silver";
-    return "Bronze";
+    const amount = Number(client.total_pagado ?? 0);
+    if (amount > 10000) return "Platino";
+    if (amount > 5000) return "Oro";
+    if (amount > 1000) return "Plata";
+    return "Bronce";
+  };
+
+  const getTierColor = (tier: string) => {
+    switch (tier.toLowerCase()) {
+      case "platino":
+        return "bg-purple-200 text-purple-800";
+      case "oro":
+        return "bg-indigo-200 text-indigo-800";
+      case "plata":
+        return "bg-slate-200 text-slate-800";
+      case "bronce":
+        return "bg-amber-200 text-amber-800";
+      default:
+        return "bg-gray-200";
+    }
   };
 
   useEffect(() => {
@@ -112,7 +127,10 @@ export default function ClientDetailPage() {
   const guestTotalStays = client.estancias ?? 0;
   const guestLoyaltyTier = String(client.loyaltyTier ?? getLoyaltyTier(client));
   const guestNotes = Array.isArray(client.notes) ? client.notes : [];
-  const guestLastVisit = String(client.lastVisit ?? "—");
+  //const guestLastVisit = String(client.lastVisit ?? "—");
+  const lastReservation = reservations.length - 1;
+  const guestLastVisit = String(reservations[lastReservation].fecha_salida?.split('T')[0] ?? "—");
+
   const initials = fullName
     .split(" ")
     .map((part) => part[0])
@@ -133,7 +151,7 @@ export default function ClientDetailPage() {
           <p className="text-sm text-slate-600 mt-1">{guestEmail} · {guestPhone}</p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <a href={`mailto:${client.email}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-950 text-white text-sm font-semibold hover:bg-slate-800 transition-colors">
+          <a href={`mailto:${client.email}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-950 text-white text-sm font-semibold hover:bg-slate-800 hover:translate-y-0.5 transition-colors">
             <span className="material-symbols-outlined text-[18px]">mail</span> Contactar
           </a>
           <Link href="/bd/clientes" className="inline-flex items-center justify-center gap-2 rounded-[2.5rem] border border-slate-300 bg-white px-5 py-3 text-[14px] font-semibold leading-4 tracking-wider text-slate-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 active:scale-95">
@@ -146,10 +164,10 @@ export default function ClientDetailPage() {
         <div className="xl:col-span-12 space-y-6">
           <div className="bg-white border border-slate-300 rounded-3xl p-6 shadow-sm">
             <div className="flex flex-wrap items-center gap-6 mb-6 pb-4 border-b border-slate-100">
-              <div className="w-14 h-14 rounded-full bg-slate-950 text-white flex items-center justify-center font-bold text-lg">
+              <div className={`w-14 h-14 rounded-full border-1 border-slate-500 ${getTierColor(guestLoyaltyTier)} flex items-center justify-center font-bold text-lg`}>
                 {initials}
               </div>
-              <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold bg-amber-50 text-amber-800 border-amber-200">
+              <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold ${getTierColor(guestLoyaltyTier)} border-gray-500`}>
                 Nivel {guestLoyaltyTier}
               </span>
               <span className="text-sm text-slate-600 flex items-center gap-1.5">

@@ -447,9 +447,9 @@ export default function ClientesPage() {
                     <tr key={client.huesped_id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-6">
                         <div className="font-medium text-slate-900">{fullName}</div>
-                        <div className="text-xs text-slate-400">
-                          Última visita: —
-                        </div>
+                        {/*<div className="text-xs text-slate-400">
+                          Última visita: 
+                        </div>*/}
                       </td>
                       <td className="py-3.5 px-6 text-slate-500">
                         <div>{client.email}</div>

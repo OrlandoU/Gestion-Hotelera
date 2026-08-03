@@ -49,7 +49,7 @@ export default function MantenimientoPage() {
                 subtitle="Solicitudes y tareas pendientes"
                 buttons={
                     <div className="flex items-center gap-3">
-                        <Link href="/bd/mantenimiento/nuevo" className="inline-flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-slate-800">
+                        <Link href="/bd/mantenimiento/nuevo" className="hover:cursor-pointer hover:-translate-y-0.5 right-4 bottom-4 flex items-center justify-center gap-2 rounded-[2.5rem] bg-[#000000] px-6 py-4 text-[14px] font-semibold leading-4 tracking-wider text-[#ffffff] shadow-lg transition-transform active:scale-95">
                             <span className="material-symbols-outlined">add</span> Nuevo ticket
                         </Link>
                     </div>
