@@ -476,11 +476,11 @@ export default function Page() {
                                 <span>Pendiente</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                                 <span>Confirmada</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                                <span className="w-2 h-2 rounded-full bg-purple-500"></span>
                                 <span>En estancia</span>
                             </div>
                             <div className="flex items-center gap-1.5">

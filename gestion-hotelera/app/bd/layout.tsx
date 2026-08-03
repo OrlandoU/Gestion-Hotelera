@@ -43,7 +43,7 @@ export default function DashboardLayout({
 
   const linksPerRole = {
     "Administrador": ["Panel", "Habitaciones", "Reservaciones", "Clientes", "Inventario", "Mantenimiento", "Usuarios", "Reportes"],
-    "Recepcionista": ["Panel", "Habitaciones", "Reservaciones", "Clientes"],
+    "Recepcionista": ["Panel", "Habitaciones", "Reservaciones", "Clientes", "Mantenimiento"],
     "Mantenimiento": ["Panel", "Habitaciones", "Mantenimiento"],
     "Limpieza": ["Panel", "Habitaciones", "Mantenimiento"],
   }
