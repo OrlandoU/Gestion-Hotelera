@@ -577,7 +577,7 @@ export default function Page() {
                                     })}
                                 </div>
 
-                                <div className="bg-slate-100 px-4 py-2 text-xs font-semibold sticky left-0 z-20 text-slate-500">Planta 1 - Suites</div>
+                                <div className="bg-slate-100 px-4 py-2 text-xs font-semibold sticky left-0 z-20 text-slate-500">Cronograma de habitaciones</div>
 
                                 {rooms.map((room) => (
                                     <div key={room.id} className="gantt-grid border-b border-slate-300 card-shadow hover:bg-slate-50/50 transition-colors group relative h-14">
