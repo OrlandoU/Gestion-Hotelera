@@ -19,6 +19,7 @@ export default function MantenimientoPage() {
     const user = getCurrentUser()
     const { data: tickets = [], loading } = useTickets()
     const [q, setQ] = useState('')
+    //const [filterResponsable, setFilterResponsable] = useState<'all', >()
     const [filterStatus, setFilterStatus] = useState<'all' | 'Pendiente' | 'Completado'>('all')
     const [filterPriority, setFilterPriority] = useState<'all' | 'Urgente' | 'Alta' | 'Media' | 'Baja'>('all')
 
@@ -41,6 +42,7 @@ export default function MantenimientoPage() {
     const total = tickets?.length ?? 0
     const pendientes = tickets?.filter((t: Ticket) => t.estado === 'Pendiente').length ?? 0
     const altas = tickets?.filter((t: Ticket) => t.prioridad === 'Alta').length ?? 0
+    //const misTareas = tickets?.filter((t: Ticket) => t.responsable_id === user?.usuario_id)
 
     return (
         <div className="w-full flex flex-col gap-6">
@@ -80,12 +82,12 @@ export default function MantenimientoPage() {
                         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por ticket, título, descripción, habitación o responsable" className="w-full px-3 py-2 border rounded-md text-sm" />
                     </div>
                     <div className="flex items-center gap-2">
-                        <button onClick={() => setFilterStatus('all')} className="px-3 py-2 border rounded-md text-sm">
+                        {/*<button onClick={() => setFilterStatus('all')} className="px-3 py-2 border rounded-md text-sm">
                             Todos
                         </button>
-                        <button onClick={() => setFilterStatus('Pendiente')} className="px-3 py-2 border rounded-md text-sm">
-                            Mis tareas
-                        </button>
+                        <button onClick={() => setFilterStatus('Pendiente')} className="px-3 py-2 border cursor-pointer rounded-md text-sm">
+                            Tareas Pendiente
+                        </button>*/}
                         <select value={filterStatus} onChange={(e: ChangeEvent<HTMLSelectElement>) => setFilterStatus(e.target.value as 'all' | 'Pendiente' | 'Completado')} className="px-3 py-2 border rounded-md text-sm">
                             <option value="all">Todos los estados</option>
                             <option value="Pendiente">Pendiente</option>
