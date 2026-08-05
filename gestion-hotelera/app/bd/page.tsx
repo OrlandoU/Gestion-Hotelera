@@ -846,7 +846,7 @@ export default function Page() {
                                 roomsToShow.map((habitacion, index) => (
                                     <div
                                         key={habitacion.espacio_id ?? habitacion.numero_espacio ?? `habitacion-${index}`}
-                                        className={`${getRoomStateClasses(habitacion.estado)} flex items-center justify-center rounded-sm text-[12px] font-medium text-[#515f74] cursor-pointer hover:bg-[#e0e3e5] transition-colors h-16`}
+                                        className={`${getRoomStateClasses(habitacion.estado)} flex items-center justify-center rounded-sm text-[12px] font-medium text-[#515f74] hover:bg-[#e0e3e5] transition-colors h-16`}
                                     >
                                         {habitacion.numero_espacio || habitacion.espacio_id || "--"}
                                     </div>

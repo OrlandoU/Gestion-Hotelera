@@ -2,9 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { Reserva, useReserva } from "@/functions/reservas";
-// removed ViewTransition import (not available in this React version)
 import Link from "next/link";
-import React from "react";
+import { useRouter } from 'next/navigation';
 import { formatLempiras } from "@/lib/utils";
 import Button from "@/components/ui/button";
 import { toast } from "sonner";
@@ -83,6 +82,7 @@ export default function ReservationPage() {
     const rawId = params?.slug as string | string[] | undefined;
     const id = Array.isArray(rawId) ? rawId[0] : rawId;
     const numericId = id ? Number(id) : null;
+    const router = useRouter();
 
     const {
         data: rawReserva,
@@ -101,8 +101,8 @@ export default function ReservationPage() {
 
         try {
             await modificarReserva(rawReserva.reserva_id, true);
-            toast.success("Reserva checkeada exitosamente");
-            window.location.href = '/bd/reservaciones';
+            toast.success("Check-in realizado exitosamente");
+            router.push('/bd/reservaciones');
         } catch (error: any) {
             // Apuntamos correctamente a la estructura de error de FastAPI/Axios
             const mensajeLimpio =
@@ -123,7 +123,7 @@ export default function ReservationPage() {
         try {
             await modificarReserva(rawReserva.reserva_id, false);
             toast.success("Reserva finalizada exitosamente");
-            window.location.href = '/bd/reservaciones';
+            router.push('/bd/reservaciones');
         } catch (error: any) {
             // Apuntamos correctamente a la estructura de error de FastAPI/Axios
             const mensajeLimpio =
